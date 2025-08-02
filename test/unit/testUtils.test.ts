@@ -68,7 +68,7 @@ describe('TestUtils', () => {
       expect(discreteGPU).toBeTruthy();
       expect(integratedGPU).toBeTruthy();
       expect(discreteGPU!.name).toBe('Intel Arc A770');
-      expect(integratedGPU!.name).toBe('Intel Xe Graphics');
+      expect(integratedGPU!.name).toBe('Intel Core Ultra Processors with Intel Arc Graphics.(Integrated graphic unit)');
     });
 
     test('should setup error simulation environment', async () => {

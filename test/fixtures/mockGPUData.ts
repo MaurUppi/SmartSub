@@ -94,7 +94,7 @@ export const intelGPUFixtures = {
    */
   xeGraphics: (): GPUDevice => ({
     id: 'intel-xe-graphics',
-    name: 'Intel Xe Graphics',
+    name: 'Intel Core Ultra Processors with Intel Arc Graphics.(Integrated graphic unit)',
     type: 'integrated',
     vendor: 'intel',
     deviceId: '9A49',
@@ -112,7 +112,7 @@ export const intelGPUFixtures = {
 
   irisXe: (): GPUDevice => ({
     id: 'intel-iris-xe-graphics',
-    name: 'Intel Iris Xe Graphics',
+    name: 'Intel Core Ultra Processors with Intel Arc Graphics.(Integrated graphic unit)',
     type: 'integrated',
     vendor: 'intel',
     deviceId: '9A60',
@@ -130,7 +130,7 @@ export const intelGPUFixtures = {
 
   irisXeMax: (): GPUDevice => ({
     id: 'intel-iris-xe-max-graphics',
-    name: 'Intel Iris Xe MAX Graphics',
+    name: 'Intel Core Ultra Processors with Intel Arc Graphics.(Integrated graphic unit)',
     type: 'discrete',
     vendor: 'intel',
     deviceId: '4905',

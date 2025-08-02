@@ -125,7 +125,7 @@ describe('DevelopmentMockSystem', () => {
       
       expect(devices).toHaveLength(2);
       expect(devices[0].name).toBe('Intel Arc A770 16GB');
-      expect(devices[1].name).toBe('Intel Xe Graphics');
+      expect(devices[1].name).toBe('Intel Core Ultra Processors with Intel Arc Graphics.(Integrated graphic unit)');
     });
 
     test('should return empty array when mocking disabled', async () => {

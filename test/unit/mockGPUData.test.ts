@@ -87,7 +87,7 @@ describe('Intel GPU Fixtures', () => {
   });
 
   describe('Intel Xe Integrated Graphics', () => {
-    test('should provide Intel Xe Graphics fixture', () => {
+    test('should provide Intel Core Ultra Processors with Intel Arc Graphics.(Integrated graphic unit) fixture', () => {
       const device = intelGPUFixtures.xeGraphics();
       
       TestAssertions.assertValidGPUDevice(device);
@@ -98,7 +98,7 @@ describe('Intel GPU Fixtures', () => {
       expect(device.performance).toBe('medium');
     });
 
-    test('should provide Intel Iris Xe Graphics fixture', () => {
+    test('should provide Intel Core Ultra Processors with Intel Arc Graphics.(Integrated graphic unit) Graphics fixture', () => {
       const device = intelGPUFixtures.irisXe();
       
       TestAssertions.assertValidGPUDevice(device);
@@ -108,7 +108,7 @@ describe('Intel GPU Fixtures', () => {
       expect(device.deviceId).toBe('9A60');
     });
 
-    test('should provide Intel Iris Xe MAX Graphics fixture', () => {
+    test('should provide Intel Core Ultra Processors with Intel Arc Graphics.(Integrated graphic unit) MAX Graphics fixture', () => {
       const device = intelGPUFixtures.irisXeMax();
       
       TestAssertions.assertValidGPUDevice(device);
@@ -418,7 +418,7 @@ describe('Fixture Utilities', () => {
       
       expect(merged).toHaveLength(4);
       expect(merged[0].name).toBe('Intel Arc A770 16GB');
-      expect(merged[2].name).toBe('Intel Xe Graphics');
+      expect(merged[2].name).toBe('Intel Core Ultra Processors with Intel Arc Graphics.(Integrated graphic unit)');
     });
 
     test('should handle empty arrays', () => {

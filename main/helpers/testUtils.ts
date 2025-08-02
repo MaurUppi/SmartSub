@@ -402,7 +402,7 @@ export const predefinedTestEnvironments = {
       },
       {
         id: 'mock-intel-xe-graphics',
-        name: 'Intel Xe Graphics',
+        name: 'Intel Core Ultra Processors with Intel Arc Graphics.(Integrated graphic unit)',
         type: 'integrated',
         vendor: 'intel',
         deviceId: '9A49',

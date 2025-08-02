@@ -230,7 +230,7 @@ describe('Task 1.1 Integration Tests: Development Environment & Mock System Setu
       
       const arcA770 = devices.find(d => d.name === 'Intel Arc A770 16GB');
       const arcA750 = devices.find(d => d.name === 'Intel Arc A750 8GB');
-      const xeGraphics = devices.find(d => d.name === 'Intel Xe Graphics');
+      const xeGraphics = devices.find(d => d.name === 'Intel Core Ultra Processors with Intel Arc Graphics.(Integrated graphic unit)');
       
       expect(arcA770).toBeTruthy();
       expect(arcA750).toBeTruthy();
@@ -301,7 +301,7 @@ describe('Task 1.1 Integration Tests: Development Environment & Mock System Setu
       
       // Should be completely different devices
       expect(devicesB.find(d => d.name === 'Intel Arc A770')).toBeTruthy();
-      expect(devicesB.find(d => d.name === 'Intel Xe Graphics')).toBeTruthy();
+      expect(devicesB.find(d => d.name === 'Intel Core Ultra Processors with Intel Arc Graphics.(Integrated graphic unit)')).toBeTruthy();
       
       // Cleanup environment B
       await TestSuiteSetup.cleanupTestSuite();

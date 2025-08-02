@@ -186,7 +186,7 @@ export class StandaloneDevelopmentMockSystem {
       },
       {
         id: 'mock-intel-xe-graphics',
-        name: 'Intel Xe Graphics',
+        name: 'Intel Core Ultra Processors with Intel Arc Graphics.(Integrated graphic unit)',
         type: 'integrated',
         vendor: 'intel',
         deviceId: '9A49',
@@ -203,7 +203,7 @@ export class StandaloneDevelopmentMockSystem {
       },
       {
         id: 'mock-intel-iris-xe',
-        name: 'Intel Iris Xe Graphics',
+        name: 'Intel Core Ultra Processors with Intel Arc Graphics.(Integrated graphic unit)',
         type: 'integrated',
         vendor: 'intel',
         deviceId: '9A60',

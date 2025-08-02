@@ -2,15 +2,16 @@
  * Development Mock System for Intel OpenVINO GPU Acceleration
  * 
  * This module provides comprehensive mocking capabilities for macOS development
- * environments where Intel GPU hardware is not available. It simulates:
- * - Intel GPU detection and enumeration
- * - OpenVINO toolkit validation
- * - Hardware capability reporting
- * - Performance characteristics simulation
+ * environments where Intel Core Ultra processors with Intel Arc Graphics are not available. It simulates:
+ * - Intel Core Ultra processor detection with integrated graphics
+ * - Intel GPU detection and enumeration (discrete Arc A-series + integrated graphics)
+ * - OpenVINO toolkit validation and compatibility
+ * - Hardware capability reporting and performance characteristics simulation
  */
 
 import { logMessage as logger } from './logger';
 import { platform } from 'os';
+import { coreUltraDetector, CoreUltraInfo } from './coreUltraDetection';
 
 // Core interfaces from design.md
 export interface GPUDevice {
@@ -174,7 +175,7 @@ export class DevelopmentMockSystem {
       },
       {
         id: 'mock-intel-xe-graphics',
-        name: 'Intel Xe Graphics',
+        name: 'Intel Core Ultra Processors with Intel Arc Graphics.(Integrated graphic unit)',
         type: 'integrated',
         vendor: 'intel',
         deviceId: '9A49',
@@ -191,7 +192,7 @@ export class DevelopmentMockSystem {
       },
       {
         id: 'mock-intel-iris-xe',
-        name: 'Intel Iris Xe Graphics',
+        name: 'Intel Core Ultra Processors with Intel Arc Graphics.(Integrated graphic unit)',
         type: 'integrated',
         vendor: 'intel',
         deviceId: '9A60',
