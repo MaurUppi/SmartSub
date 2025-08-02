@@ -168,7 +168,7 @@ describe('DevelopmentMockSystem', () => {
       
       TestAssertions.assertValidOpenVINOCapabilities(capabilities);
       expect(capabilities.isInstalled).toBe(true);
-      expect(capabilities.version).toBe('2024.1.0');
+      expect(capabilities.version).toBe('2024.6.0');
       expect(capabilities.supportedDevices).toContain('mock-intel-arc-a770');
       expect(capabilities.modelFormats).toContain('ONNX');
       expect(capabilities.runtimePath).toBeTruthy();
@@ -436,7 +436,7 @@ describe('DevelopmentMockSystem', () => {
       
       TestAssertions.assertValidOpenVINOCapabilities(capabilities);
       expect(capabilities.isInstalled).toBe(true);
-      expect(capabilities.version).toBe('2024.1.0');
+      expect(capabilities.version).toBe('2024.6.0');
     });
 
     test('mockSystemUtils.createTestOpenVINOCapabilities should apply overrides', () => {

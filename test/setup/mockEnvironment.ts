@@ -269,7 +269,7 @@ export class MockDataGenerators {
   public static generateMockOpenVINOCapabilities(overrides: any = {}): any {
     return {
       isInstalled: true,
-      version: '2024.1.0',
+      version: '2024.6.0',
       supportedDevices: ['mock-device'],
       runtimePath: '/mock/openvino',
       modelFormats: ['ONNX'],

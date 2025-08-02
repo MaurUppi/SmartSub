@@ -176,7 +176,7 @@ describe('OpenVINO Capability Fixtures', () => {
     
     TestAssertions.assertValidOpenVINOCapabilities(capabilities);
     expect(capabilities.isInstalled).toBe(true);
-    expect(capabilities.version).toBe('2024.1.0');
+    expect(capabilities.version).toBe('2024.6.0');
     expect(capabilities.supportedDevices).toContain('intel-arc-a770-16gb');
     expect(capabilities.supportedDevices).toContain('intel-xe-graphics');
     expect(capabilities.runtimePath).toBe('/opt/intel/openvino_2024/runtime');
@@ -217,7 +217,7 @@ describe('OpenVINO Capability Fixtures', () => {
     const capabilities = openVinoCapabilityFixtures.developmentMock();
     
     TestAssertions.assertValidOpenVINOCapabilities(capabilities);
-    expect(capabilities.version).toBe('2024.1.0-mock');
+    expect(capabilities.version).toBe('2024.6.0-mock');
     expect(capabilities.runtimePath).toBe('/mock/openvino/runtime');
     expect(capabilities.supportedDevices).toContain('mock-intel-arc-a770');
   });

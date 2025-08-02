@@ -276,7 +276,7 @@ export class StandaloneDevelopmentMockSystem {
 
     const capabilities: OpenVINOCapabilities = {
       isInstalled: true,
-      version: '2024.1.0',
+      version: '2024.6.0',
       supportedDevices: this.mockDevices
         .filter(device => device.capabilities.openvinoCompatible)
         .map(device => device.id),
@@ -448,7 +448,7 @@ export const mockSystemUtils = {
   createTestOpenVINOCapabilities(overrides?: Partial<OpenVINOCapabilities>): OpenVINOCapabilities {
     return {
       isInstalled: true,
-      version: '2024.1.0',
+      version: '2024.6.0',
       supportedDevices: ['test-device'],
       runtimePath: '/test/openvino',
       modelFormats: ['ONNX'],

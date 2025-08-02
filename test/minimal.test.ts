@@ -77,7 +77,7 @@ test('should validate fixture data structure', () => {
   const capabilities = fixtures.openvinoCapabilities.fullInstallation();
   expect(capabilities).toBeDefined();
   expect(capabilities.isInstalled).toBe(true);
-  expect(capabilities.version).toBe('2024.1.0');
+  expect(capabilities.version).toBe('2024.6.0');
   expect(Array.isArray(capabilities.supportedDevices)).toBe(true);
 });
 

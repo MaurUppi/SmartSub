@@ -216,7 +216,7 @@ export const openVinoCapabilityFixtures = {
    */
   fullInstallation: (): OpenVINOCapabilities => ({
     isInstalled: true,
-    version: '2024.1.0',
+    version: '2024.6.0',
     supportedDevices: [
       'intel-arc-a770-16gb',
       'intel-arc-a750-8gb', 
@@ -253,7 +253,7 @@ export const openVinoCapabilityFixtures = {
    */
   noIntelGPUSupport: (): OpenVINOCapabilities => ({
     isInstalled: true,
-    version: '2024.1.0',
+    version: '2024.6.0',
     supportedDevices: [],
     runtimePath: '/opt/intel/openvino_2024/runtime',
     modelFormats: ['ONNX', 'TensorFlow', 'PyTorch', 'OpenVINO IR'],
@@ -264,7 +264,7 @@ export const openVinoCapabilityFixtures = {
    */
   developmentMock: (): OpenVINOCapabilities => ({
     isInstalled: true,
-    version: '2024.1.0-mock',
+    version: '2024.6.0-mock',
     supportedDevices: [
       'mock-intel-arc-a770',
       'mock-intel-xe-graphics'

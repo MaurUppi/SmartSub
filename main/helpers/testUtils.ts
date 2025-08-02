@@ -365,7 +365,7 @@ export const predefinedTestEnvironments = {
     ],
     openvinoCapabilities: {
       isInstalled: true,
-      version: '2024.1.0',
+      version: '2024.6.0',
       supportedDevices: ['mock-intel-arc-a770'],
       runtimePath: '/opt/intel/openvino_2024/runtime',
       modelFormats: ['ONNX', 'TensorFlow', 'PyTorch', 'OpenVINO IR'],
@@ -420,7 +420,7 @@ export const predefinedTestEnvironments = {
     ],
     openvinoCapabilities: {
       isInstalled: true,
-      version: '2024.1.0',
+      version: '2024.6.0',
       supportedDevices: ['mock-intel-arc-a770', 'mock-intel-xe-graphics'],
       runtimePath: '/opt/intel/openvino_2024/runtime',
       modelFormats: ['ONNX', 'TensorFlow', 'PyTorch', 'OpenVINO IR'],

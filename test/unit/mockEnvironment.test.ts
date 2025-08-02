@@ -294,7 +294,7 @@ describe('MockDataGenerators', () => {
       
       TestAssertions.assertValidOpenVINOCapabilities(capabilities);
       expect(capabilities.isInstalled).toBe(true);
-      expect(capabilities.version).toBe('2024.1.0');
+      expect(capabilities.version).toBe('2024.6.0');
       expect(capabilities.supportedDevices).toContain('mock-device');
     });
 
