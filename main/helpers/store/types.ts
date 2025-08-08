@@ -1,10 +1,30 @@
 import { Provider, CustomParameterConfig } from '../../../types/provider';
 
+export enum LogCategory {
+  GENERAL = 'general',
+  GPU_DETECTION = 'gpu-detection',
+  OPENVINO_ADDON = 'openvino-addon',
+  ADDON_LOADING = 'addon-loading',
+  PERFORMANCE = 'performance',
+  ERROR_RECOVERY = 'error-recovery',
+  SYSTEM_INFO = 'system-info',
+  USER_ACTION = 'user-action',
+}
+
 export type LogEntry = {
   timestamp: number;
   message: string;
-  type?: 'info' | 'error' | 'warning';
+  type?: 'info' | 'error' | 'warning' | 'debug' | 'success';
+  category?: LogCategory;
+  context?: Record<string, any>;
+  correlationId?: string;
 };
+
+export interface OpenVINOPreferences {
+  cacheDir: string;
+  devicePreference: 'discrete' | 'integrated' | 'auto';
+  enableOptimizations: boolean;
+}
 
 export type StoreType = {
   translationProviders: Provider[];
@@ -27,6 +47,13 @@ export type StoreType = {
     vadMaxSpeechDuration: number;
     vadSpeechPad: number;
     vadSamplesOverlap: number;
+
+    // New Intel GPU settings
+    useOpenVINO?: boolean;
+    selectedGPUId?: string; // 'auto' | specific GPU ID
+    gpuPreference?: string[]; // ['nvidia', 'intel', 'apple', 'cpu']
+    gpuAutoDetection?: boolean;
+    openvinoPreferences?: OpenVINOPreferences;
   };
   providerVersion?: number;
   logs: LogEntry[];

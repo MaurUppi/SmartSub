@@ -1,9 +1,13 @@
-import ffmpegStatic from 'ffmpeg-static';
+import ffmpegStatic from 'ffmpeg-ffprobe-static';
 
 import ffmpeg from 'fluent-ffmpeg';
 import { logMessage } from './storeManager';
 
-const ffmpegPath = ffmpegStatic.replace('app.asar', 'app.asar.unpacked');
+// Use ffmpeg from ffmpeg-ffprobe-static (eliminates redundancy with ffmpeg-static)
+const ffmpegPath = ffmpegStatic.ffmpegPath.replace(
+  'app.asar',
+  'app.asar.unpacked',
+);
 
 ffmpeg.setFfmpegPath(ffmpegPath);
 

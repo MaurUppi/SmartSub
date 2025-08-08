@@ -1,6 +1,6 @@
 /**
  * Development Mock System for Intel OpenVINO GPU Acceleration
- * 
+ *
  * This module provides comprehensive mocking capabilities for macOS development
  * environments where Intel Core Ultra processors with Intel Arc Graphics are not available. It simulates:
  * - Intel Core Ultra processor detection with integrated graphics
@@ -9,7 +9,7 @@
  * - Hardware capability reporting and performance characteristics simulation
  */
 
-import { logMessage as logger } from './logger';
+import { logMessage } from './logger';
 import { platform } from 'os';
 import { coreUltraDetector, CoreUltraInfo } from './coreUltraDetection';
 
@@ -73,22 +73,30 @@ export class DevelopmentMockSystem {
   /**
    * Initialize the mock system with optional configuration
    */
-  public async initialize(config?: Partial<MockEnvironmentConfig>): Promise<void> {
+  public async initialize(
+    config?: Partial<MockEnvironmentConfig>,
+  ): Promise<void> {
     if (this.isInitialized) {
-      logger.warn('DevelopmentMockSystem already initialized');
+      logMessage('DevelopmentMockSystem already initialized', 'warning');
       return;
     }
 
     this.config = { ...this.config, ...config };
-    
+
     // Only enable mocking in development environment on macOS
     const shouldMock = this.shouldEnableMocking();
-    
+
     if (shouldMock) {
       await this.initializeMockDevices();
-      logger.info('DevelopmentMockSystem initialized with mock Intel GPU devices');
+      logMessage(
+        'DevelopmentMockSystem initialized with mock Intel GPU devices',
+        'info',
+      );
     } else {
-      logger.info('DevelopmentMockSystem initialized - production environment detected');
+      logMessage(
+        'DevelopmentMockSystem initialized - production environment detected',
+        'info',
+      );
     }
 
     this.isInitialized = true;
@@ -101,7 +109,7 @@ export class DevelopmentMockSystem {
     const isDevelopment = process.env.NODE_ENV === 'development';
     const isMacOS = platform() === 'darwin';
     const mockForced = process.env.FORCE_MOCK_INTEL_GPU === 'true';
-    
+
     return (isDevelopment && isMacOS) || mockForced;
   }
 
@@ -130,7 +138,9 @@ export class DevelopmentMockSystem {
 
     // Simulate device detection delay
     if (this.config.mockNetworkDelay > 0) {
-      await new Promise(resolve => setTimeout(resolve, this.config.mockNetworkDelay));
+      await new Promise((resolve) =>
+        setTimeout(resolve, this.config.mockNetworkDelay),
+      );
     }
   }
 
@@ -206,7 +216,7 @@ export class DevelopmentMockSystem {
         },
         powerEfficiency: 'excellent',
         performance: 'medium',
-      }
+      },
     ];
   }
 
@@ -229,10 +239,15 @@ export class DevelopmentMockSystem {
 
     // Simulate detection delay
     if (this.config.mockNetworkDelay > 0) {
-      await new Promise(resolve => setTimeout(resolve, this.config.mockNetworkDelay / 2));
+      await new Promise((resolve) =>
+        setTimeout(resolve, this.config.mockNetworkDelay / 2),
+      );
     }
 
-    logger.info(`Mock GPU enumeration found ${this.mockDevices.length} Intel GPU devices`);
+    logMessage(
+      `Mock GPU enumeration found ${this.mockDevices.length} Intel GPU devices`,
+      'info',
+    );
     return [...this.mockDevices];
   }
 
@@ -260,20 +275,25 @@ export class DevelopmentMockSystem {
 
     // Simulate detection delay
     if (this.config.mockNetworkDelay > 0) {
-      await new Promise(resolve => setTimeout(resolve, this.config.mockNetworkDelay));
+      await new Promise((resolve) =>
+        setTimeout(resolve, this.config.mockNetworkDelay),
+      );
     }
 
     const capabilities: OpenVINOCapabilities = {
       isInstalled: true,
       version: '2024.6.0',
       supportedDevices: this.mockDevices
-        .filter(device => device.capabilities.openvinoCompatible)
-        .map(device => device.id),
+        .filter((device) => device.capabilities.openvinoCompatible)
+        .map((device) => device.id),
       runtimePath: '/opt/intel/openvino_2024/runtime',
       modelFormats: ['ONNX', 'TensorFlow', 'PyTorch', 'OpenVINO IR'],
     };
 
-    logger.info('Mock OpenVINO capabilities detected:', capabilities);
+    logMessage(
+      `Mock OpenVINO capabilities detected: ${JSON.stringify(capabilities)}`,
+      'info',
+    );
     return capabilities;
   }
 
@@ -290,25 +310,29 @@ export class DevelopmentMockSystem {
       await this.initialize();
     }
 
-    const device = this.mockDevices.find(d => d.id === deviceId);
+    const device = this.mockDevices.find((d) => d.id === deviceId);
     if (!device) {
       throw new Error(`Mock device not found: ${deviceId}`);
     }
 
     // Simulate benchmark delay
     if (this.config.enablePerformanceSimulation) {
-      await new Promise(resolve => setTimeout(resolve, 1000)); // 1s benchmark
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // 1s benchmark
     }
 
     // Generate realistic performance metrics based on device characteristics
     const baseMetrics = this.getBasePerformanceMetrics(device);
     const variance = 0.1; // 10% variance
-    
+
     return {
-      processingTime: baseMetrics.processingTime * (1 + (Math.random() - 0.5) * variance),
-      memoryUsage: baseMetrics.memoryUsage * (1 + (Math.random() - 0.5) * variance),
-      powerConsumption: baseMetrics.powerConsumption * (1 + (Math.random() - 0.5) * variance),
-      throughput: baseMetrics.throughput * (1 + (Math.random() - 0.5) * variance),
+      processingTime:
+        baseMetrics.processingTime * (1 + (Math.random() - 0.5) * variance),
+      memoryUsage:
+        baseMetrics.memoryUsage * (1 + (Math.random() - 0.5) * variance),
+      powerConsumption:
+        baseMetrics.powerConsumption * (1 + (Math.random() - 0.5) * variance),
+      throughput:
+        baseMetrics.throughput * (1 + (Math.random() - 0.5) * variance),
     };
   }
 
@@ -317,18 +341,18 @@ export class DevelopmentMockSystem {
    */
   private getBasePerformanceMetrics(device: GPUDevice) {
     const metrics = {
-      'discrete': {
+      discrete: {
         processingTime: 150, // ms per audio second
         memoryUsage: 2048, // MB
         powerConsumption: 120, // watts
         throughput: 85, // audio seconds per minute
       },
-      'integrated': {
+      integrated: {
         processingTime: 300, // ms per audio second
         memoryUsage: 1024, // MB
         powerConsumption: 25, // watts
         throughput: 45, // audio seconds per minute
-      }
+      },
     };
 
     return metrics[device.type];
@@ -339,7 +363,10 @@ export class DevelopmentMockSystem {
    */
   public configure(config: Partial<MockEnvironmentConfig>): void {
     this.config = { ...this.config, ...config };
-    logger.info('DevelopmentMockSystem configuration updated:', config);
+    logMessage(
+      `DevelopmentMockSystem configuration updated: ${JSON.stringify(config)}`,
+      'info',
+    );
   }
 
   /**
@@ -349,7 +376,7 @@ export class DevelopmentMockSystem {
     this.config = this.getDefaultConfig();
     this.mockDevices = [];
     this.isInitialized = false;
-    logger.info('DevelopmentMockSystem reset to defaults');
+    logMessage('DevelopmentMockSystem reset to defaults', 'info');
   }
 
   /**
@@ -371,17 +398,19 @@ export class DevelopmentMockSystem {
    */
   public addMockDevice(device: GPUDevice): void {
     this.mockDevices.push(device);
-    logger.info(`Added custom mock device: ${device.name}`);
+    logMessage(`Added custom mock device: ${device.name}`, 'info');
   }
 
   /**
    * Remove mock device
    */
   public removeMockDevice(deviceId: string): boolean {
-    const index = this.mockDevices.findIndex(device => device.id === deviceId);
+    const index = this.mockDevices.findIndex(
+      (device) => device.id === deviceId,
+    );
     if (index >= 0) {
       const removed = this.mockDevices.splice(index, 1)[0];
-      logger.info(`Removed mock device: ${removed.name}`);
+      logMessage(`Removed mock device: ${removed.name}`, 'info');
       return true;
     }
     return false;
@@ -391,7 +420,7 @@ export class DevelopmentMockSystem {
    * Get mock device by ID
    */
   public getMockDevice(deviceId: string): GPUDevice | undefined {
-    return this.mockDevices.find(device => device.id === deviceId);
+    return this.mockDevices.find((device) => device.id === deviceId);
   }
 
   /**
@@ -434,7 +463,9 @@ export const mockSystemUtils = {
   /**
    * Create test OpenVINO capabilities
    */
-  createTestOpenVINOCapabilities(overrides?: Partial<OpenVINOCapabilities>): OpenVINOCapabilities {
+  createTestOpenVINOCapabilities(
+    overrides?: Partial<OpenVINOCapabilities>,
+  ): OpenVINOCapabilities {
     return {
       isInstalled: true,
       version: '2024.6.0',
@@ -443,5 +474,5 @@ export const mockSystemUtils = {
       modelFormats: ['ONNX'],
       ...overrides,
     };
-  }
+  },
 };

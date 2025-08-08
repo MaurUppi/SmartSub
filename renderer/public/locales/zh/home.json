@@ -116,5 +116,14 @@
   "translationFailed": "翻译失败",
   "currentPlaying": "(当前播放)",
   "translationFailedLabel": "(翻译失败)",
-  "translationFailedPlaceholder": "翻译失败，请手动输入"
+  "translationFailedPlaceholder": "翻译失败，请手动输入",
+  "gpuSelection": "GPU 选择",
+  "gpuSelectionDesc": "选择用于硬件加速的 GPU 设备",
+  "gpuSelectionChanged": "GPU 选择已更改为 {{gpu}}",
+  "gpuListRefreshed": "GPU 列表已刷新",
+  "gpuRefreshFailed": "刷新 GPU 列表失败",
+  "autoDetectGPU": "自动检测（推荐）",
+  "cpuOnly": "仅使用 CPU",
+  "noGPUsDetected": "未检测到 GPU",
+  "gpuNotAvailable": "此平台不支持 GPU 选择"
 }

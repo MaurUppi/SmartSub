@@ -1,0 +1,15 @@
+{
+  "platform": "darwin",
+  "arch": "arm64",
+  "openvinoVersion": "2024.6.0",
+  "buildType": "coreml-strict",
+  "generatedAt": "2025-08-08T06:10:11.379Z",
+  "addons": {
+    "coreml": {
+      "available": true,
+      "filename": "addon-macos-arm64-coreml.node"
+    },
+    "primary": "addon-macos-arm64-coreml.node"
+  },
+  "strict": true
+}

@@ -184,3 +184,22 @@ async function processNextTasks(event) {
     setTimeout(() => processNextTasks(event), 100);
   }
 }
+
+/**
+ * Export functions to access task state from other modules
+ */
+export function getTaskCancellationState() {
+  return {
+    shouldCancel,
+    isPaused,
+    isProcessing,
+  };
+}
+
+export function isTaskCancelled(): boolean {
+  return shouldCancel;
+}
+
+export function isTaskPaused(): boolean {
+  return isPaused;
+}

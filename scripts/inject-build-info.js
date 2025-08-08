@@ -34,6 +34,17 @@ try {
     }
   }
 
+  // 如果是OpenVINO构建，添加OpenVINO相关信息
+  const buildType = process.env.BUILD_TYPE;
+  const openvinoVersion = process.env.OPENVINO_VERSION;
+
+  if (buildType === 'openvino') {
+    buildInfo.buildType = 'openvino';
+    if (openvinoVersion) {
+      buildInfo.openvinoVersion = openvinoVersion;
+    }
+  }
+
   // 将buildInfo写入package.json
   packageJson.buildInfo = buildInfo;
 

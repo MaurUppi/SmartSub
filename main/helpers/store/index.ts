@@ -30,6 +30,17 @@ export const store = new Store<StoreType>({
       vadMaxSpeechDuration: 0,
       vadSpeechPad: 30,
       vadSamplesOverlap: 0.1,
+
+      // Intel GPU settings with sensible defaults
+      useOpenVINO: false,
+      selectedGPUId: 'auto', // Auto-detect by default
+      gpuPreference: ['nvidia', 'intel', 'apple', 'cpu'], // Priority order
+      gpuAutoDetection: true,
+      openvinoPreferences: {
+        cacheDir: path.join(app.getPath('userData'), 'openvino-cache'),
+        devicePreference: 'auto', // Auto-select best Intel GPU
+        enableOptimizations: true,
+      },
     },
     logs: [],
   },

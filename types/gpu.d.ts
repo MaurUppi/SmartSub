@@ -1,0 +1,160 @@
+/**
+ * GPU Type Definitions for Intel OpenVINO Integration
+ *
+ * Comprehensive type definitions for GPU detection, enumeration,
+ * and compatibility validation across Windows, Linux, and macOS.
+ */
+
+// Core GPU device interface
+export interface GPUDevice {
+  id: string;
+  name: string;
+  type: 'discrete' | 'integrated';
+  vendor: 'nvidia' | 'intel' | 'apple';
+  deviceId: string;
+  priority: number;
+  driverVersion: string;
+  memory: number | 'shared';
+  capabilities: {
+    openvinoCompatible: boolean;
+    cudaCompatible: boolean;
+    coremlCompatible: boolean;
+  };
+  powerEfficiency: 'excellent' | 'good' | 'moderate';
+  performance: 'high' | 'medium' | 'low';
+  detectionMethod: 'wmi' | 'lspci' | 'systeminformation' | 'mock';
+  platformInfo?: {
+    windowsDeviceId?: string;
+    linuxPciId?: string;
+    driverPath?: string;
+    kernelModule?: string;
+  };
+}
+
+// OpenVINO specific information
+export interface OpenVINOInfo {
+  isInstalled: boolean;
+  version: string;
+  runtimePath: string;
+  supportedDevices: string[];
+  modelFormats: string[];
+  validationStatus: 'valid' | 'invalid' | 'unknown';
+  installationMethod: 'package' | 'manual' | 'conda' | 'unknown';
+  detectionErrors?: string[];
+}
+
+// Comprehensive GPU capabilities assessment
+export interface GPUCapabilities {
+  totalGPUs: number;
+  intelGPUs: GPUDevice[];
+  nvidiaGPUs: GPUDevice[];
+  appleGPUs: GPUDevice[];
+  recommendedGPU: GPUDevice | null;
+  openvinoInfo: OpenVINOInfo | null;
+  detectionTimestamp: Date;
+  detectionPlatform: 'windows' | 'linux' | 'darwin';
+  detectionSuccess: boolean;
+  detectionErrors: string[];
+}
+
+// Hardware detection configuration
+export interface HardwareDetectionConfig {
+  enableIntelGPU: boolean;
+  enableNvidiaGPU: boolean;
+  enableAppleGPU: boolean;
+  enableOpenVINOValidation: boolean;
+  timeoutMs: number;
+  preferredGPUType: 'discrete' | 'integrated' | 'auto';
+  minDriverVersion?: string;
+  enableMockMode: boolean;
+  mockScenario?: string;
+}
+
+// Platform-specific detection methods
+export interface WindowsGPUInfo {
+  name: string;
+  deviceId: string;
+  driverVersion: string;
+  driverDate: string;
+  memory: number;
+  vendorId: string;
+  subsystemId: string;
+  status: string;
+}
+
+export interface LinuxGPUInfo {
+  pciId: string;
+  deviceName: string;
+  vendor: string;
+  driver: string;
+  kernelModule: string;
+  memorySize?: string;
+  busInfo: string;
+}
+
+// Detection result types
+export type DetectionResult<T> = {
+  success: boolean;
+  data: T | null;
+  error?: string;
+  timestamp: Date;
+  detectionTimeMs: number;
+};
+
+// GPU classification helpers
+export interface GPUClassification {
+  isIntelGPU: boolean;
+  isDiscreteGPU: boolean;
+  isIntegratedGPU: boolean;
+  isArcSeries: boolean;
+  isCoreUltraIntegrated: boolean;
+  priority: number;
+  performanceClass: 'high' | 'medium' | 'low';
+  powerClass: 'excellent' | 'good' | 'moderate';
+}
+
+// OpenVINO validation results
+export interface OpenVINOValidation {
+  versionValid: boolean;
+  deviceSupported: boolean;
+  runtimeAvailable: boolean;
+  modelFormatSupported: boolean;
+  compatibilityScore: number; // 0-100
+  recommendations: string[];
+  warnings: string[];
+  errors: string[];
+}
+
+// Hardware detection events
+export interface HardwareDetectionEvent {
+  type:
+    | 'detection_start'
+    | 'detection_complete'
+    | 'gpu_found'
+    | 'openvino_validated'
+    | 'error';
+  timestamp: Date;
+  data: any;
+  message: string;
+}
+
+// Mock system integration
+export interface MockHardwareScenario {
+  name: string;
+  description: string;
+  gpuDevices: GPUDevice[];
+  openvinoInfo: OpenVINOInfo;
+  platform: 'windows' | 'linux' | 'darwin';
+  expectedBehavior: {
+    totalGPUsDetected: number;
+    recommendedGPU: string | null;
+    openvinoCompatible: boolean;
+    detectionSuccess: boolean;
+  };
+}
+
+// Export utility types
+export type GPUVendor = GPUDevice['vendor'];
+export type GPUType = GPUDevice['type'];
+export type DetectionPlatform = GPUCapabilities['detectionPlatform'];
+export type OpenVINOStatus = OpenVINOInfo['validationStatus'];

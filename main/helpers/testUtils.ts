@@ -1,6 +1,6 @@
 /**
  * Test Utilities for Intel OpenVINO GPU Acceleration Integration
- * 
+ *
  * This module provides comprehensive testing utilities for:
  * - Mock system validation
  * - Performance testing
@@ -8,8 +8,12 @@
  * - Hardware simulation verification
  */
 
-import { GPUDevice, OpenVINOCapabilities, mockSystem } from './developmentMockSystem';
-import { logMessage as logger } from './logger';
+import {
+  GPUDevice,
+  OpenVINOCapabilities,
+  mockSystem,
+} from './developmentMockSystem';
+import { logMessage } from './logger';
 
 export interface TestEnvironment {
   name: string;
@@ -59,17 +63,21 @@ export class TestUtils {
   /**
    * Set up test environment with specific configuration
    */
-  public async setupTestEnvironment(environment: TestEnvironment): Promise<void> {
-    logger.info(`Setting up test environment: ${environment.name}`);
-    
+  public async setupTestEnvironment(
+    environment: TestEnvironment,
+  ): Promise<void> {
+    logMessage(`Setting up test environment: ${environment.name}`, 'info');
+
     // Store current environment
     this.currentTestEnvironment = environment;
-    
+
     // Configure environment variables
-    for (const [key, value] of Object.entries(environment.environmentVariables)) {
+    for (const [key, value] of Object.entries(
+      environment.environmentVariables,
+    )) {
       process.env[key] = value;
     }
-    
+
     // Configure mock system
     await mockSystem.initialize({
       mockIntelGPUs: true,
@@ -79,8 +87,11 @@ export class TestUtils {
       forceErrors: false,
       customGPUDevices: environment.mockDevices,
     });
-    
-    logger.info(`Test environment "${environment.name}" configured successfully`);
+
+    logMessage(
+      `Test environment "${environment.name}" configured successfully`,
+      'info',
+    );
   }
 
   /**
@@ -88,25 +99,33 @@ export class TestUtils {
    */
   public async cleanupTestEnvironment(): Promise<void> {
     if (this.currentTestEnvironment) {
-      logger.info(`Cleaning up test environment: ${this.currentTestEnvironment.name}`);
-      
+      logMessage(
+        `Cleaning up test environment: ${this.currentTestEnvironment.name}`,
+        'info',
+      );
+
       // Reset environment variables
-      for (const key of Object.keys(this.currentTestEnvironment.environmentVariables)) {
+      for (const key of Object.keys(
+        this.currentTestEnvironment.environmentVariables,
+      )) {
         delete process.env[key];
       }
-      
+
       // Reset mock system
       mockSystem.reset();
-      
+
       this.currentTestEnvironment = undefined;
-      logger.info('Test environment cleaned up');
+      logMessage('Test environment cleaned up', 'info');
     }
   }
 
   /**
    * Create test scenario for specific use case
    */
-  public createTestScenario(name: string, config: Partial<TestScenario>): TestScenario {
+  public createTestScenario(
+    name: string,
+    config: Partial<TestScenario>,
+  ): TestScenario {
     const defaultScenario: TestScenario = {
       name,
       description: `Test scenario: ${name}`,
@@ -114,7 +133,7 @@ export class TestUtils {
       expectedOpenVINOCompatibility: true,
       ...config,
     };
-    
+
     return defaultScenario;
   }
 
@@ -123,34 +142,49 @@ export class TestUtils {
    */
   public async validateTestScenario(scenario: TestScenario): Promise<boolean> {
     try {
-      logger.info(`Validating test scenario: ${scenario.name}`);
-      
+      logMessage(`Validating test scenario: ${scenario.name}`, 'info');
+
       // Test GPU device enumeration
       const devices = await mockSystem.enumerateGPUDevices();
       if (devices.length !== scenario.expectedDeviceCount) {
-        logger.error(`Device count mismatch. Expected: ${scenario.expectedDeviceCount}, Got: ${devices.length}`);
+        logMessage(
+          `Device count mismatch. Expected: ${scenario.expectedDeviceCount}, Got: ${devices.length}`,
+          'error',
+        );
         return false;
       }
-      
+
       // Test OpenVINO capabilities
       const capabilities = await mockSystem.getOpenVINOCapabilities();
       if (capabilities.isInstalled !== scenario.expectedOpenVINOCompatibility) {
-        logger.error(`OpenVINO compatibility mismatch. Expected: ${scenario.expectedOpenVINOCompatibility}, Got: ${capabilities.isInstalled}`);
+        logMessage(
+          `OpenVINO compatibility mismatch. Expected: ${scenario.expectedOpenVINOCompatibility}, Got: ${capabilities.isInstalled}`,
+          'error',
+        );
         return false;
       }
-      
+
       // Validate device capabilities
       for (const device of devices) {
-        if (!device.capabilities.openvinoCompatible && scenario.expectedOpenVINOCompatibility) {
-          logger.error(`Device ${device.name} is not OpenVINO compatible but should be`);
+        if (
+          !device.capabilities.openvinoCompatible &&
+          scenario.expectedOpenVINOCompatibility
+        ) {
+          logMessage(
+            `Device ${device.name} is not OpenVINO compatible but should be`,
+            'error',
+          );
           return false;
         }
       }
-      
-      logger.info(`Test scenario "${scenario.name}" validated successfully`);
+
+      logMessage(
+        `Test scenario "${scenario.name}" validated successfully`,
+        'info',
+      );
       return true;
     } catch (error) {
-      logger.error(`Test scenario validation failed: ${error.message}`);
+      logMessage(`Test scenario validation failed: ${error.message}`, 'error');
       return false;
     }
   }
@@ -158,14 +192,20 @@ export class TestUtils {
   /**
    * Run performance test on specified device
    */
-  public async runPerformanceTest(deviceId: string, testName: string): Promise<PerformanceTestResult> {
+  public async runPerformanceTest(
+    deviceId: string,
+    testName: string,
+  ): Promise<PerformanceTestResult> {
     const startTime = Date.now();
-    
+
     try {
-      logger.info(`Running performance test "${testName}" on device: ${deviceId}`);
-      
+      logMessage(
+        `Running performance test "${testName}" on device: ${deviceId}`,
+        'info',
+      );
+
       const metrics = await mockSystem.simulatePerformanceBenchmark(deviceId);
-      
+
       const result: PerformanceTestResult = {
         testName,
         deviceId,
@@ -176,10 +216,13 @@ export class TestUtils {
         timestamp: new Date(),
         success: true,
       };
-      
+
       this.testResults.push(result);
-      logger.info(`Performance test "${testName}" completed successfully`);
-      
+      logMessage(
+        `Performance test "${testName}" completed successfully`,
+        'info',
+      );
+
       return result;
     } catch (error) {
       const result: PerformanceTestResult = {
@@ -193,10 +236,13 @@ export class TestUtils {
         success: false,
         error: error.message,
       };
-      
+
       this.testResults.push(result);
-      logger.error(`Performance test "${testName}" failed: ${error.message}`);
-      
+      logMessage(
+        `Performance test "${testName}" failed: ${error.message}`,
+        'error',
+      );
+
       return result;
     }
   }
@@ -212,18 +258,18 @@ export class TestUtils {
     const results = [];
     let passed = 0;
     let failed = 0;
-    
-    logger.info(`Running test suite with ${scenarios.length} scenarios`);
-    
+
+    logMessage(`Running test suite with ${scenarios.length} scenarios`, 'info');
+
     for (const scenario of scenarios) {
       try {
         const success = await this.validateTestScenario(scenario);
-        
+
         results.push({
           scenario: scenario.name,
           success,
         });
-        
+
         if (success) {
           passed++;
         } else {
@@ -238,9 +284,12 @@ export class TestUtils {
         failed++;
       }
     }
-    
-    logger.info(`Test suite completed. Passed: ${passed}, Failed: ${failed}`);
-    
+
+    logMessage(
+      `Test suite completed. Passed: ${passed}, Failed: ${failed}`,
+      'info',
+    );
+
     return { passed, failed, results };
   }
 
@@ -256,7 +305,7 @@ export class TestUtils {
    */
   public clearTestResults(): void {
     this.testResults = [];
-    logger.info('Test results cleared');
+    logMessage('Test results cleared', 'info');
   }
 
   /**
@@ -274,9 +323,10 @@ export class TestUtils {
   public assertEqual<T>(actual: T, expected: T, message?: string): void {
     const actualStr = JSON.stringify(actual);
     const expectedStr = JSON.stringify(expected);
-    
+
     if (actualStr !== expectedStr) {
-      const errorMessage = message || `Expected ${expectedStr}, but got ${actualStr}`;
+      const errorMessage =
+        message || `Expected ${expectedStr}, but got ${actualStr}`;
       throw new Error(`Assertion failed: ${errorMessage}`);
     }
   }
@@ -284,13 +334,18 @@ export class TestUtils {
   /**
    * Assert that async function throws error
    */
-  public async assertThrows(fn: () => Promise<any>, expectedError?: string): Promise<void> {
+  public async assertThrows(
+    fn: () => Promise<any>,
+    expectedError?: string,
+  ): Promise<void> {
     try {
       await fn();
       throw new Error('Expected function to throw, but it did not');
     } catch (error) {
       if (expectedError && !error.message.includes(expectedError)) {
-        throw new Error(`Expected error containing "${expectedError}", but got "${error.message}"`);
+        throw new Error(
+          `Expected error containing "${expectedError}", but got "${error.message}"`,
+        );
       }
     }
   }
@@ -299,7 +354,7 @@ export class TestUtils {
    * Mock delay for timing tests
    */
   public async delay(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   /**
@@ -311,24 +366,26 @@ export class TestUtils {
       `Generated: ${new Date().toISOString()}`,
       '',
       `Total Performance Tests: ${this.testResults.length}`,
-      `Successful Tests: ${this.testResults.filter(r => r.success).length}`,
-      `Failed Tests: ${this.testResults.filter(r => !r.success).length}`,
+      `Successful Tests: ${this.testResults.filter((r) => r.success).length}`,
+      `Failed Tests: ${this.testResults.filter((r) => !r.success).length}`,
       '',
       'Performance Test Results:',
-      ...this.testResults.map(result => 
-        `- ${result.testName} (${result.deviceId}): ${result.success ? 'PASS' : 'FAIL'}` +
-        (result.error ? ` - ${result.error}` : '')
+      ...this.testResults.map(
+        (result) =>
+          `- ${result.testName} (${result.deviceId}): ${result.success ? 'PASS' : 'FAIL'}` +
+          (result.error ? ` - ${result.error}` : ''),
       ),
       '',
       'Current Environment:',
-      this.currentTestEnvironment ? 
-        `- Name: ${this.currentTestEnvironment.name}` : '- No environment active',
+      this.currentTestEnvironment
+        ? `- Name: ${this.currentTestEnvironment.name}`
+        : '- No environment active',
       '',
       'Mock System Status:',
       `- Mocking Enabled: ${mockSystem.isMockingEnabled()}`,
       `- Configuration: ${JSON.stringify(mockSystem.getConfiguration(), null, 2)}`,
     ];
-    
+
     return report.join('\n');
   }
 }
@@ -361,7 +418,7 @@ export const predefinedTestEnvironments = {
         },
         powerEfficiency: 'good',
         performance: 'high',
-      }
+      },
     ],
     openvinoCapabilities: {
       isInstalled: true,
@@ -416,7 +473,7 @@ export const predefinedTestEnvironments = {
         },
         powerEfficiency: 'excellent',
         performance: 'medium',
-      }
+      },
     ],
     openvinoCapabilities: {
       isInstalled: true,

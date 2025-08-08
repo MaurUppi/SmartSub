@@ -11,15 +11,19 @@ files:
       - app
 publish:
   - provider: github
+    owner: MaurUppi
+    repo: SmartSub
 generateUpdatesFilesForAllChannels: true
 electronUpdaterCompatibility: '>=2.16'
 mac:
   target:
     - zip
     - dmg
-  artifactName: '${productName}_Mac_${version}_${arch}.${ext}'
+  artifactName: '${productName}_Mac_${version}_${arch}_${env.OPENVINO_VERSION}.${ext}'
   publish:
     - provider: github
+      owner: MaurUppi
+      repo: SmartSub
       channel: latest
   extraResources:
     - from: ./extraResources/addons/
@@ -28,6 +32,13 @@ mac:
         - '**/*'
     - from: ./extraResources/ggml-silero-v5.1.2.bin
       to: ./extraResources/ggml-silero-v5.1.2.bin
+    # Conditional OpenVINO addon packaging - only when OPENVINO_VERSION is set
+    - from: ./extraResources/addon-macos-arm-openvino.node
+      to: ./extraResources/addons/addon-macos-arm-openvino.node
+      filter: "${env.OPENVINO_VERSION ? '**/*' : []}"
+    - from: ./extraResources/addon-macos-x86-openvino.node
+      to: ./extraResources/addons/addon-macos-x86-openvino.node
+      filter: "${env.OPENVINO_VERSION ? '**/*' : []}"
 win:
   target:
     - nsis
@@ -38,10 +49,19 @@ win:
         - '**/*'
     - from: ./extraResources/ggml-silero-v5.1.2.bin
       to: ./extraResources/ggml-silero-v5.1.2.bin
+    # Conditional OpenVINO addon packaging - only when OPENVINO_VERSION is set
+    - from: ./extraResources/addon-windows-openvino.node
+      to: ./extraResources/addons/addon-windows-openvino.node
+      filter: "${env.OPENVINO_VERSION ? '**/*' : []}"
+    - from: ./extraResources/addon-windows-openvino-u22.node
+      to: ./extraResources/addons/addon-windows-openvino-u22.node
+      filter: "${env.OPENVINO_VERSION ? '**/*' : []}"
   requestedExecutionLevel: asInvoker
-  artifactName: '${productName}_Windows_${version}_${arch}_${env.CUDA_VERSION}_${env.CUDA_OPT}.${ext}'
+  artifactName: '${productName}_Windows_${version}_${arch}_${env.OPENVINO_VERSION}.${ext}'
   publish:
     - provider: github
+      owner: MaurUppi
+      repo: SmartSub
       channel: latest
 linux:
   target:
@@ -49,9 +69,11 @@ linux:
     - tar.gz
     - deb
   category: AudioVideo
-  artifactName: '${productName}_Linux_${version}_${arch}.${ext}'
+  artifactName: '${productName}_Linux_${version}_${arch}_${env.OPENVINO_VERSION}.${ext}'
   publish:
     - provider: github
+      owner: MaurUppi
+      repo: SmartSub
       channel: latest
   extraResources:
     - from: ./extraResources/addons/
@@ -60,6 +82,13 @@ linux:
         - '**/*'
     - from: ./extraResources/ggml-silero-v5.1.2.bin
       to: ./extraResources/ggml-silero-v5.1.2.bin
+    # Conditional OpenVINO addon packaging - only when OPENVINO_VERSION is set
+    - from: ./extraResources/addon-linux-openvino.node
+      to: ./extraResources/addons/addon-linux-openvino.node
+      filter: "${env.OPENVINO_VERSION ? '**/*' : []}"
+    - from: ./extraResources/addon-linux-openvino-u22.node
+      to: ./extraResources/addons/addon-linux-openvino-u22.node
+      filter: "${env.OPENVINO_VERSION ? '**/*' : []}"
 nsis:
   oneClick: false
   perMachine: false
@@ -67,11 +96,10 @@ nsis:
   deleteAppDataOnUninstall: false
   differentialPackage: false
 asarUnpack:
-  - 'node_modules/ffmpeg-static/bin/${os}/${arch}/ffmpeg'
-  - 'node_modules/ffmpeg-static/index.js'
-  - 'node_modules/ffmpeg-static/package.json'
-  - 'node_modules/ffmpeg-static/ffmpeg'
-  - 'node_modules/ffmpeg-static/ffmpeg.exe'
-  - 'node_modules/ffmpeg-static/ffmpeg.macos'
-  - 'node_modules/ffmpeg-static/ffmpeg.linux'
-  - 'node_modules/ffmpeg-static/ffmpeg.win32'
+  # Use ffmpeg-ffprobe-static for all ffmpeg and ffprobe needs (eliminates redundancy)
+  - 'node_modules/ffmpeg-ffprobe-static/ffprobe' # Unix/Linux/macOS binary
+  - 'node_modules/ffmpeg-ffprobe-static/ffprobe.exe' # Windows binary
+  - 'node_modules/ffmpeg-ffprobe-static/ffmpeg' # Unix/Linux/macOS binary
+  - 'node_modules/ffmpeg-ffprobe-static/ffmpeg.exe' # Windows binary
+  - 'node_modules/ffmpeg-ffprobe-static/index.js' # Cross-platform path resolver
+  - 'node_modules/ffmpeg-ffprobe-static/package.json' # Package metadata

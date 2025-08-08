@@ -90,6 +90,7 @@ export const defaultUserConfig = {
   maxConcurrentTasks: 1,
   sourceSrtSaveOption: 'noSave',
   targetSrtSaveOption: 'fileNameWithLang',
+  selectedGPU: 'auto', // Default GPU selection to auto-detect
 };
 
 export function getSrtFileName(

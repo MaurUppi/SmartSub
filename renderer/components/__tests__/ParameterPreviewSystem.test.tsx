@@ -81,7 +81,7 @@ jest.mock('@/components/ui/tabs', () => ({
         {children}
       </div>
     ) : null,
-  TabsList: ({ children, ...props }: any) => (
+  TabsList: ({ children, activeTab, onTabChange, ...props }: any) => (
     <div data-testid="tabs-list" {...props}>
       {children}
     </div>
@@ -140,7 +140,13 @@ jest.mock('@/components/ui/select', () => ({
       )}
     </div>
   ),
-  SelectContent: ({ children, ...props }: any) => (
+  SelectContent: ({
+    children,
+    onValueChange,
+    value,
+    disabled,
+    ...props
+  }: any) => (
     <div data-testid="select-content" {...props}>
       {children}
     </div>
@@ -155,12 +161,12 @@ jest.mock('@/components/ui/select', () => ({
       {children}
     </button>
   ),
-  SelectTrigger: ({ children, ...props }: any) => (
+  SelectTrigger: ({ children, onValueChange, ...props }: any) => (
     <div data-testid="select-trigger" {...props}>
       {children}
     </div>
   ),
-  SelectValue: ({ placeholder, ...props }: any) => (
+  SelectValue: ({ placeholder, value, onValueChange, ...props }: any) => (
     <span data-testid="select-value" {...props}>
       {placeholder}
     </span>

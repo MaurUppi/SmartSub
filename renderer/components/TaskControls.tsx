@@ -65,16 +65,21 @@ const TaskControls = ({ files, formData }) => {
     window?.ipc?.send('handleTask', { files, formData });
   };
   const handlePause = () => {
+    // Note: Pause functionality is limited due to whisper.cpp addon limitations
+    // Processing continues in background, only UI updates are paused
     window?.ipc?.send('pauseTask', null);
     setTaskStatus('paused');
   };
 
   const handleResume = () => {
+    // Resume UI updates - processing was never actually paused
     window?.ipc?.send('resumeTask', null);
     setTaskStatus('running');
   };
 
   const handleCancel = () => {
+    // Note: Cancel functionality is limited due to whisper.cpp addon limitations
+    // Processing will continue until natural completion
     window?.ipc?.send('cancelTask', null);
     setTaskStatus('cancelled');
   };
@@ -87,14 +92,40 @@ const TaskControls = ({ files, formData }) => {
       )}
       {taskStatus === 'running' && (
         <>
-          <Button onClick={handlePause}>{t('home:pauseTask')}</Button>
-          <Button onClick={handleCancel}>{t('home:cancelTask')}</Button>
+          <Button
+            disabled={true}
+            title="Processing cannot be stopped due to technical limitations"
+            className="cursor-not-allowed opacity-50"
+          >
+            {t('home:pauseTask')}
+          </Button>
+          <Button
+            disabled={true}
+            title="Processing cannot be stopped due to technical limitations"
+            className="cursor-not-allowed opacity-50"
+          >
+            {t('home:cancelTask')}
+          </Button>
         </>
       )}
       {taskStatus === 'paused' && (
         <>
-          <Button onClick={handleResume}>{t('home:resumeTask')}</Button>
-          <Button onClick={handleCancel}>{t('home:cancelTask')}</Button>
+          <Button
+            onClick={handleResume}
+            title={t(
+              'common:resume_processing',
+              'Resume processing (UI only - processing continues in background)',
+            )}
+          >
+            {t('home:resumeTask')}
+          </Button>
+          <Button
+            disabled={true}
+            title="Processing cannot be stopped due to technical limitations"
+            className="cursor-not-allowed opacity-50"
+          >
+            {t('home:cancelTask')}
+          </Button>
         </>
       )}
       {taskStatus === 'cancelled' && (

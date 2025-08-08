@@ -96,6 +96,52 @@ jobs:
             cuda_opt: 'generic'
             artifact_suffix: windows-x64-cuda1241-generic
 
+          # Windows OpenVINO builds
+          - os: windows-2022
+            arch: x64
+            os_build_arg: win
+            addon_name: addon-windows-openvino.node
+            build_type: openvino
+            openvino_version: '2024.6.0'
+            artifact_suffix: windows-x64-openvino-2024-6-0
+
+          # Linux OpenVINO builds
+          - os: ubuntu-latest
+            arch: x64
+            os_build_arg: linux
+            addon_name: addon-linux-openvino.node
+            build_type: openvino
+            openvino_version: '2024.6.0'
+            artifact_suffix: linux-x64-openvino-2024-6-0
+
+          - os: ubuntu-22.04
+            arch: x64
+            os_build_arg: linux
+            addon_name: addon-linux-openvino-u22.node
+            build_type: openvino
+            openvino_version: '2024.6.0'
+            artifact_suffix: linux-x64-openvino-u22-2024-6-0
+
+          # macOS ARM64 OpenVINO build
+          - os: macos-15
+            arch: arm64
+            os_build_arg: mac
+            addon_name: addon-macos-arm-openvino.node
+            build_type: openvino
+            openvino_version: '2024.6.0'
+            artifact_suffix: macos-arm64-openvino-2024-6-0
+            build_args: '--arm64'
+
+          # macOS x64 OpenVINO build
+          - os: macos-13
+            arch: x64
+            os_build_arg: mac
+            addon_name: addon-macos-x86-openvino.node
+            build_type: openvino
+            openvino_version: '2024.6.0'
+            artifact_suffix: macos-x64-openvino-2024-6-0
+            build_args: '--x64'
+
     steps:
       - name: Check out Git repository
         uses: actions/checkout@v4
@@ -105,7 +151,8 @@ jobs:
         with:
           node-version: 20.14.0
 
-      - name: Download addon
+      - name: Download addon (Non-OpenVINO builds)
+        if: matrix.build_type != 'openvino'
         shell: bash
         run: |
           mkdir -p temp-artifacts
@@ -121,8 +168,39 @@ jobs:
               "https://github.com/buxuku/whisper.cpp/releases/download/latest/addon-macos-arm64-coreml.node"
           fi
 
-      - name: Prepare macOS addon
-        if: matrix.os_build_arg == 'mac'
+      - name: Download OpenVINO addons from fork
+        if: matrix.build_type == 'openvino'
+        shell: bash
+        run: |
+          mkdir -p temp-artifacts
+
+          # Get the latest default tag from whisper.cpp-openvino releases
+          echo "Fetching latest default tag from whisper.cpp-openvino repository..."
+          DEFAULT_TAG=$(curl -s https://api.github.com/repos/MaurUppi/whisper.cpp-openvino/releases | \
+            jq -r '.[] | select(.tag_name | startswith("default-v")) | .tag_name' | head -1)
+
+          if [ -z "$DEFAULT_TAG" ]; then
+            echo "No default tag found, falling back to latest release..."
+            DEFAULT_TAG="latest"
+          else
+            echo "Found default tag: $DEFAULT_TAG"
+          fi
+
+          # Download the OpenVINO addon using the default tag
+          echo "Downloading ${{ matrix.addon_name }} from tag $DEFAULT_TAG..."
+          curl -L -o "temp-artifacts/${{ matrix.addon_name }}" \
+            "https://github.com/MaurUppi/whisper.cpp-openvino/releases/download/$DEFAULT_TAG/${{ matrix.addon_name }}"
+
+          # Verify download succeeded
+          if [ ! -f "temp-artifacts/${{ matrix.addon_name }}" ]; then
+            echo "ERROR: Failed to download ${{ matrix.addon_name }}"
+            exit 1
+          fi
+
+          echo "Successfully downloaded ${{ matrix.addon_name }} ($(wc -c < temp-artifacts/${{ matrix.addon_name }}) bytes)"
+
+      - name: Prepare macOS addon (Non-OpenVINO)
+        if: matrix.os_build_arg == 'mac' && matrix.build_type != 'openvino'
         env:
           BUILD_PLATFORM: 'darwin'
           BUILD_ARCH: '${{ matrix.arch }}'
@@ -133,8 +211,36 @@ jobs:
           fi
           node scripts/inject-build-info.js
 
-      - name: Prepare Windows addon
-        if: matrix.os_build_arg == 'win'
+      - name: Prepare macOS OpenVINO addon
+        if: matrix.os_build_arg == 'mac' && matrix.build_type == 'openvino'
+        env:
+          BUILD_PLATFORM: 'darwin'
+          BUILD_ARCH: '${{ matrix.arch }}'
+          OPENVINO_VERSION: '${{ matrix.openvino_version }}'
+          BUILD_TYPE: 'openvino'
+        run: |
+          mkdir -p extraResources/addons
+
+          # Copy as primary addon.node for compatibility
+          cp temp-artifacts/${{ matrix.addon_name }} extraResources/addons/addon.node
+
+          # Copy with OpenVINO-specific name for fallback chain
+          cp temp-artifacts/${{ matrix.addon_name }} extraResources/addons/${{ matrix.addon_name }}
+
+          # Create fallback chain - copy to expected OpenVINO addon names
+          if [[ "${{ matrix.arch }}" == "arm64" ]]; then
+            cp temp-artifacts/${{ matrix.addon_name }} extraResources/addons/addon-macos-arm-openvino.node
+          else
+            cp temp-artifacts/${{ matrix.addon_name }} extraResources/addons/addon-macos-x86-openvino.node
+          fi
+
+          echo "OpenVINO addon files prepared:"
+          ls -la extraResources/addons/
+
+          node scripts/inject-build-info.js
+
+      - name: Prepare Windows addon (Non-OpenVINO)
+        if: matrix.os_build_arg == 'win' && matrix.build_type != 'openvino'
         env:
           BUILD_PLATFORM: 'win32'
           BUILD_ARCH: '${{ matrix.arch }}'
@@ -145,6 +251,60 @@ jobs:
           Copy-Item -Path "temp-artifacts/addon-windows-no-cuda.node" -Destination "extraResources/addons/addon-no-cuda.node"
           node scripts/inject-build-info.js
 
+      - name: Prepare Windows OpenVINO addon
+        if: matrix.os_build_arg == 'win' && matrix.build_type == 'openvino'
+        env:
+          BUILD_PLATFORM: 'win32'
+          BUILD_ARCH: '${{ matrix.arch }}'
+          OPENVINO_VERSION: '${{ matrix.openvino_version }}'
+          BUILD_TYPE: 'openvino'
+        run: |
+          # Ensure addons directory exists
+          New-Item -ItemType Directory -Force -Path "extraResources/addons"
+
+          # Copy as primary addon.node for compatibility
+          Copy-Item -Path "temp-artifacts/${{ matrix.addon_name }}" -Destination "extraResources/addons/addon.node"
+
+          # Copy with OpenVINO-specific name for fallback chain
+          Copy-Item -Path "temp-artifacts/${{ matrix.addon_name }}" -Destination "extraResources/addons/${{ matrix.addon_name }}"
+
+          # Create fallback chain - copy to expected OpenVINO addon name
+          Copy-Item -Path "temp-artifacts/${{ matrix.addon_name }}" -Destination "extraResources/addons/addon-windows-openvino.node"
+
+          Write-Host "OpenVINO addon files prepared:"
+          Get-ChildItem -Path "extraResources/addons/" | Format-Table Name, Length, LastWriteTime
+
+          node scripts/inject-build-info.js
+
+      - name: Prepare Linux OpenVINO addon
+        if: matrix.os_build_arg == 'linux' && matrix.build_type == 'openvino'
+        env:
+          BUILD_PLATFORM: 'linux'
+          BUILD_ARCH: '${{ matrix.arch }}'
+          OPENVINO_VERSION: '${{ matrix.openvino_version }}'
+          BUILD_TYPE: 'openvino'
+        run: |
+          mkdir -p extraResources/addons
+
+          # Copy as primary addon.node for compatibility
+          cp temp-artifacts/${{ matrix.addon_name }} extraResources/addons/addon.node
+
+          # Copy with OpenVINO-specific name for fallback chain
+          cp temp-artifacts/${{ matrix.addon_name }} extraResources/addons/${{ matrix.addon_name }}
+
+          # Create fallback chain - copy to expected OpenVINO addon name
+          cp temp-artifacts/${{ matrix.addon_name }} extraResources/addons/addon-linux-openvino.node
+
+          echo "OpenVINO addon files prepared:"
+          ls -la extraResources/addons/
+
+          node scripts/inject-build-info.js
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
       - name: Install dependencies
         run: yarn install --frozen-lockfile
 
@@ -154,13 +314,28 @@ jobs:
       - name: Build Electron app
         shell: bash # Use bash for consistency if possible, or powershell for windows if needed
         run: |
-          export BUILD_PLATFORM=${{ matrix.os_build_arg == 'mac' && 'darwin' || 'win32' }}
+          if [[ "${{ matrix.os_build_arg }}" == "mac" ]]; then
+            export BUILD_PLATFORM="darwin"
+          elif [[ "${{ matrix.os_build_arg }}" == "linux" ]]; then
+            export BUILD_PLATFORM="linux"
+          else
+            export BUILD_PLATFORM="win32"
+          fi
           export BUILD_ARCH=${{ matrix.arch }}
-          if [[ "${{ matrix.os_build_arg }}" == "win" ]]; then
+
+          if [[ "${{ matrix.build_type }}" == "openvino" ]]; then
+            export OPENVINO_VERSION="${{ matrix.openvino_version }}"
+            export BUILD_TYPE="openvino"
+          elif [[ "${{ matrix.os_build_arg }}" == "win" ]]; then
             export CUDA_VERSION="${{ matrix.cuda_version }}"
             export CUDA_OPT="${{ matrix.cuda_opt }}"
           fi
-          yarn run electron-builder --${{ matrix.os_build_arg }} --${{ matrix.arch }} ${{ matrix.build_args || '' }} --publish never
+
+          if [[ "${{ matrix.os_build_arg }}" == "linux" ]]; then
+            yarn run electron-builder --linux --${{ matrix.arch }} ${{ matrix.build_args || '' }} --publish never
+          else
+            yarn run electron-builder --${{ matrix.os_build_arg }} --${{ matrix.arch }} ${{ matrix.build_args || '' }} --publish never
+          fi
 
       - name: Stage Artifacts
         shell: bash

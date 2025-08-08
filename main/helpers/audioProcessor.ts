@@ -1,12 +1,15 @@
-import ffmpegStatic from 'ffmpeg-static';
+import ffmpegStatic from 'ffmpeg-ffprobe-static';
 import ffmpeg from 'fluent-ffmpeg';
 import path from 'path';
 import fs from 'fs';
 import { logMessage } from './storeManager';
 import { getMd5, ensureTempDir } from './fileUtils';
 
-// 设置ffmpeg路径
-const ffmpegPath = ffmpegStatic.replace('app.asar', 'app.asar.unpacked');
+// 设置ffmpeg路径 (使用ffmpeg-ffprobe-static消除冗余)
+const ffmpegPath = ffmpegStatic.ffmpegPath.replace(
+  'app.asar',
+  'app.asar.unpacked',
+);
 ffmpeg.setFfmpegPath(ffmpegPath);
 
 /**

@@ -1,6 +1,6 @@
 /**
  * Mock GPU Data Fixtures for OpenVINO Integration Testing
- * 
+ *
  * This module provides comprehensive test fixtures for:
  * - Various Intel GPU device configurations
  * - OpenVINO capability scenarios
@@ -8,7 +8,10 @@
  * - Error simulation data
  */
 
-import { GPUDevice, OpenVINOCapabilities } from '../../main/helpers/developmentMockSystem';
+import {
+  GPUDevice,
+  OpenVINOCapabilities,
+} from '../../main/helpers/developmentMockSystem';
 
 /**
  * Intel GPU device fixtures based on real hardware specifications
@@ -219,12 +222,18 @@ export const openVinoCapabilityFixtures = {
     version: '2024.6.0',
     supportedDevices: [
       'intel-arc-a770-16gb',
-      'intel-arc-a750-8gb', 
+      'intel-arc-a750-8gb',
       'intel-xe-graphics',
-      'intel-iris-xe-graphics'
+      'intel-iris-xe-graphics',
     ],
     runtimePath: '/opt/intel/openvino_2024/runtime',
-    modelFormats: ['ONNX', 'TensorFlow', 'PyTorch', 'OpenVINO IR', 'PaddlePaddle'],
+    modelFormats: [
+      'ONNX',
+      'TensorFlow',
+      'PyTorch',
+      'OpenVINO IR',
+      'PaddlePaddle',
+    ],
   }),
 
   /**
@@ -265,10 +274,7 @@ export const openVinoCapabilityFixtures = {
   developmentMock: (): OpenVINOCapabilities => ({
     isInstalled: true,
     version: '2024.6.0-mock',
-    supportedDevices: [
-      'mock-intel-arc-a770',
-      'mock-intel-xe-graphics'
-    ],
+    supportedDevices: ['mock-intel-arc-a770', 'mock-intel-xe-graphics'],
     runtimePath: '/mock/openvino/runtime',
     modelFormats: ['ONNX', 'OpenVINO IR'],
   }),
@@ -276,10 +282,13 @@ export const openVinoCapabilityFixtures = {
 
 /**
  * Performance benchmark fixtures based on real-world testing
+ * Enhanced with realistic speedup factors and memory usage patterns
+ * Updated for Phase 2.1: Complete performance validation scenarios
  */
 export const performanceBenchmarkFixtures = {
   /**
    * Intel Arc A770 performance characteristics
+   * Expected 3-4x speedup over CPU baseline
    */
   arcA770Performance: () => ({
     processingTime: 120, // ms per second of audio
@@ -287,10 +296,25 @@ export const performanceBenchmarkFixtures = {
     powerConsumption: 120, // watts
     throughput: 95, // audio seconds processed per minute
     efficiency: 0.79, // audio seconds per watt
+    speedupFactor: 3.5, // 3.5x faster than CPU
+    realTimeRatio: 8.33, // Can process 8.33x real-time
+    memoryPeak: 2560, // MB peak usage
+    gpuUtilization: 85, // % GPU utilization
+    thermalThrottling: false,
+    modelCompatibility: {
+      tiny: { speedup: 4.2, memory: 1024 },
+      base: { speedup: 3.8, memory: 1536 },
+      small: { speedup: 3.5, memory: 2048 },
+      medium: { speedup: 3.2, memory: 2560 },
+      large: { speedup: 3.0, memory: 3584 },
+      'large-v2': { speedup: 2.9, memory: 3584 },
+      'large-v3': { speedup: 2.8, memory: 3584 },
+    },
   }),
 
   /**
    * Intel Arc A750 performance characteristics
+   * Expected 2.8-3.5x speedup over CPU baseline
    */
   arcA750Performance: () => ({
     processingTime: 145,
@@ -298,10 +322,51 @@ export const performanceBenchmarkFixtures = {
     powerConsumption: 100,
     throughput: 78,
     efficiency: 0.78,
+    speedupFactor: 3.1, // 3.1x faster than CPU
+    realTimeRatio: 6.9, // Can process 6.9x real-time
+    memoryPeak: 2048, // MB peak usage
+    gpuUtilization: 82, // % GPU utilization
+    thermalThrottling: false,
+    modelCompatibility: {
+      tiny: { speedup: 3.8, memory: 1024 },
+      base: { speedup: 3.4, memory: 1536 },
+      small: { speedup: 3.1, memory: 2048 },
+      medium: { speedup: 2.9, memory: 2560 },
+      large: { speedup: 2.7, memory: 3584 },
+      'large-v2': { speedup: 2.6, memory: 3584 },
+      'large-v3': { speedup: 2.5, memory: 3584 },
+    },
+  }),
+
+  /**
+   * Intel Arc A580 performance characteristics
+   * Expected 2.5-3x speedup over CPU baseline
+   */
+  arcA580Performance: () => ({
+    processingTime: 175,
+    memoryUsage: 1280,
+    powerConsumption: 90,
+    throughput: 65,
+    efficiency: 0.72,
+    speedupFactor: 2.7, // 2.7x faster than CPU
+    realTimeRatio: 5.7, // Can process 5.7x real-time
+    memoryPeak: 1792, // MB peak usage
+    gpuUtilization: 78, // % GPU utilization
+    thermalThrottling: false,
+    modelCompatibility: {
+      tiny: { speedup: 3.2, memory: 1024 },
+      base: { speedup: 2.9, memory: 1280 },
+      small: { speedup: 2.7, memory: 1792 },
+      medium: { speedup: 2.5, memory: 2304 },
+      large: { speedup: 2.3, memory: 3072 },
+      'large-v2': { speedup: 2.2, memory: 3072 },
+      'large-v3': { speedup: 2.1, memory: 3072 },
+    },
   }),
 
   /**
    * Intel Xe integrated graphics performance
+   * Expected 2-3x speedup over CPU baseline
    */
   xeGraphicsPerformance: () => ({
     processingTime: 280,
@@ -309,10 +374,51 @@ export const performanceBenchmarkFixtures = {
     powerConsumption: 25,
     throughput: 42,
     efficiency: 1.68,
+    speedupFactor: 2.4, // 2.4x faster than CPU
+    realTimeRatio: 3.6, // Can process 3.6x real-time
+    memoryPeak: 1536, // MB peak usage (shared memory)
+    gpuUtilization: 90, // % GPU utilization (higher due to shared resources)
+    thermalThrottling: false,
+    modelCompatibility: {
+      tiny: { speedup: 2.8, memory: 512 },
+      base: { speedup: 2.6, memory: 768 },
+      small: { speedup: 2.4, memory: 1024 },
+      medium: { speedup: 2.2, memory: 1536 },
+      large: { speedup: 0, memory: 0 }, // Not supported - insufficient memory
+      'large-v2': { speedup: 0, memory: 0 }, // Not supported
+      'large-v3': { speedup: 0, memory: 0 }, // Not supported
+    },
+  }),
+
+  /**
+   * Intel Iris Xe graphics performance
+   * Expected 2.2-2.8x speedup over CPU baseline
+   */
+  irisXePerformance: () => ({
+    processingTime: 320,
+    memoryUsage: 896,
+    powerConsumption: 20,
+    throughput: 37,
+    efficiency: 1.85,
+    speedupFactor: 2.2, // 2.2x faster than CPU
+    realTimeRatio: 3.1, // Can process 3.1x real-time
+    memoryPeak: 1280, // MB peak usage (shared memory)
+    gpuUtilization: 88, // % GPU utilization
+    thermalThrottling: false,
+    modelCompatibility: {
+      tiny: { speedup: 2.6, memory: 512 },
+      base: { speedup: 2.4, memory: 768 },
+      small: { speedup: 2.2, memory: 1024 },
+      medium: { speedup: 2.0, memory: 1280 },
+      large: { speedup: 0, memory: 0 }, // Not supported
+      'large-v2': { speedup: 0, memory: 0 }, // Not supported
+      'large-v3': { speedup: 0, memory: 0 }, // Not supported
+    },
   }),
 
   /**
    * Performance comparison baseline (CPU)
+   * Intel Core i7 baseline for comparison
    */
   cpuBaselinePerformance: () => ({
     processingTime: 800,
@@ -320,6 +426,114 @@ export const performanceBenchmarkFixtures = {
     powerConsumption: 65,
     throughput: 15,
     efficiency: 0.23,
+    speedupFactor: 1.0, // Baseline reference
+    realTimeRatio: 1.25, // Slightly faster than real-time
+    memoryPeak: 768, // MB peak usage
+    cpuUtilization: 95, // % CPU utilization
+    thermalThrottling: false,
+    modelCompatibility: {
+      tiny: { speedup: 1.0, memory: 512 },
+      base: { speedup: 1.0, memory: 512 },
+      small: { speedup: 1.0, memory: 768 },
+      medium: { speedup: 1.0, memory: 1024 },
+      large: { speedup: 1.0, memory: 1536 },
+      'large-v2': { speedup: 1.0, memory: 1536 },
+      'large-v3': { speedup: 1.0, memory: 1536 },
+    },
+  }),
+
+  /**
+   * AMD/NVIDIA comparison baseline for context
+   */
+  nvidiaRTX4090Performance: () => ({
+    processingTime: 45, // Much faster due to CUDA optimization
+    memoryUsage: 4096,
+    powerConsumption: 400,
+    throughput: 200,
+    efficiency: 0.5,
+    speedupFactor: 8.5, // 8.5x faster than CPU
+    realTimeRatio: 22.2, // Can process 22.2x real-time
+    memoryPeak: 6144, // MB peak usage
+    gpuUtilization: 75, // % GPU utilization
+    thermalThrottling: false,
+    modelCompatibility: {
+      tiny: { speedup: 12.0, memory: 2048 },
+      base: { speedup: 10.5, memory: 3072 },
+      small: { speedup: 9.2, memory: 4096 },
+      medium: { speedup: 8.8, memory: 5120 },
+      large: { speedup: 8.5, memory: 6144 },
+      'large-v2': { speedup: 8.2, memory: 6144 },
+      'large-v3': { speedup: 8.0, memory: 6144 },
+    },
+  }),
+
+  /**
+   * Intel Arc A380 performance characteristics
+   * Expected 2.2-2.8x speedup over CPU baseline
+   */
+  arcA380Performance: () => ({
+    processingTime: 205,
+    memoryUsage: 1024,
+    powerConsumption: 75,
+    throughput: 55,
+    efficiency: 0.73,
+    speedupFactor: 2.4, // 2.4x faster than CPU
+    realTimeRatio: 4.9, // Can process 4.9x real-time
+    memoryPeak: 1536, // MB peak usage
+    gpuUtilization: 80, // % GPU utilization
+    thermalThrottling: false,
+    modelCompatibility: {
+      tiny: { speedup: 2.8, memory: 1024 },
+      base: { speedup: 2.6, memory: 1024 },
+      small: { speedup: 2.4, memory: 1536 },
+      medium: { speedup: 2.2, memory: 2048 },
+      large: { speedup: 0, memory: 0 }, // Not supported - insufficient memory
+      'large-v2': { speedup: 0, memory: 0 }, // Not supported
+      'large-v3': { speedup: 0, memory: 0 }, // Not supported
+    },
+  }),
+
+  /**
+   * Intel Iris Xe Max performance characteristics
+   * Expected 2.5-3.2x speedup over CPU baseline
+   */
+  irisXeMaxPerformance: () => ({
+    processingTime: 250,
+    memoryUsage: 1536,
+    powerConsumption: 50,
+    throughput: 48,
+    efficiency: 0.96,
+    speedupFactor: 2.8, // 2.8x faster than CPU
+    realTimeRatio: 4.0, // Can process 4.0x real-time
+    memoryPeak: 2048, // MB peak usage
+    gpuUtilization: 85, // % GPU utilization
+    thermalThrottling: false,
+    modelCompatibility: {
+      tiny: { speedup: 3.2, memory: 1024 },
+      base: { speedup: 3.0, memory: 1536 },
+      small: { speedup: 2.8, memory: 2048 },
+      medium: { speedup: 2.5, memory: 2560 },
+      large: { speedup: 2.2, memory: 3584 },
+      'large-v2': { speedup: 2.0, memory: 3584 },
+      'large-v3': { speedup: 1.9, memory: 3584 },
+    },
+  }),
+
+  /**
+   * Cross-platform performance variations
+   */
+  windowsPlatformVariance: () => ({
+    driverOverhead: 0.95, // 5% performance reduction due to driver overhead
+    schedulingEfficiency: 0.98, // 2% reduction due to Windows scheduling
+    memoryOverhead: 1.1, // 10% additional memory usage
+    powerEfficiencyFactor: 0.92, // 8% less power efficient
+  }),
+
+  linuxPlatformVariance: () => ({
+    driverOverhead: 1.0, // No significant driver overhead
+    schedulingEfficiency: 1.02, // 2% improvement due to better scheduling
+    memoryOverhead: 0.95, // 5% less memory usage
+    powerEfficiencyFactor: 1.05, // 5% more power efficient
   }),
 };
 
@@ -405,10 +619,7 @@ export const testScenarioFixtures = {
    */
   noIntelGPU: {
     name: 'No Intel GPU Present',
-    devices: [
-      intelGPUFixtures.nvidiaRTX4090(),
-      intelGPUFixtures.appleM1(),
-    ],
+    devices: [intelGPUFixtures.nvidiaRTX4090(), intelGPUFixtures.appleM1()],
     openvinoCapabilities: openVinoCapabilityFixtures.noIntelGPUSupport(),
     expectedPerformance: null,
   },
@@ -431,11 +642,134 @@ export const testScenarioFixtures = {
     devices: [
       intelGPUFixtures.appleM1(),
       // Mock Intel devices for development
-      { ...intelGPUFixtures.arcA770(), id: 'mock-' + intelGPUFixtures.arcA770().id },
-      { ...intelGPUFixtures.xeGraphics(), id: 'mock-' + intelGPUFixtures.xeGraphics().id },
+      {
+        ...intelGPUFixtures.arcA770(),
+        id: 'mock-' + intelGPUFixtures.arcA770().id,
+      },
+      {
+        ...intelGPUFixtures.xeGraphics(),
+        id: 'mock-' + intelGPUFixtures.xeGraphics().id,
+      },
     ],
     openvinoCapabilities: openVinoCapabilityFixtures.developmentMock(),
     expectedPerformance: performanceBenchmarkFixtures.arcA770Performance(),
+  },
+
+  /**
+   * Phase 2.1 Enhanced Cross-Platform Testing Scenarios
+   */
+  windows11ArcA770: {
+    name: 'Windows 11 + Intel Arc A770',
+    devices: [intelGPUFixtures.arcA770()],
+    openvinoCapabilities: {
+      ...openVinoCapabilityFixtures.fullInstallation(),
+      runtimePath: 'C:\\Program Files\\Intel\\openvino_2024\\runtime',
+      installationMethod: 'msi',
+      driverVersion: '31.0.101.4887',
+    },
+    platformVariance: performanceBenchmarkFixtures.windowsPlatformVariance(),
+    expectedPerformance: performanceBenchmarkFixtures.arcA770Performance(),
+    platform: 'windows',
+    osVersion: '10.0.22621', // Windows 11
+  },
+
+  windows10XeGraphics: {
+    name: 'Windows 10 + Intel Xe Graphics',
+    devices: [intelGPUFixtures.xeGraphics()],
+    openvinoCapabilities: {
+      ...openVinoCapabilityFixtures.fullInstallation(),
+      runtimePath: 'C:\\Program Files\\Intel\\openvino_2024\\runtime',
+      installationMethod: 'msi',
+      driverVersion: '31.0.101.4887',
+    },
+    platformVariance: performanceBenchmarkFixtures.windowsPlatformVariance(),
+    expectedPerformance: performanceBenchmarkFixtures.xeGraphicsPerformance(),
+    platform: 'windows',
+    osVersion: '10.0.19045', // Windows 10
+  },
+
+  ubuntu2204ArcA750: {
+    name: 'Ubuntu 22.04 + Intel Arc A750',
+    devices: [intelGPUFixtures.arcA750()],
+    openvinoCapabilities: {
+      ...openVinoCapabilityFixtures.fullInstallation(),
+      runtimePath: '/opt/intel/openvino_2024/runtime',
+      installationMethod: 'apt',
+      driverVersion: '1.3.26918',
+    },
+    platformVariance: performanceBenchmarkFixtures.linuxPlatformVariance(),
+    expectedPerformance: performanceBenchmarkFixtures.arcA750Performance(),
+    platform: 'linux',
+    osVersion: '5.15.0-91-generic',
+  },
+
+  ubuntu2004XeGraphics: {
+    name: 'Ubuntu 20.04 + Intel Xe Graphics',
+    devices: [intelGPUFixtures.xeGraphics()],
+    openvinoCapabilities: {
+      ...openVinoCapabilityFixtures.fullInstallation(),
+      runtimePath: '/opt/intel/openvino_2024/runtime',
+      installationMethod: 'pip',
+      driverVersion: '1.3.25593',
+    },
+    platformVariance: performanceBenchmarkFixtures.linuxPlatformVariance(),
+    expectedPerformance: performanceBenchmarkFixtures.xeGraphicsPerformance(),
+    platform: 'linux',
+    osVersion: '5.4.0-150-generic',
+  },
+
+  hybridSystemScenario: {
+    name: 'Hybrid System (Arc A770 + Xe Graphics)',
+    devices: [intelGPUFixtures.arcA770(), intelGPUFixtures.xeGraphics()],
+    openvinoCapabilities: openVinoCapabilityFixtures.fullInstallation(),
+    expectedPerformance: performanceBenchmarkFixtures.arcA770Performance(), // Should select discrete
+    selectionLogic: 'discrete_preferred',
+    multiGPUSupport: true,
+  },
+
+  driverCompatibilityTest: {
+    name: 'Driver Compatibility Validation',
+    testCases: [
+      {
+        driverVersion: '31.0.101.4887',
+        compatibility: 'optimal',
+        expectedSpeedup: 3.5,
+        supportedModels: [
+          'tiny',
+          'base',
+          'small',
+          'medium',
+          'large',
+          'large-v2',
+          'large-v3',
+        ],
+      },
+      {
+        driverVersion: '31.0.101.4502',
+        compatibility: 'good',
+        expectedSpeedup: 3.2,
+        supportedModels: [
+          'tiny',
+          'base',
+          'small',
+          'medium',
+          'large',
+          'large-v2',
+        ],
+      },
+      {
+        driverVersion: '30.0.100.9955',
+        compatibility: 'limited',
+        expectedSpeedup: 2.5,
+        supportedModels: ['tiny', 'base', 'small'],
+      },
+      {
+        driverVersion: '27.20.100.9316',
+        compatibility: 'incompatible',
+        expectedSpeedup: 1.0,
+        supportedModels: [],
+      },
+    ],
   },
 
   /**
@@ -473,15 +807,18 @@ export const fixtureUtils = {
   /**
    * Filter devices by vendor
    */
-  filterDevicesByVendor(devices: GPUDevice[], vendor: 'intel' | 'nvidia' | 'apple'): GPUDevice[] {
-    return devices.filter(device => device.vendor === vendor);
+  filterDevicesByVendor(
+    devices: GPUDevice[],
+    vendor: 'intel' | 'nvidia' | 'apple',
+  ): GPUDevice[] {
+    return devices.filter((device) => device.vendor === vendor);
   },
 
   /**
    * Filter devices by OpenVINO compatibility
    */
   filterOpenVINOCompatibleDevices(devices: GPUDevice[]): GPUDevice[] {
-    return devices.filter(device => device.capabilities.openvinoCompatible);
+    return devices.filter((device) => device.capabilities.openvinoCompatible);
   },
 
   /**
@@ -492,11 +829,103 @@ export const fixtureUtils = {
   },
 
   /**
+   * Apply platform-specific performance adjustments
+   */
+  applyPlatformVariance(baseMetrics: any, platformVariance: any): any {
+    return {
+      ...baseMetrics,
+      processingTime:
+        baseMetrics.processingTime / platformVariance.schedulingEfficiency,
+      memoryUsage: baseMetrics.memoryUsage * platformVariance.memoryOverhead,
+      speedupFactor:
+        baseMetrics.speedupFactor * platformVariance.driverOverhead,
+      powerConsumption:
+        baseMetrics.powerConsumption / platformVariance.powerEfficiencyFactor,
+    };
+  },
+
+  /**
+   * Validate driver compatibility
+   */
+  validateDriverCompatibility(driverVersion: string): {
+    compatible: boolean;
+    compatibility: 'optimal' | 'good' | 'limited' | 'incompatible';
+    supportedFeatures: string[];
+    recommendedAction?: string;
+  } {
+    const versionPattern = /^(\d+)\.(\d+)\.(\d+)\.(\d+)/;
+    const match = driverVersion.match(versionPattern);
+
+    if (!match) {
+      return {
+        compatible: false,
+        compatibility: 'incompatible',
+        supportedFeatures: [],
+        recommendedAction: 'Install valid Intel Graphics Driver',
+      };
+    }
+
+    const majorVersion = parseInt(match[1]);
+    const minorVersion = parseInt(match[2]);
+    const patchVersion = parseInt(match[3]);
+    const buildVersion = parseInt(match[4]);
+
+    if (majorVersion >= 31) {
+      if (buildVersion >= 4887) {
+        return {
+          compatible: true,
+          compatibility: 'optimal',
+          supportedFeatures: [
+            'openvino',
+            'hardware_acceleration',
+            'all_models',
+            'performance_optimization',
+          ],
+        };
+      } else if (buildVersion >= 4502) {
+        return {
+          compatible: true,
+          compatibility: 'good',
+          supportedFeatures: [
+            'openvino',
+            'hardware_acceleration',
+            'most_models',
+          ],
+        };
+      } else {
+        return {
+          compatible: true,
+          compatibility: 'good',
+          supportedFeatures: ['openvino', 'hardware_acceleration'],
+          recommendedAction:
+            'Update to Intel Graphics Driver 31.0.101.4502 or newer for best performance',
+        };
+      }
+    } else if (majorVersion >= 30) {
+      return {
+        compatible: true,
+        compatibility: 'limited',
+        supportedFeatures: ['basic_openvino', 'small_models'],
+        recommendedAction:
+          'Update to Intel Graphics Driver 31.0.101.4502 or newer',
+      };
+    }
+
+    return {
+      compatible: false,
+      compatibility: 'incompatible',
+      supportedFeatures: [],
+      recommendedAction:
+        'Update to Intel Graphics Driver 31.0.101.4502 or newer',
+    };
+  },
+
+  /**
    * Generate random performance variance
    */
   addPerformanceVariance(baseMetrics: any, variancePercent: number = 10): any {
     const variance = variancePercent / 100;
-    const applyVariance = (value: number) => 
+    const applyVariance = (value: number) =>
       value * (1 + (Math.random() - 0.5) * 2 * variance);
 
     return {
@@ -511,7 +940,10 @@ export const fixtureUtils = {
   /**
    * Create test device with custom properties
    */
-  createCustomTestDevice(baseDevice: GPUDevice, overrides: Partial<GPUDevice>): GPUDevice {
+  createCustomTestDevice(
+    baseDevice: GPUDevice,
+    overrides: Partial<GPUDevice>,
+  ): GPUDevice {
     return {
       ...this.cloneFixture(baseDevice),
       ...overrides,

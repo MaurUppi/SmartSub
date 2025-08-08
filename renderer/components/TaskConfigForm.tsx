@@ -25,6 +25,7 @@ import { Switch } from './ui/switch';
 import { Textarea } from './ui/textarea';
 import { Card } from './ui/card';
 import { cn } from 'lib/utils';
+import GPUSelectionDropbox from './GPUSelectionDropbox';
 
 // 定义 Provider 类型
 type Provider = {
@@ -548,7 +549,21 @@ const TaskConfigForm = ({ form, formData, systemInfo }) => {
 
           {/* 高级设置 Tab */}
           <TabsContent value="advanced" className="mt-4">
-            <fieldset className="grid gap-4 rounded-lg border p-4">
+            <fieldset className="grid gap-6 rounded-lg border p-4">
+              {/* GPU 选择部分 */}
+              <div className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="selectedGPU"
+                  render={({ field }) => (
+                    <FormItem>
+                      <GPUSelectionDropbox form={form} showDescription={true} />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              {/* 最大并发任务设置 */}
               <FormField
                 control={form.control}
                 name="maxConcurrentTasks"

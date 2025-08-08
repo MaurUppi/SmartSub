@@ -22,6 +22,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { Input } from '@/components/ui/input';
+import { usePlatform } from '../../hooks/usePlatform';
 
 // 新增一个 CommandInput 组件
 const CommandInput = ({
@@ -72,6 +73,7 @@ const CommandInput = ({
 const Settings = () => {
   const router = useRouter();
   const { t, i18n } = useTranslation('settings');
+  const { platform, capabilities, isMacOS, isWindows, isLinux } = usePlatform();
   const [currentLanguage, setCurrentLanguage] = useState(router.locale);
   const [useLocalWhisper, setUseLocalWhisper] = useState(false);
   const [whisperCommand, setWhisperCommand] = useState('');
@@ -127,6 +129,15 @@ const Settings = () => {
     setCurrentLanguage(i18n.language);
   }, [i18n.language]);
 
+  // Update CUDA setting when platform capabilities are available
+  useEffect(() => {
+    if (platform !== 'unknown' && useCuda && !capabilities.supportsCUDA) {
+      setUseCuda(false);
+      // Optionally save the updated setting
+      window?.ipc?.invoke('setSettings', { useCuda: false });
+    }
+  }, [platform, capabilities, useCuda]);
+
   const handleLanguageChange = async (value) => {
     await window?.ipc?.invoke('setSettings', { language: value });
     if (value !== i18n.language) {
@@ -153,6 +164,16 @@ const Settings = () => {
   };
 
   const handleCudaChange = async (checked: boolean) => {
+    // Only allow CUDA to be enabled if platform supports it
+    if (checked && !capabilities.supportsCUDA) {
+      toast.error(
+        isMacOS
+          ? 'CUDA is not available on Apple Silicon. Use Apple CoreML for GPU acceleration instead.'
+          : 'CUDA is not supported on this platform.',
+      );
+      return;
+    }
+
     await window?.ipc?.invoke('setSettings', {
       useCuda: checked,
     });
@@ -355,19 +376,35 @@ const Settings = () => {
 
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span>{t('useCuda')}</span>
+              <span
+                className={
+                  !capabilities.supportsCUDA ? 'text-muted-foreground' : ''
+                }
+              >
+                {t('useCuda')}
+              </span>
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger>
                     <HelpCircle className="h-4 w-4 text-muted-foreground" />
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>{t('useCudaTip')}</p>
+                    <p>
+                      {capabilities.supportsCUDA
+                        ? t('useCudaTip')
+                        : isMacOS
+                          ? 'CUDA is not available on Apple Silicon. Use Apple CoreML for GPU acceleration instead.'
+                          : 'CUDA is not supported on this platform.'}
+                    </p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
             </div>
-            <Switch checked={useCuda} onCheckedChange={handleCudaChange} />
+            <Switch
+              checked={useCuda && capabilities.supportsCUDA}
+              onCheckedChange={handleCudaChange}
+              disabled={!capabilities.supportsCUDA}
+            />
           </div>
 
           <div className="flex items-center justify-between">

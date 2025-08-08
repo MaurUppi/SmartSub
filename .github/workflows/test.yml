@@ -1,0 +1,115 @@
+name: Tests
+
+on:
+  push:
+    branches: [main, develop, feature/*]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run linting
+        run: npm run format -- --check
+
+      - name: Run type checking
+        run: npx tsc --noEmit
+
+      - name: Run unit tests
+        run: npm run test:ts
+
+      - name: Run React component tests
+        run: npm run test:tsx
+
+      - name: Run all tests with coverage
+        run: npm run test:coverage
+
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./coverage/lcov.info
+          flags: unittests
+          name: codecov-umbrella
+
+  test-openvino:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            openvino_version: '2024.6.0'
+            kernel_version: '6.8+'
+          - os: ubuntu-22.04
+            openvino_version: '2024.6.0'
+            kernel_version: '5.15+'
+          - os: windows-2022
+            openvino_version: '2024.6.0'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install OpenVINO toolkit (Ubuntu)
+        if: runner.os == 'Linux'
+        run: |
+          # Determine Ubuntu version for download URL
+          if [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
+            UBUNTU_VERSION="22"  # Use Ubuntu 22 package for latest
+          elif [ "${{ matrix.os }}" = "ubuntu-22.04" ]; then
+            UBUNTU_VERSION="22"
+          else
+            UBUNTU_VERSION="20"
+          fi
+
+          wget https://storage.openvinotoolkit.org/repositories/openvino/packages/2024.6/l_openvino_toolkit_ubuntu${UBUNTU_VERSION}_${{ matrix.openvino_version }}_x86_64.tgz
+          tar -xzf l_openvino_toolkit_ubuntu*.tgz
+          sudo mv l_openvino_toolkit_ubuntu*_x86_64 /opt/intel/openvino_${{ matrix.openvino_version }}
+          echo "OPENVINO_INSTALL_DIR=/opt/intel/openvino_${{ matrix.openvino_version }}" >> $GITHUB_ENV
+
+      - name: Install OpenVINO toolkit (Windows)
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: |
+          Invoke-WebRequest -Uri "https://storage.openvinotoolkit.org/repositories/openvino/packages/2024.6/w_openvino_toolkit_windows_${{ matrix.openvino_version }}_x86_64.zip" -OutFile "openvino.zip"
+          Expand-Archive -Path "openvino.zip" -DestinationPath "C:\temp\openvino"
+          Move-Item "C:\temp\openvino\w_openvino_toolkit_windows*" "C:\intel\openvino_${{ matrix.openvino_version }}"
+          echo "OPENVINO_INSTALL_DIR=C:\intel\openvino_${{ matrix.openvino_version }}" >> $env:GITHUB_ENV
+
+      - name: Test OpenVINO integration
+        run: npm run test -- --testPathPattern="openvino"
+
+      - name: Validate GPU detection
+        run: npm run test -- --testPathPattern="gpu"

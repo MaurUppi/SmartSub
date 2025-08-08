@@ -79,6 +79,66 @@ export function setupStoreHandlers() {
     return true;
   });
 
+  // 平台信息处理
+  ipcMain.handle('getPlatformInfo', async () => {
+    const isAppleSilicon = os.arch() === 'arm64' && os.platform() === 'darwin';
+
+    return {
+      platform: os.platform(),
+      arch: os.arch(),
+      version: os.version(),
+      model: os.machine(),
+      cpuModel: os?.cpus()?.[0]?.model,
+      release: os.release(),
+      type: os.type(),
+      isAppleSilicon,
+      buildInfo: getBuildInfo(),
+    };
+  });
+
+  // GPU 配置管道处理
+  ipcMain.handle('configureGPUPipeline', async (event, config) => {
+    try {
+      const { gpuId, gpuType, vendor } = config;
+
+      // Log GPU selection for debugging
+      console.log('Configuring GPU pipeline:', { gpuId, gpuType, vendor });
+
+      // Store GPU configuration in settings
+      await store.set('gpuConfig', {
+        selectedGPU: gpuId,
+        gpuType: gpuType,
+        vendor: vendor,
+        configuredAt: new Date().toISOString(),
+      });
+
+      // TODO: Apply GPU configuration to processing pipeline
+      // This will be implemented when the actual processing pipeline is integrated
+
+      return { success: true, message: 'GPU pipeline configured successfully' };
+    } catch (error) {
+      console.error('Failed to configure GPU pipeline:', error);
+      return { success: false, message: error.message };
+    }
+  });
+
+  // GPU 检测刷新处理
+  ipcMain.handle('refreshGPUDetection', async () => {
+    try {
+      // Re-run GPU detection
+      // This will trigger the useGPUDetection hook to refresh
+      console.log('Refreshing GPU detection...');
+
+      // TODO: Implement actual GPU re-detection logic
+      // For now, just return success to trigger hook refresh
+
+      return { success: true, message: 'GPU detection refreshed' };
+    } catch (error) {
+      console.error('Failed to refresh GPU detection:', error);
+      return { success: false, message: error.message };
+    }
+  });
+
   // 清理配置
   ipcMain.handle('clearConfig', async () => {
     store.clear();

@@ -1,0 +1,495 @@
+/* GPU Selection Component Styles */
+
+/* GPU Selection Container */
+.gpu-selection-container {
+  @apply w-full max-w-4xl mx-auto;
+}
+
+.gpu-selection-card {
+  @apply bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm;
+  transition:
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.gpu-selection-card:hover {
+  @apply shadow-md border-gray-300 dark:border-gray-600;
+}
+
+/* GPU Selection Header */
+.gpu-selection-header {
+  @apply flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700;
+}
+
+.gpu-selection-title {
+  @apply text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center;
+}
+
+.gpu-selection-title-icon {
+  @apply mr-2 h-5 w-5 text-blue-600 dark:text-blue-400;
+}
+
+.gpu-refresh-button {
+  @apply inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors duration-200;
+}
+
+.gpu-refresh-button:disabled {
+  @apply opacity-50 cursor-not-allowed;
+}
+
+.gpu-refresh-icon {
+  @apply mr-2 h-4 w-4;
+}
+
+.gpu-refresh-icon.spinning {
+  @apply animate-spin;
+}
+
+/* GPU Selection Content */
+.gpu-selection-content {
+  @apply p-4 space-y-4;
+}
+
+/* Error Display */
+.gpu-detection-error {
+  @apply p-3 rounded-md bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800;
+}
+
+.gpu-detection-error-text {
+  @apply text-sm text-red-600 dark:text-red-400;
+}
+
+/* GPU Dropdown */
+.gpu-select-container {
+  @apply space-y-2;
+}
+
+.gpu-select-label {
+  @apply text-sm font-medium text-gray-700 dark:text-gray-300;
+}
+
+.gpu-select-trigger {
+  @apply w-full h-10 px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-md text-sm placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent;
+}
+
+.gpu-select-trigger:disabled {
+  @apply opacity-50 cursor-not-allowed bg-gray-100 dark:bg-gray-800;
+}
+
+/* GPU Option Items */
+.gpu-option-item {
+  @apply flex items-center justify-between w-full p-2 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-150;
+}
+
+.gpu-option-item:disabled {
+  @apply cursor-not-allowed opacity-50;
+}
+
+.gpu-option-item.unavailable {
+  @apply bg-gray-50 dark:bg-gray-800 cursor-not-allowed;
+}
+
+.gpu-option-content {
+  @apply flex items-center space-x-2 flex-1;
+}
+
+.gpu-option-icon {
+  @apply w-4 h-4 flex-shrink-0;
+}
+
+.gpu-option-name {
+  @apply font-medium text-gray-900 dark:text-gray-100;
+}
+
+.gpu-option-name.unavailable {
+  @apply text-gray-400 dark:text-gray-500;
+}
+
+.gpu-option-badges {
+  @apply flex items-center space-x-1 flex-shrink-0;
+}
+
+/* Performance Icons */
+.performance-icon-high {
+  @apply text-green-500;
+}
+
+.performance-icon-medium {
+  @apply text-yellow-500;
+}
+
+.performance-icon-low {
+  @apply text-gray-500;
+}
+
+/* Status Badges */
+.status-badge {
+  @apply inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border;
+}
+
+.status-badge.available {
+  @apply text-green-700 bg-green-100 border-green-300 dark:text-green-300 dark:bg-green-900/20 dark:border-green-700;
+}
+
+.status-badge.requires-setup {
+  @apply text-orange-700 bg-orange-100 border-orange-300 dark:text-orange-300 dark:bg-orange-900/20 dark:border-orange-700;
+}
+
+.status-badge.unavailable {
+  @apply text-red-700 bg-red-100 border-red-300 dark:text-red-300 dark:bg-red-900/20 dark:border-red-700;
+}
+
+/* Speed Badges */
+.speed-badge {
+  @apply inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700 border border-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600;
+}
+
+/* Selected GPU Info */
+.selected-gpu-info {
+  @apply p-3 rounded-md bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800;
+}
+
+.selected-gpu-header {
+  @apply flex items-center justify-between;
+}
+
+.selected-gpu-details {
+  @apply space-y-1;
+}
+
+.selected-gpu-name {
+  @apply font-medium text-gray-900 dark:text-gray-100;
+}
+
+.selected-gpu-description {
+  @apply text-sm text-gray-600 dark:text-gray-400;
+}
+
+.selected-gpu-badges {
+  @apply flex items-center space-x-2;
+}
+
+.openvino-badge {
+  @apply inline-flex items-center px-2 py-1 rounded-full text-xs font-medium text-blue-700 bg-blue-100 border border-blue-300 dark:text-blue-300 dark:bg-blue-900/20 dark:border-blue-700;
+}
+
+/* Loading State */
+.gpu-detection-loading {
+  @apply flex items-center justify-center p-4;
+}
+
+.gpu-detection-loading-icon {
+  @apply mr-2 h-4 w-4 animate-spin text-blue-600 dark:text-blue-400;
+}
+
+.gpu-detection-loading-text {
+  @apply text-sm text-gray-600 dark:text-gray-400;
+}
+
+/* GPU Info Panel Styles */
+.gpu-info-panel {
+  @apply bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm;
+}
+
+.gpu-info-panel.empty {
+  @apply border-dashed border-2 border-gray-300 dark:border-gray-600;
+}
+
+.gpu-info-empty-state {
+  @apply flex flex-col items-center justify-center p-8 text-center text-gray-500 dark:text-gray-400;
+}
+
+.gpu-info-empty-icon {
+  @apply w-8 h-8 mx-auto mb-2;
+}
+
+.gpu-info-header {
+  @apply p-4 border-b border-gray-200 dark:border-gray-700;
+}
+
+.gpu-info-title {
+  @apply text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center;
+}
+
+.gpu-info-content {
+  @apply p-4 space-y-4;
+}
+
+/* GPU Details Sections */
+.gpu-detail-section {
+  @apply space-y-2;
+}
+
+.gpu-detail-header {
+  @apply flex items-center space-x-2;
+}
+
+.gpu-detail-icon {
+  @apply w-4 h-4;
+}
+
+.gpu-detail-label {
+  @apply font-medium text-gray-900 dark:text-gray-100;
+}
+
+.gpu-detail-content {
+  @apply pl-6 space-y-1;
+}
+
+.gpu-detail-value {
+  @apply font-medium text-gray-900 dark:text-gray-100;
+}
+
+.gpu-detail-description {
+  @apply text-sm text-gray-600 dark:text-gray-400;
+}
+
+/* Performance Rating Styles */
+.performance-rating-high {
+  @apply bg-green-100 text-green-800 border-green-300 dark:bg-green-900/20 dark:text-green-300 dark:border-green-700;
+}
+
+.performance-rating-medium {
+  @apply bg-yellow-100 text-yellow-800 border-yellow-300 dark:bg-yellow-900/20 dark:text-yellow-300 dark:border-yellow-700;
+}
+
+.performance-rating-low {
+  @apply bg-gray-100 text-gray-800 border-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600;
+}
+
+/* Power Efficiency Styles */
+.efficiency-excellent {
+  @apply bg-green-100 text-green-800 border-green-300 dark:bg-green-900/20 dark:text-green-300 dark:border-green-700;
+}
+
+.efficiency-good {
+  @apply bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-700;
+}
+
+.efficiency-moderate {
+  @apply bg-orange-100 text-orange-800 border-orange-300 dark:bg-orange-900/20 dark:text-orange-300 dark:border-orange-700;
+}
+
+/* Setup Instructions Styles */
+.setup-instructions-card {
+  @apply bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm;
+}
+
+.setup-step {
+  @apply flex items-start space-x-3 p-3 rounded-lg border border-gray-200 dark:border-gray-700;
+}
+
+.setup-step-indicator {
+  @apply flex-shrink-0 mt-0.5;
+}
+
+.setup-step-number {
+  @apply w-5 h-5 border-2 border-gray-300 dark:border-gray-600 rounded-full flex items-center justify-center text-xs font-medium;
+}
+
+.setup-step-completed {
+  @apply w-5 h-5 text-green-500;
+}
+
+.setup-step-content {
+  @apply flex-grow space-y-2;
+}
+
+.setup-step-title {
+  @apply font-medium flex items-center text-gray-900 dark:text-gray-100;
+}
+
+.setup-step-description {
+  @apply text-sm text-gray-600 dark:text-gray-400;
+}
+
+.setup-step-actions {
+  @apply flex items-center space-x-2;
+}
+
+/* Platform Selection */
+.platform-selector {
+  @apply flex space-x-2;
+}
+
+.platform-button {
+  @apply px-3 py-2 text-sm font-medium rounded-md border transition-colors duration-200;
+}
+
+.platform-button.active {
+  @apply bg-blue-600 text-white border-blue-600;
+}
+
+.platform-button:not(.active) {
+  @apply bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600;
+}
+
+/* Platform Instructions */
+.platform-instructions {
+  @apply bg-gray-50 dark:bg-gray-900 p-4 rounded-lg;
+}
+
+.platform-instructions-list {
+  @apply space-y-2;
+}
+
+.platform-instruction-item {
+  @apply flex items-start;
+}
+
+.platform-instruction-number {
+  @apply flex-shrink-0 w-6 h-6 bg-blue-500 text-white text-xs rounded-full flex items-center justify-center mr-3 mt-0.5;
+}
+
+.platform-instruction-text {
+  @apply text-sm text-gray-700 dark:text-gray-300;
+}
+
+/* Advanced Settings Styles */
+.advanced-settings-card {
+  @apply bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm;
+}
+
+.advanced-settings-header {
+  @apply p-4 border-b border-gray-200 dark:border-gray-700;
+}
+
+.advanced-settings-actions {
+  @apply flex items-center space-x-2;
+}
+
+.advanced-settings-section {
+  @apply space-y-4;
+}
+
+.advanced-settings-section-title {
+  @apply font-semibold flex items-center text-gray-900 dark:text-gray-100;
+}
+
+.advanced-settings-section-icon {
+  @apply w-4 h-4 mr-2;
+}
+
+/* Form Controls */
+.form-control-group {
+  @apply space-y-2;
+}
+
+.form-control-label {
+  @apply flex items-center space-x-2;
+}
+
+.form-control-input {
+  @apply w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent;
+}
+
+.form-control-input.error {
+  @apply border-red-300 dark:border-red-600;
+}
+
+.form-control-error {
+  @apply text-sm text-red-600 dark:text-red-400;
+}
+
+.form-control-switch {
+  @apply relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:ring-offset-2;
+}
+
+.form-control-switch.checked {
+  @apply bg-blue-600;
+}
+
+.form-control-switch:not(.checked) {
+  @apply bg-gray-200 dark:bg-gray-700;
+}
+
+.form-control-switch-thumb {
+  @apply inline-block h-4 w-4 transform rounded-full bg-white transition;
+}
+
+.form-control-switch-thumb.checked {
+  @apply translate-x-6;
+}
+
+.form-control-switch-thumb:not(.checked) {
+  @apply translate-x-1;
+}
+
+/* Tooltip Styles */
+.gpu-tooltip {
+  @apply z-50 overflow-hidden rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-1.5 text-sm text-gray-900 dark:text-gray-100 shadow-md;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .gpu-selection-container {
+    @apply px-4;
+  }
+
+  .gpu-selection-header {
+    @apply flex-col space-y-2 items-stretch;
+  }
+
+  .gpu-option-item {
+    @apply flex-col items-start space-y-1;
+  }
+
+  .gpu-option-badges {
+    @apply self-end;
+  }
+
+  .selected-gpu-header {
+    @apply flex-col items-start space-y-2;
+  }
+
+  .selected-gpu-badges {
+    @apply self-end;
+  }
+
+  .advanced-settings-actions {
+    @apply flex-col space-y-2 space-x-0;
+  }
+
+  .platform-selector {
+    @apply flex-col space-y-2 space-x-0;
+  }
+}
+
+/* Animation Classes */
+@keyframes gpu-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.gpu-detecting {
+  animation: gpu-pulse 2s infinite;
+}
+
+/* Focus and Accessibility */
+.gpu-selection-card:focus-within {
+  @apply ring-2 ring-blue-500 dark:ring-blue-400 ring-offset-2;
+}
+
+.gpu-option-item:focus {
+  @apply outline-none ring-2 ring-blue-500 dark:ring-blue-400 ring-offset-2;
+}
+
+.form-control-input:focus {
+  @apply outline-none ring-2 ring-blue-500 dark:ring-blue-400 ring-offset-2;
+}
+
+/* Print Styles */
+@media print {
+  .gpu-selection-container {
+    @apply shadow-none border border-gray-300;
+  }
+
+  .gpu-refresh-button {
+    @apply hidden;
+  }
+}

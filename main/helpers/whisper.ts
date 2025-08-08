@@ -239,9 +239,143 @@ export const hasEncoderModel = (model) => {
 };
 
 /**
- * 加载适合当前系统的Whisper Addon
+ * Enhanced Whisper Addon Loading with Intel GPU Support
+ * Intelligent GPU selection with user override and comprehensive fallback chains
  */
-export async function loadWhisperAddon(model) {
+export async function loadWhisperAddon(
+  model: string,
+  existingGpuCapabilities?: any,
+) {
+  const settings = store.get('settings') || {};
+  const { useCuda, useOpenVINO, selectedGPUId, gpuPreference } = settings;
+
+  // Import logging function
+  const { logMessage } = require('./logger');
+
+  logMessage('Starting enhanced whisper addon loading', 'info');
+  logMessage(`Model: ${model}`, 'info');
+
+  // Import GPU selection modules
+  const {
+    selectOptimalGPU,
+    resolveSpecificGPU,
+    getGPUSelectionConfig,
+    logGPUSelection,
+  } = require('./gpuSelector');
+  const {
+    loadAndValidateAddon,
+    handleAddonLoadingError,
+    createFallbackChain,
+    logAddonLoadAttempt,
+  } = require('./addonManager');
+  const { detectAvailableGPUs } = require('./hardware/hardwareDetection');
+
+  try {
+    // Use existing GPU capabilities or detect if not provided
+    const gpuCapabilities = existingGpuCapabilities || detectAvailableGPUs();
+    const gpuConfig = getGPUSelectionConfig();
+
+    // Only log capabilities if we had to detect them (avoid duplicate logging)
+    if (!existingGpuCapabilities) {
+      logMessage(
+        `GPU capabilities detected: ${JSON.stringify({
+          nvidia: gpuCapabilities.nvidia,
+          intelCount: gpuCapabilities.intel.length,
+          apple: gpuCapabilities.apple,
+          openvinoVersion: gpuCapabilities.openvinoVersion,
+        })}`,
+        'info',
+      );
+    }
+
+    let selectedAddon = null;
+
+    // 1. Handle explicit GPU selection (user override)
+    if (selectedGPUId && selectedGPUId !== 'auto') {
+      selectedAddon = resolveSpecificGPU(selectedGPUId, gpuCapabilities);
+      if (selectedAddon) {
+        logMessage(
+          `Using user-selected GPU: ${selectedAddon.displayName}`,
+          'info',
+        );
+      } else {
+        logMessage(
+          `User-selected GPU ${selectedGPUId} not available, falling back to auto-detection`,
+          'warning',
+        );
+      }
+    }
+
+    // 2. Fallback to priority-based selection
+    if (!selectedAddon) {
+      const priority = gpuPreference || ['nvidia', 'intel', 'apple', 'cpu'];
+      selectedAddon = selectOptimalGPU(priority, gpuCapabilities, model);
+    }
+
+    // Log selection decision
+    logGPUSelection(selectedAddon, gpuCapabilities);
+    logAddonLoadAttempt(selectedAddon);
+
+    // 3. Load and validate the selected addon
+    try {
+      const whisperFunction = await loadAndValidateAddon(selectedAddon);
+
+      logMessage(
+        `Successfully loaded ${selectedAddon.type} addon for model ${model}`,
+        'info',
+      );
+
+      // Set environment variables for OpenVINO if needed
+      if (selectedAddon.type === 'openvino' && selectedAddon.deviceConfig) {
+        process.env.OPENVINO_DEVICE_ID = selectedAddon.deviceConfig.deviceId;
+        logMessage(
+          `Set OpenVINO device ID: ${selectedAddon.deviceConfig.deviceId}`,
+          'debug',
+        );
+      }
+
+      return whisperFunction;
+    } catch (loadError) {
+      logMessage(
+        `Failed to load ${selectedAddon.type} addon: ${loadError.message}`,
+        'error',
+      );
+
+      // 4. Handle loading failure with fallback chain
+      const fallbackChain = createFallbackChain(selectedAddon);
+
+      if (fallbackChain.length > 0) {
+        logMessage(
+          `Attempting recovery with ${fallbackChain.length} fallback options`,
+          'info',
+        );
+        return await handleAddonLoadingError(
+          loadError,
+          selectedAddon,
+          fallbackChain,
+        );
+      } else {
+        throw new Error(
+          `No fallback options available for ${selectedAddon.type}`,
+        );
+      }
+    }
+  } catch (error) {
+    logMessage(`Enhanced addon loading failed: ${error.message}`, 'error');
+
+    // 5. Emergency fallback to legacy loading system
+    logMessage(
+      'Attempting emergency fallback to legacy addon loading',
+      'warning',
+    );
+    return await loadWhisperAddonLegacy(model);
+  }
+}
+
+/**
+ * Legacy addon loading system (preserved for emergency fallback)
+ */
+async function loadWhisperAddonLegacy(model: string) {
   const platform = process.platform;
   const settings = store.get('settings') || { useCuda: false };
   const useCuda = settings.useCuda || false;
@@ -278,6 +412,13 @@ export async function loadWhisperAddon(model) {
 
   const module = { exports: { whisper: null } };
   process.dlopen(module, addonPath);
+
+  if (!module.exports.whisper) {
+    throw new Error('Legacy addon loading failed - whisper function not found');
+  }
+
+  logMessage('Emergency fallback to legacy addon loading successful', 'info');
+
   return module.exports.whisper as (
     params: any,
     callback: (error: Error | null, result?: any) => void,

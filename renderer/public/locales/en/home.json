@@ -110,5 +110,14 @@
   "translationFailed": "Translation Failed",
   "currentPlaying": "(Current Playing)",
   "translationFailedLabel": "(Translation Failed)",
-  "translationFailedPlaceholder": "Translation failed, please enter manually"
+  "translationFailedPlaceholder": "Translation failed, please enter manually",
+  "gpuSelection": "GPU Selection",
+  "gpuSelectionDesc": "Select a GPU device for hardware acceleration",
+  "gpuSelectionChanged": "GPU selection changed to {{gpu}}",
+  "gpuListRefreshed": "GPU list refreshed",
+  "gpuRefreshFailed": "Failed to refresh GPU list",
+  "autoDetectGPU": "Auto-detect (Recommended)",
+  "cpuOnly": "CPU Only",
+  "noGPUsDetected": "No GPUs detected",
+  "gpuNotAvailable": "GPU not available on this platform"
 }
