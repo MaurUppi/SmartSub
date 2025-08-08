@@ -27,6 +27,29 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Download required addons for testing
+        run: |
+          mkdir -p extraResources/addons
+          # Download minimal addons needed for tests
+          if [ "$RUNNER_OS" == "Linux" ]; then
+            curl -L -f https://github.com/MaurUppi/whisper.cpp-openvino/releases/download/default-v20250806-141833/addon-linux-openvino.node \
+              -o extraResources/addons/addon-linux-openvino.node || echo "OpenVINO addon download failed, using mocks"
+          fi
+          # Create addon manifest for tests
+          cat > extraResources/addons/addon-manifest.json << EOF
+          {
+            "platform": "${{ runner.os }}",
+            "arch": "x64",
+            "openvinoVersion": "2024.6.0",
+            "buildType": "test",
+            "generatedAt": "$(date -u +%Y-%m-%dT%H:%M:%S.000Z)",
+            "addons": {
+              "primary": "addon-test.node"
+            }
+          }
+          EOF
+          ls -la extraResources/addons/
+
       - name: Audit dependencies for security vulnerabilities
         run: npm audit --audit-level moderate
         continue-on-error: true

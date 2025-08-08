@@ -1,6 +1,6 @@
 /**
  * Mock Environment Setup for OpenVINO Integration Testing
- * 
+ *
  * This module provides comprehensive test environment setup for:
  * - Jest test configuration
  * - Mock system initialization
@@ -8,8 +8,15 @@
  * - Global test utilities
  */
 
-import { mockSystem, DevelopmentMockSystem } from '../../main/helpers/developmentMockSystem';
-import { testUtils, TestUtils, predefinedTestEnvironments } from '../../main/helpers/testUtils';
+import {
+  mockSystem,
+  DevelopmentMockSystem,
+} from '../../main/helpers/developmentMockSystem';
+import {
+  testUtils,
+  TestUtils,
+  predefinedTestEnvironments,
+} from '../../main/helpers/testUtils';
 
 // Global test configuration
 declare global {
@@ -147,15 +154,17 @@ export class MockEnvironmentSetup {
     expect.extend({
       toHaveGPUDevice(received: any[], deviceId: string) {
         const device = received.find((d: any) => d.id === deviceId);
-        
+
         if (device) {
           return {
-            message: () => `Expected array not to contain GPU device with ID ${deviceId}`,
+            message: () =>
+              `Expected array not to contain GPU device with ID ${deviceId}`,
             pass: true,
           };
         } else {
           return {
-            message: () => `Expected array to contain GPU device with ID ${deviceId}`,
+            message: () =>
+              `Expected array to contain GPU device with ID ${deviceId}`,
             pass: false,
           };
         }
@@ -163,7 +172,7 @@ export class MockEnvironmentSetup {
 
       toBeOpenVINOCompatible(received: any) {
         const isCompatible = received.capabilities?.openvinoCompatible === true;
-        
+
         if (isCompatible) {
           return {
             message: () => `Expected device not to be OpenVINO compatible`,
@@ -178,11 +187,12 @@ export class MockEnvironmentSetup {
       },
 
       toHavePerformanceMetrics(received: any) {
-        const hasMetrics = received.processingTime !== undefined &&
-                          received.memoryUsage !== undefined &&
-                          received.powerConsumption !== undefined &&
-                          received.throughput !== undefined;
-        
+        const hasMetrics =
+          received.processingTime !== undefined &&
+          received.memoryUsage !== undefined &&
+          received.powerConsumption !== undefined &&
+          received.throughput !== undefined;
+
         if (hasMetrics) {
           return {
             message: () => `Expected object not to have performance metrics`,
@@ -190,7 +200,8 @@ export class MockEnvironmentSetup {
           };
         } else {
           return {
-            message: () => `Expected object to have performance metrics (processingTime, memoryUsage, powerConsumption, throughput)`,
+            message: () =>
+              `Expected object to have performance metrics (processingTime, memoryUsage, powerConsumption, throughput)`,
             pass: false,
           };
         }
@@ -206,7 +217,9 @@ export class TestSuiteSetup {
   /**
    * Set up test suite with specific environment
    */
-  public static async setupTestSuite(environmentName: keyof typeof predefinedTestEnvironments): Promise<void> {
+  public static async setupTestSuite(
+    environmentName: keyof typeof predefinedTestEnvironments,
+  ): Promise<void> {
     const environment = predefinedTestEnvironments[environmentName]();
     await testUtils.setupTestEnvironment(environment);
   }
@@ -362,11 +375,31 @@ export class TestAssertions {
 // Export singleton instance
 export const mockEnvironmentSetup = MockEnvironmentSetup.getInstance();
 
+// Alias for backward compatibility
+export class MockEnvironment {
+  private setupInstance: MockEnvironmentSetup;
+
+  constructor() {
+    this.setupInstance = MockEnvironmentSetup.getInstance();
+  }
+
+  async setup(): Promise<void> {
+    return this.setupInstance.setupGlobalEnvironment();
+  }
+
+  async cleanup(): Promise<void> {
+    return this.setupInstance.cleanupGlobalEnvironment();
+  }
+}
+
 // Export test utilities for convenience
 export { testUtils, mockSystem };
 
 // Export predefined environments and scenarios
-export { predefinedTestEnvironments, predefinedTestScenarios } from '../../main/helpers/testUtils';
+export {
+  predefinedTestEnvironments,
+  predefinedTestScenarios,
+} from '../../main/helpers/testUtils';
 
 // Global setup and teardown functions for Jest
 export const globalSetup = async (): Promise<void> => {
@@ -382,27 +415,31 @@ export const commonTestSetup = {
   beforeEach: async () => {
     await testUtils.cleanupTestEnvironment();
   },
-  
+
   afterEach: async () => {
     await testUtils.cleanupTestEnvironment();
   },
 };
 
 // Helper to create test with timeout
-export const createTimeoutTest = (testFn: () => Promise<void>, timeoutMs: number = 10000) => {
-  return () => new Promise<void>((resolve, reject) => {
-    const timeout = setTimeout(() => {
-      reject(new Error(`Test timed out after ${timeoutMs}ms`));
-    }, timeoutMs);
+export const createTimeoutTest = (
+  testFn: () => Promise<void>,
+  timeoutMs: number = 10000,
+) => {
+  return () =>
+    new Promise<void>((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        reject(new Error(`Test timed out after ${timeoutMs}ms`));
+      }, timeoutMs);
 
-    testFn()
-      .then(() => {
-        clearTimeout(timeout);
-        resolve();
-      })
-      .catch((error) => {
-        clearTimeout(timeout);
-        reject(error);
-      });
-  });
+      testFn()
+        .then(() => {
+          clearTimeout(timeout);
+          resolve();
+        })
+        .catch((error) => {
+          clearTimeout(timeout);
+          reject(error);
+        });
+    });
 };

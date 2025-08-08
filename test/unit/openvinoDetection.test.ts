@@ -7,6 +7,7 @@
 
 import { OpenVINODetector } from '../../main/hardware/openvinoDetection';
 import { fixtures } from '../fixtures/mockGPUData';
+import { openVinoCapabilityFixtures } from '../fixtures/openvinoFixtures';
 
 describe('OpenVINO Detection System', () => {
   let detector: OpenVINODetector;
@@ -207,36 +208,30 @@ ERROR:Detection failed - ImportError
   describe('Integration with Mock System', () => {
     test('should work with mock OpenVINO capabilities', () => {
       const openvinoCapabilities =
-        fixtures.openVinoCapabilityFixtures.fullInstallation();
+        openVinoCapabilityFixtures.fullInstallation();
 
       expect(openvinoCapabilities.isInstalled).toBe(true);
       expect(openvinoCapabilities.version).toBe('2024.6.0');
-      expect(openvinoCapabilities.supportedDevices).toContain(
-        'intel-arc-a770-16gb',
-      );
-      expect(openvinoCapabilities.modelFormats).toContain('ONNX');
+      expect(openvinoCapabilities.supportedDevices).toContain('GPU.0');
+      expect(openvinoCapabilities.modelFormats).toContain('FP32');
       expect(openvinoCapabilities.validationStatus).toBe('valid');
     });
 
     test('should handle mock unavailable scenario', () => {
-      const openvinoCapabilities =
-        fixtures.openVinoCapabilityFixtures.notInstalled();
+      const openvinoCapabilities = openVinoCapabilityFixtures.notInstalled();
 
       expect(openvinoCapabilities.isInstalled).toBe(false);
       expect(openvinoCapabilities.validationStatus).toBe('invalid');
-      expect(openvinoCapabilities.detectionErrors.length).toBeGreaterThan(0);
+      expect(openvinoCapabilities.supportedDevices.length).toBe(0);
     });
 
     test('should handle mock development scenario', () => {
-      const openvinoCapabilities =
-        fixtures.openVinoCapabilityFixtures.developmentMock();
+      const openvinoCapabilities = openVinoCapabilityFixtures.developmentMock();
 
       expect(openvinoCapabilities.isInstalled).toBe(true);
       expect(openvinoCapabilities.version).toBe('2024.6.0-mock');
-      expect(openvinoCapabilities.supportedDevices).toContain(
-        'mock-intel-arc-a770',
-      );
-      expect(openvinoCapabilities.runtimePath).toBe('/mock/openvino/runtime');
+      expect(openvinoCapabilities.supportedDevices).toContain('GPU.0');
+      expect(openvinoCapabilities.installPath).toBe('/mock/openvino');
     });
   });
 
@@ -269,8 +264,8 @@ ERROR:Detection failed - ImportError
 
     test('should validate supported devices format', () => {
       const testCapabilities = [
-        fixtures.openVinoCapabilityFixtures.fullInstallation(),
-        fixtures.openVinoCapabilityFixtures.developmentMock(),
+        openVinoCapabilityFixtures.fullInstallation(),
+        openVinoCapabilityFixtures.developmentMock(),
       ];
 
       for (const capabilities of testCapabilities) {
@@ -289,13 +284,13 @@ ERROR:Detection failed - ImportError
 
     test('should validate model formats', () => {
       const testCapabilities = [
-        fixtures.openVinoCapabilityFixtures.fullInstallation(),
-        fixtures.openVinoCapabilityFixtures.developmentMock(),
+        openVinoCapabilityFixtures.fullInstallation(),
+        openVinoCapabilityFixtures.developmentMock(),
       ];
 
       for (const capabilities of testCapabilities) {
         expect(Array.isArray(capabilities.modelFormats)).toBe(true);
-        expect(capabilities.modelFormats).toContain('ONNX');
+        expect(capabilities.modelFormats).toContain('FP32');
         expect(capabilities.modelFormats.length).toBeGreaterThan(0);
       }
     });
