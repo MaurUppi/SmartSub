@@ -24,8 +24,9 @@ export interface GPUOption {
     | 'intel-discrete'
     | 'intel-integrated'
     | 'apple'
+    | 'amd'
     | 'cpu';
-  status: 'available' | 'unavailable' | 'requires-setup';
+  status: 'available' | 'unavailable' | 'requires-setup' | 'cpu-only';
   performance: 'high' | 'medium' | 'low';
   description: string;
   driverVersion?: string;
@@ -33,6 +34,8 @@ export interface GPUOption {
   powerEfficiency: 'excellent' | 'good' | 'moderate';
   estimatedSpeed?: string;
   openvinoCompatible?: boolean;
+  cpuOnlyProcessing?: boolean; // NEW: Indicates AMD GPU with CPU-only processing
+  fallbackReason?: string; // NEW: Explains why falling back to CPU-only
 }
 
 export interface GPUInfoPanelProps {
@@ -69,6 +72,13 @@ const getGPUTypeInfo = (type: string, t: any) => {
         description: t('appleGPUDescription'),
         icon: <Cpu className="w-4 h-4" />,
         color: 'text-gray-600',
+      };
+    case 'amd':
+      return {
+        label: t('amdGPU'),
+        description: t('amdGPUDescription'),
+        icon: <Monitor className="w-4 h-4" />,
+        color: 'text-red-600',
       };
     case 'cpu':
       return {
@@ -254,7 +264,9 @@ export const GPUInfoPanel: React.FC<GPUInfoPanelProps> = ({
                     ? 'bg-green-100 text-green-800 border-green-300'
                     : selectedGPU.status === 'requires-setup'
                       ? 'bg-orange-100 text-orange-800 border-orange-300'
-                      : 'bg-red-100 text-red-800 border-red-300'
+                      : selectedGPU.status === 'cpu-only'
+                        ? 'bg-blue-100 text-blue-800 border-blue-300'
+                        : 'bg-red-100 text-red-800 border-red-300'
                 }
               >
                 {t(selectedGPU.status)}
@@ -263,6 +275,36 @@ export const GPUInfoPanel: React.FC<GPUInfoPanelProps> = ({
           </div>
           <p className="text-sm text-gray-600">{selectedGPU.description}</p>
         </div>
+
+        {/* NEW: CPU-only processing information for AMD GPUs (Requirements #4, #7, #8) */}
+        {selectedGPU.cpuOnlyProcessing && (
+          <>
+            <div className="p-3 bg-blue-50 border border-blue-200 rounded-md">
+              <div className="flex items-start space-x-2">
+                <Info className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                <div>
+                  <h4 className="font-medium text-blue-800">
+                    {t('cpuOnlyProcessingTitle')}
+                  </h4>
+                  <p className="text-sm text-blue-700 mt-1">
+                    {selectedGPU.fallbackReason || t('amdGpuCpuOnlyDefault')}
+                  </p>
+                  <div className="mt-2 space-y-1">
+                    <p className="text-xs text-blue-600">
+                      • {t('amdGpuCpuOnlyBenefit1')}
+                    </p>
+                    <p className="text-xs text-blue-600">
+                      • {t('amdGpuCpuOnlyBenefit2')}
+                    </p>
+                    <p className="text-xs text-blue-600">
+                      • {t('amdGpuCpuOnlyBenefit3')}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
 
         <Separator />
 
@@ -355,27 +397,37 @@ export const GPUInfoPanel: React.FC<GPUInfoPanelProps> = ({
         )}
 
         {/* Processing Speed Estimate */}
-        {selectedGPU.estimatedSpeed && selectedGPU.status === 'available' && (
-          <>
-            <Separator />
-            <div className="space-y-2">
-              <div className="flex items-center space-x-2">
-                <Timer className="w-4 h-4" />
-                <span className="font-medium">
-                  {t('estimatedProcessingSpeed')}
-                </span>
+        {selectedGPU.estimatedSpeed &&
+          (selectedGPU.status === 'available' ||
+            selectedGPU.status === 'cpu-only') && (
+            <>
+              <Separator />
+              <div className="space-y-2">
+                <div className="flex items-center space-x-2">
+                  <Timer className="w-4 h-4" />
+                  <span className="font-medium">
+                    {t('estimatedProcessingSpeed')}
+                  </span>
+                </div>
+                <div className="pl-6">
+                  <p
+                    className={`font-medium ${
+                      selectedGPU.status === 'cpu-only'
+                        ? 'text-blue-600'
+                        : 'text-green-600'
+                    }`}
+                  >
+                    {selectedGPU.estimatedSpeed}
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    {selectedGPU.status === 'cpu-only'
+                      ? t('cpuOnlyProcessingSpeedDescription')
+                      : t('processingSpeedDescription')}
+                  </p>
+                </div>
               </div>
-              <div className="pl-6">
-                <p className="font-medium text-green-600">
-                  {selectedGPU.estimatedSpeed}
-                </p>
-                <p className="text-sm text-gray-600">
-                  {t('processingSpeedDescription')}
-                </p>
-              </div>
-            </div>
-          </>
-        )}
+            </>
+          )}
       </CardContent>
     </Card>
   );

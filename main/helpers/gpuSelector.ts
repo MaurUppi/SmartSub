@@ -11,22 +11,32 @@ import {
 } from './logger';
 import { detectAvailableGPUs } from './hardware/hardwareDetection';
 import { checkOpenVINOSupport } from './hardware/openvinoDetection';
-import { checkCudaSupport } from './cudaUtils';
+import {
+  checkCudaSupport,
+  getCUDAAddonName as getCUDAAddonNameFromUtils,
+} from './cudaUtils';
 import { store } from './store';
 import { isAppleSilicon } from './utils';
 import { hasEncoderModel } from './whisper';
 
 /**
- * Get platform-specific addon filename for each acceleration type
+ * Get platform-specific addon filename for CUDA acceleration
+ * Enhanced with version-specific detection (Requirement #2)
  */
 function getCUDAAddonName(): string {
-  switch (process.platform) {
-    case 'win32':
-      return 'addon-windows-cuda.node';
-    case 'linux':
-      return 'addon-linux-cuda.node';
-    default:
-      return 'addon-cuda.node'; // Fallback for unsupported platforms
+  // Use enhanced CUDA detection for version-specific addon selection
+  try {
+    return getCUDAAddonNameFromUtils();
+  } catch (error) {
+    // Fallback to generic platform-specific addon if detection fails
+    switch (process.platform) {
+      case 'win32':
+        return 'addon-windows-cuda.node';
+      case 'linux':
+        return 'addon-linux-cuda.node';
+      default:
+        return 'addon-cuda.node'; // Fallback for unsupported platforms
+    }
   }
 }
 
@@ -71,6 +81,18 @@ function getCPUAddonName(): string {
   }
 }
 
+/**
+ * Get no-CUDA fallback addon name for AMD Windows scenario (Requirement #7)
+ */
+function getNoCudaAddonName(): string {
+  switch (process.platform) {
+    case 'win32':
+      return 'addon-windows-no-cuda.node'; // ✅ NEW: Fallback addon for AMD Windows
+    default:
+      return getCPUAddonName(); // Use CPU addon for other platforms
+  }
+}
+
 export interface AddonInfo {
   type: 'cuda' | 'openvino' | 'coreml' | 'cpu';
   path: string;
@@ -79,6 +101,10 @@ export interface AddonInfo {
     deviceId?: string;
     memory?: number | 'shared';
     type?: 'discrete' | 'integrated';
+    // ✅ NEW: CUDA-specific configuration (Requirement #2)
+    cudaVersion?: string;
+    driverVersion?: string;
+    majorVersion?: number;
   } | null;
   fallbackReason?: string;
 }
@@ -86,6 +112,7 @@ export interface AddonInfo {
 export interface GPUCapabilities {
   nvidia: boolean;
   intel: any[];
+  amd: any[]; // ✅ NEW: AMD GPU support for requirements #4, #7, #8
   intelAll: any[];
   apple: boolean;
   cpu: boolean;
@@ -115,6 +142,7 @@ export function selectOptimalGPU(
       systemCapabilities: {
         nvidia: capabilities.nvidia,
         intelCount: capabilities.intel.length,
+        amdCount: capabilities.amd.length, // ✅ NEW: AMD GPU count logging
         apple: capabilities.apple,
         openvinoVersion: capabilities.openvinoVersion,
       },
@@ -155,17 +183,52 @@ export function selectOptimalGPU(
     }
   }
 
-  // Emergency CPU fallback
+  // Enhanced fallback chain when primary GPU options fail
+  logGPUDetectionEvent(
+    'detection_failed',
+    {
+      reason:
+        'Primary GPU priority options failed, trying enhanced fallback chain',
+      failedPriorities: priority,
+      totalPriorityOptions: priority.length,
+    },
+    correlationId,
+  );
+
+  // Try enhanced fallback chain
+  const fallbackResult = tryEnhancedFallbackChain(
+    capabilities,
+    model,
+    correlationId,
+  );
+
+  if (fallbackResult) {
+    logGPUDetectionEvent(
+      'detection_completed',
+      {
+        finalSelection: fallbackResult,
+        totalPriorityOptions: priority.length,
+        successfulSelection: true,
+        usedFallbackChain: true,
+      },
+      correlationId,
+    );
+
+    return fallbackResult;
+  }
+
+  // Ultimate emergency CPU fallback
   logGPUDetectionEvent(
     'detection_completed',
     {
       finalSelection: {
         type: 'cpu',
-        reason: 'All GPU acceleration methods unavailable',
+        reason: 'All GPU acceleration and fallback methods unavailable',
       },
       totalPriorityOptions: priority.length,
       successfulSelection: false,
       emergencyFallback: true,
+      fallbackChainFailed: true,
     },
     correlationId,
   );
@@ -173,9 +236,367 @@ export function selectOptimalGPU(
   return {
     type: 'cpu',
     path: getCPUAddonName(),
-    displayName: 'CPU Processing (Emergency Fallback)',
+    displayName: 'CPU Processing (Ultimate Emergency Fallback)',
     deviceConfig: null,
-    fallbackReason: 'All GPU acceleration methods unavailable',
+    fallbackReason: 'All GPU acceleration and fallback methods unavailable',
+  };
+}
+
+/**
+ * Enhanced fallback chain when primary GPU selection fails
+ * Tries multiple fallback options across different platforms and configurations
+ */
+function tryEnhancedFallbackChain(
+  capabilities: GPUCapabilities,
+  model: string,
+  correlationId?: string,
+): AddonInfo | null {
+  const platform = process.platform;
+  const arch = process.arch;
+
+  logGPUDetectionEvent(
+    'fallback_chain_started',
+    {
+      platform,
+      arch,
+      systemCapabilities: {
+        nvidia: capabilities.nvidia,
+        intelCount: capabilities.intel.length,
+        amdCount: capabilities.amd.length,
+        apple: capabilities.apple,
+        openvinoVersion: capabilities.openvinoVersion,
+      },
+    },
+    correlationId,
+  );
+
+  // Platform-specific fallback chains
+  if (platform === 'win32') {
+    return tryWindowsFallbackChain(capabilities, model, correlationId);
+  } else if (platform === 'linux') {
+    return tryLinuxFallbackChain(capabilities, model, correlationId);
+  } else if (platform === 'darwin') {
+    return tryMacOSFallbackChain(capabilities, model, arch, correlationId);
+  }
+
+  // Generic cross-platform fallback
+  return tryGenericFallbackChain(capabilities, model, correlationId);
+}
+
+/**
+ * Windows-specific enhanced fallback chain
+ */
+function tryWindowsFallbackChain(
+  capabilities: GPUCapabilities,
+  model: string,
+  correlationId?: string,
+): AddonInfo | null {
+  const fallbackOptions = [
+    'openvino', // Try OpenVINO first (most capable)
+    'no-cuda', // Try no-CUDA addon (Windows-specific)
+    'cpu', // Basic CPU processing
+  ];
+
+  for (const option of fallbackOptions) {
+    try {
+      const result = tryWindowsFallbackOption(
+        option,
+        capabilities,
+        model,
+        correlationId,
+      );
+      if (result) {
+        logGPUDetectionEvent(
+          'fallback_chain_success',
+          {
+            platform: 'win32',
+            successfulFallback: option,
+            result: {
+              type: result.type,
+              path: result.path,
+              displayName: result.displayName,
+            },
+          },
+          correlationId,
+        );
+        return result;
+      }
+    } catch (error) {
+      logGPUDetectionEvent(
+        'fallback_chain_option_failed',
+        {
+          platform: 'win32',
+          failedFallback: option,
+          error: error.message,
+        },
+        correlationId,
+      );
+      continue;
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Try specific Windows fallback option
+ */
+function tryWindowsFallbackOption(
+  option: string,
+  capabilities: GPUCapabilities,
+  model: string,
+  correlationId?: string,
+): AddonInfo | null {
+  switch (option) {
+    case 'openvino':
+      if (capabilities.openvinoVersion !== false) {
+        return {
+          type: 'openvino',
+          path: getOpenVINOAddonName(),
+          displayName: 'CPU Processing (OpenVINO Fallback)',
+          deviceConfig: null,
+          fallbackReason:
+            'Primary GPU options failed - using OpenVINO fallback',
+        };
+      }
+      throw new Error('OpenVINO not available');
+
+    case 'no-cuda':
+      return {
+        type: 'cpu',
+        path: getNoCudaAddonName(),
+        displayName: 'CPU Processing (No-CUDA Fallback)',
+        deviceConfig: null,
+        fallbackReason: 'Primary GPU options failed - using no-CUDA fallback',
+      };
+
+    case 'cpu':
+      return {
+        type: 'cpu',
+        path: getCPUAddonName(),
+        displayName: 'CPU Processing (Basic Fallback)',
+        deviceConfig: null,
+        fallbackReason:
+          'All acceleration options failed - using basic CPU processing',
+      };
+
+    default:
+      throw new Error(`Unknown Windows fallback option: ${option}`);
+  }
+}
+
+/**
+ * Linux-specific enhanced fallback chain
+ */
+function tryLinuxFallbackChain(
+  capabilities: GPUCapabilities,
+  model: string,
+  correlationId?: string,
+): AddonInfo | null {
+  const fallbackOptions = ['openvino', 'cpu'];
+
+  for (const option of fallbackOptions) {
+    try {
+      const result = tryLinuxFallbackOption(
+        option,
+        capabilities,
+        model,
+        correlationId,
+      );
+      if (result) {
+        logGPUDetectionEvent(
+          'fallback_chain_success',
+          {
+            platform: 'linux',
+            successfulFallback: option,
+            result: {
+              type: result.type,
+              path: result.path,
+              displayName: result.displayName,
+            },
+          },
+          correlationId,
+        );
+        return result;
+      }
+    } catch (error) {
+      logGPUDetectionEvent(
+        'fallback_chain_option_failed',
+        {
+          platform: 'linux',
+          failedFallback: option,
+          error: error.message,
+        },
+        correlationId,
+      );
+      continue;
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Try specific Linux fallback option
+ */
+function tryLinuxFallbackOption(
+  option: string,
+  capabilities: GPUCapabilities,
+  model: string,
+  correlationId?: string,
+): AddonInfo | null {
+  switch (option) {
+    case 'openvino':
+      if (capabilities.openvinoVersion !== false) {
+        return {
+          type: 'openvino',
+          path: getOpenVINOAddonName(),
+          displayName: 'CPU Processing (Linux OpenVINO Fallback)',
+          deviceConfig: null,
+          fallbackReason:
+            'Primary GPU options failed - using OpenVINO fallback',
+        };
+      }
+      throw new Error('OpenVINO not available');
+
+    case 'cpu':
+      return {
+        type: 'cpu',
+        path: getCPUAddonName(),
+        displayName: 'CPU Processing (Linux Fallback)',
+        deviceConfig: null,
+        fallbackReason:
+          'All acceleration options failed - using CPU processing',
+      };
+
+    default:
+      throw new Error(`Unknown Linux fallback option: ${option}`);
+  }
+}
+
+/**
+ * macOS-specific enhanced fallback chain
+ */
+function tryMacOSFallbackChain(
+  capabilities: GPUCapabilities,
+  model: string,
+  arch: string,
+  correlationId?: string,
+): AddonInfo | null {
+  const fallbackOptions =
+    arch === 'arm64' ? ['coreml', 'cpu'] : ['openvino', 'cpu'];
+
+  for (const option of fallbackOptions) {
+    try {
+      const result = tryMacOSFallbackOption(
+        option,
+        capabilities,
+        model,
+        arch,
+        correlationId,
+      );
+      if (result) {
+        logGPUDetectionEvent(
+          'fallback_chain_success',
+          {
+            platform: 'darwin',
+            arch,
+            successfulFallback: option,
+            result: {
+              type: result.type,
+              path: result.path,
+              displayName: result.displayName,
+            },
+          },
+          correlationId,
+        );
+        return result;
+      }
+    } catch (error) {
+      logGPUDetectionEvent(
+        'fallback_chain_option_failed',
+        {
+          platform: 'darwin',
+          arch,
+          failedFallback: option,
+          error: error.message,
+        },
+        correlationId,
+      );
+      continue;
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Try specific macOS fallback option
+ */
+function tryMacOSFallbackOption(
+  option: string,
+  capabilities: GPUCapabilities,
+  model: string,
+  arch: string,
+  correlationId?: string,
+): AddonInfo | null {
+  switch (option) {
+    case 'coreml':
+      if (capabilities.apple && arch === 'arm64') {
+        return {
+          type: 'coreml',
+          path: getCoreMLAddonName(),
+          displayName: 'Apple CoreML (macOS Fallback)',
+          deviceConfig: null,
+          fallbackReason: 'Primary GPU options failed - using CoreML fallback',
+        };
+      }
+      throw new Error('CoreML not available or not on Apple Silicon');
+
+    case 'openvino':
+      if (capabilities.openvinoVersion !== false) {
+        return {
+          type: 'openvino',
+          path: getOpenVINOAddonName(),
+          displayName: 'CPU Processing (macOS OpenVINO Fallback)',
+          deviceConfig: null,
+          fallbackReason:
+            'Primary GPU options failed - using OpenVINO fallback',
+        };
+      }
+      throw new Error('OpenVINO not available');
+
+    case 'cpu':
+      return {
+        type: 'cpu',
+        path: getCPUAddonName(),
+        displayName: 'CPU Processing (macOS Fallback)',
+        deviceConfig: null,
+        fallbackReason:
+          'All acceleration options failed - using CPU processing',
+      };
+
+    default:
+      throw new Error(`Unknown macOS fallback option: ${option}`);
+  }
+}
+
+/**
+ * Generic cross-platform fallback chain
+ */
+function tryGenericFallbackChain(
+  capabilities: GPUCapabilities,
+  model: string,
+  correlationId?: string,
+): AddonInfo | null {
+  // Last resort: try basic CPU processing
+  return {
+    type: 'cpu',
+    path: getCPUAddonName(),
+    displayName: 'CPU Processing (Generic Fallback)',
+    deviceConfig: null,
+    fallbackReason:
+      'Platform-specific fallbacks unavailable - using generic CPU processing',
   };
 }
 
@@ -195,6 +616,9 @@ function tryGPUType(
     case 'intel':
       return tryIntelGPU(capabilities, model, correlationId);
 
+    case 'amd': // ✅ NEW: AMD GPU support for requirements #4, #7, #8
+      return tryAMDGPU(capabilities, model, correlationId);
+
     case 'apple':
       return tryAppleGPU(capabilities, model, correlationId);
 
@@ -211,7 +635,7 @@ function tryGPUType(
         `Unknown GPU type: ${gpuType}`,
         'warning',
         LogCategory.GPU_DETECTION,
-        { gpuType, availableTypes: ['nvidia', 'intel', 'apple', 'cpu'] },
+        { gpuType, availableTypes: ['nvidia', 'intel', 'amd', 'apple', 'cpu'] },
         correlationId,
       );
       return null;
@@ -220,6 +644,7 @@ function tryGPUType(
 
 /**
  * Try NVIDIA CUDA GPU
+ * Enhanced with version-specific CUDA detection (Requirement #2)
  */
 function tryNVIDIAGPU(
   capabilities: GPUCapabilities,
@@ -239,6 +664,21 @@ function tryNVIDIAGPU(
     return null;
   }
 
+  // Enhanced CUDA version detection (Requirement #2)
+  const cudaInfo = checkCudaSupport();
+  if (!cudaInfo) {
+    logGPUDetectionEvent(
+      'gpu_validated',
+      {
+        gpuType: 'nvidia',
+        validated: false,
+        reason: 'CUDA not available or detection failed',
+      },
+      correlationId,
+    );
+    return null;
+  }
+
   if (!validateModelSupport('cuda', model)) {
     logGPUDetectionEvent(
       'gpu_validated',
@@ -246,13 +686,14 @@ function tryNVIDIAGPU(
         gpuType: 'nvidia',
         validated: false,
         reason: `Model ${model} not supported on CUDA`,
+        cudaVersion: cudaInfo.version,
       },
       correlationId,
     );
     return null;
   }
 
-  // Log successful NVIDIA GPU detection
+  // Log successful NVIDIA GPU detection with CUDA version info
   logGPUDetectionEvent(
     'gpu_found',
     {
@@ -260,15 +701,22 @@ function tryNVIDIAGPU(
       available: true,
       model,
       validated: true,
+      cudaVersion: cudaInfo.version,
+      driverVersion: cudaInfo.driverVersion,
+      versionSpecificAddon: cudaInfo.addonName,
     },
     correlationId,
   );
 
   return {
     type: 'cuda',
-    path: getCUDAAddonName(),
-    displayName: 'NVIDIA CUDA GPU',
-    deviceConfig: null,
+    path: cudaInfo.addonName, // ✅ NEW: Use version-specific addon name
+    displayName: `NVIDIA CUDA GPU (CUDA ${cudaInfo.version})`, // ✅ NEW: Include version in display name
+    deviceConfig: {
+      cudaVersion: cudaInfo.version,
+      driverVersion: cudaInfo.driverVersion,
+      majorVersion: cudaInfo.majorVersion,
+    },
   };
 }
 
@@ -457,6 +905,244 @@ function tryAppleGPU(
 }
 
 /**
+ * Enhanced AMD Windows Fallback Chain (Requirement #7)
+ * Implements: OpenVINO → no-cuda → CPU fallback sequence
+ */
+function tryAMDWindowsFallbackChain(
+  capabilities: GPUCapabilities,
+  model: string,
+  correlationId?: string,
+): AddonInfo | null {
+  const fallbackChain = ['openvino', 'no-cuda', 'cpu'];
+  const platform = 'win32';
+
+  for (let i = 0; i < fallbackChain.length; i++) {
+    const fallbackType = fallbackChain[i];
+
+    try {
+      const addonInfo = tryFallbackOption(
+        fallbackType,
+        capabilities,
+        model,
+        platform,
+        correlationId,
+      );
+
+      if (addonInfo) {
+        logGPUDetectionEvent(
+          'gpu_validated',
+          {
+            gpuType: 'amd',
+            validated: true,
+            reason: `AMD on Windows - successful ${fallbackType} fallback`,
+            fallbackChain,
+            selectedFallback: fallbackType,
+            fallbackIndex: i,
+            platform,
+          },
+          correlationId,
+        );
+
+        return addonInfo;
+      }
+    } catch (error) {
+      logGPUDetectionEvent(
+        'gpu_validated',
+        {
+          gpuType: 'amd',
+          validated: false,
+          reason: `AMD on Windows - ${fallbackType} fallback failed: ${error.message}`,
+          fallbackChain,
+          failedFallback: fallbackType,
+          fallbackIndex: i,
+          platform,
+          error: error.message,
+        },
+        correlationId,
+      );
+      // Continue to next fallback option
+    }
+  }
+
+  // All fallbacks failed
+  logGPUDetectionEvent(
+    'gpu_validated',
+    {
+      gpuType: 'amd',
+      validated: false,
+      reason: 'AMD on Windows - all fallback options exhausted',
+      fallbackChain,
+      platform,
+      allFallbacksFailed: true,
+    },
+    correlationId,
+  );
+
+  return null;
+}
+
+/**
+ * Try a specific fallback option in the AMD Windows fallback chain
+ */
+function tryFallbackOption(
+  fallbackType: string,
+  capabilities: GPUCapabilities,
+  model: string,
+  platform: string,
+  correlationId?: string,
+): AddonInfo | null {
+  switch (fallbackType) {
+    case 'openvino':
+      // Try OpenVINO addon
+      if (capabilities.openvinoVersion !== false) {
+        return {
+          type: 'openvino',
+          path: getOpenVINOAddonName(),
+          displayName: 'CPU Processing (AMD GPU detected - OpenVINO)',
+          deviceConfig: null,
+          fallbackReason:
+            'AMD GPU detected - CPU processing with OpenVINO (primary fallback)',
+        };
+      }
+      throw new Error('OpenVINO toolkit not available');
+
+    case 'no-cuda':
+      // Try no-CUDA addon (Windows-specific fallback)
+      try {
+        const noCudaPath = getNoCudaAddonName();
+        return {
+          type: 'cpu',
+          path: noCudaPath,
+          displayName: 'CPU Processing (AMD GPU detected - No CUDA)',
+          deviceConfig: null,
+          fallbackReason:
+            'AMD GPU detected - CPU processing with no-CUDA addon (secondary fallback)',
+        };
+      } catch (error) {
+        throw new Error(`No-CUDA addon not available: ${error.message}`);
+      }
+
+    case 'cpu':
+      // Emergency CPU fallback
+      return {
+        type: 'cpu',
+        path: getCPUAddonName(),
+        displayName: 'CPU Processing (AMD GPU detected - Emergency CPU)',
+        deviceConfig: null,
+        fallbackReason:
+          'AMD GPU detected - emergency CPU processing (final fallback)',
+      };
+
+    default:
+      throw new Error(`Unknown fallback type: ${fallbackType}`);
+  }
+}
+
+/**
+ * Try AMD GPU (Requirements #4, #7, #8)
+ * AMD GPUs are handled with CPU-only processing and appropriate fallback chains
+ */
+function tryAMDGPU(
+  capabilities: GPUCapabilities,
+  model: string,
+  correlationId?: string,
+): AddonInfo | null {
+  if (capabilities.amd.length === 0) {
+    logGPUDetectionEvent(
+      'gpu_found',
+      {
+        gpuType: 'amd',
+        available: false,
+        reason: 'No AMD GPU detected',
+      },
+      correlationId,
+    );
+    return null;
+  }
+
+  // AMD GPUs detected - apply CPU-only policy per requirements
+  const platform = process.platform;
+  const arch = process.arch;
+
+  logGPUDetectionEvent(
+    'gpu_found',
+    {
+      gpuType: 'amd',
+      available: true,
+      amdGPUCount: capabilities.amd.length,
+      platform,
+      arch,
+      policy: 'cpu_only_processing',
+    },
+    correlationId,
+  );
+
+  // Requirements #4, #7, #8: AMD GPUs → CPU support ONLY with appropriate addon
+  if (platform === 'win32') {
+    // Requirement #7: AMD + Windows → Enhanced fallback chain: OpenVINO → no-cuda → CPU
+    return tryAMDWindowsFallbackChain(capabilities, model, correlationId);
+  } else if (platform === 'linux') {
+    // Requirement #8: AMD + Linux → CPU only + OpenVINO
+    logGPUDetectionEvent(
+      'gpu_validated',
+      {
+        gpuType: 'amd',
+        validated: true,
+        reason: 'AMD on Linux - using OpenVINO with CPU-only processing',
+        fallback: 'openvino',
+        platform,
+      },
+      correlationId,
+    );
+
+    return {
+      type: 'openvino',
+      path: getOpenVINOAddonName(),
+      displayName: 'CPU Processing (AMD GPU detected - OpenVINO)',
+      deviceConfig: null,
+      fallbackReason: 'AMD GPU detected - CPU processing with OpenVINO',
+    };
+  } else if (platform === 'darwin' && arch === 'x64') {
+    // Requirement #4: AMD/NVIDIA + macOS Intel → CPU only + OpenVINO
+    logGPUDetectionEvent(
+      'gpu_validated',
+      {
+        gpuType: 'amd',
+        validated: true,
+        reason: 'AMD on macOS Intel - using OpenVINO with CPU-only processing',
+        fallback: 'openvino',
+        platform,
+        arch,
+      },
+      correlationId,
+    );
+
+    return {
+      type: 'openvino',
+      path: getOpenVINOAddonName(),
+      displayName: 'CPU Processing (AMD GPU detected - OpenVINO)',
+      deviceConfig: null,
+      fallbackReason: 'AMD GPU detected - CPU processing with OpenVINO',
+    };
+  }
+
+  // Unsupported platform combination
+  logGPUDetectionEvent(
+    'gpu_validated',
+    {
+      gpuType: 'amd',
+      validated: false,
+      reason: 'AMD GPU detected on unsupported platform combination',
+      platform,
+      arch,
+    },
+    correlationId,
+  );
+
+  return null;
+}
+
+/**
  * Resolve specific GPU by ID (user override)
  */
 export function resolveSpecificGPU(
@@ -484,14 +1170,30 @@ export function resolveSpecificGPU(
     return null; // Let automatic selection handle this
   }
 
-  // Handle NVIDIA GPU selection
+  // Handle NVIDIA GPU selection (Enhanced with version-specific CUDA - Requirement #2)
   if (gpuId.includes('nvidia') && capabilities.nvidia) {
-    return {
-      type: 'cuda',
-      path: getCUDAAddonName(),
-      displayName: 'NVIDIA CUDA GPU (User Selected)',
-      deviceConfig: null,
-    };
+    const cudaInfo = checkCudaSupport();
+
+    if (cudaInfo) {
+      return {
+        type: 'cuda',
+        path: cudaInfo.addonName, // ✅ NEW: Use version-specific addon
+        displayName: `NVIDIA CUDA GPU (CUDA ${cudaInfo.version} - User Selected)`,
+        deviceConfig: {
+          cudaVersion: cudaInfo.version,
+          driverVersion: cudaInfo.driverVersion,
+          majorVersion: cudaInfo.majorVersion,
+        },
+      };
+    } else {
+      // Fallback if CUDA detection fails
+      return {
+        type: 'cuda',
+        path: getCUDAAddonName(),
+        displayName: 'NVIDIA CUDA GPU (User Selected)',
+        deviceConfig: null,
+      };
+    }
   }
 
   // Handle Intel GPU selection
@@ -508,6 +1210,35 @@ export function resolveSpecificGPU(
           memory: intelGPU.memory,
           type: intelGPU.type,
         },
+      };
+    }
+  }
+
+  // Handle AMD GPU selection (Requirements #4, #7, #8)
+  if (gpuId.includes('amd') && capabilities.amd.length > 0) {
+    // AMD GPUs always result in CPU-only processing per requirements
+    const platform = process.platform;
+
+    if (platform === 'win32') {
+      // Requirement #7: AMD + Windows → CPU only + OpenVINO/fallback
+      return {
+        type: 'openvino',
+        path: getOpenVINOAddonName(),
+        displayName: 'CPU Processing (AMD GPU - User Selected)',
+        deviceConfig: null,
+        fallbackReason: 'AMD GPU selected - CPU processing with OpenVINO',
+      };
+    } else if (
+      platform === 'linux' ||
+      (platform === 'darwin' && process.arch === 'x64')
+    ) {
+      // Requirements #8, #4: AMD + Linux/macOS Intel → CPU only + OpenVINO
+      return {
+        type: 'openvino',
+        path: getOpenVINOAddonName(),
+        displayName: 'CPU Processing (AMD GPU - User Selected)',
+        deviceConfig: null,
+        fallbackReason: 'AMD GPU selected - CPU processing with OpenVINO',
       };
     }
   }
@@ -684,6 +1415,7 @@ export function getGPUSelectionConfig() {
     gpuPreference: settings.gpuPreference || [
       'nvidia',
       'intel',
+      'amd', // ✅ NEW: AMD GPU in preference order
       'apple',
       'cpu',
     ],
@@ -710,6 +1442,7 @@ export function logGPUSelection(
     systemCapabilities: {
       nvidia: capabilities.nvidia,
       intelGPUCount: capabilities.intel.length,
+      amdGPUCount: capabilities.amd.length, // ✅ NEW: AMD GPU count logging
       apple: capabilities.apple,
       openvinoVersion: capabilities.openvinoVersion,
       multiGPU: capabilities.capabilities.multiGPU,

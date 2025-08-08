@@ -9,8 +9,9 @@ export interface GPUOption {
     | 'intel-discrete'
     | 'intel-integrated'
     | 'apple'
+    | 'amd'
     | 'cpu';
-  status: 'available' | 'unavailable' | 'requires-setup';
+  status: 'available' | 'unavailable' | 'requires-setup' | 'cpu-only';
   performance: 'high' | 'medium' | 'low';
   description: string;
   driverVersion?: string;
@@ -18,6 +19,8 @@ export interface GPUOption {
   powerEfficiency: 'excellent' | 'good' | 'moderate';
   estimatedSpeed?: string;
   openvinoCompatible?: boolean;
+  cpuOnlyProcessing?: boolean; // NEW: Indicates AMD GPU with CPU-only processing
+  fallbackReason?: string; // NEW: Explains why falling back to CPU-only
 }
 
 export interface GPUDetectionResult {
@@ -139,6 +142,24 @@ const getMockGPUOptions = (): GPUOption[] => [
     powerEfficiency: 'excellent',
     estimatedSpeed: '1.5x faster',
     openvinoCompatible: false,
+  },
+  // NEW: AMD GPU mock options for development (Requirements #4, #7, #8)
+  {
+    id: 'amd-rx-7800-xt-mock',
+    displayName: 'AMD Radeon RX 7800 XT',
+    type: 'amd',
+    status: 'cpu-only',
+    performance: 'medium',
+    description:
+      'High-end AMD GPU - uses CPU processing with OpenVINO optimization',
+    driverVersion: '24.1.1',
+    memory: 16384,
+    powerEfficiency: 'good',
+    estimatedSpeed: '2x faster (CPU processing)',
+    openvinoCompatible: true,
+    cpuOnlyProcessing: true,
+    fallbackReason:
+      'AMD GPUs automatically use optimized CPU processing with OpenVINO acceleration for better compatibility',
   },
 ];
 

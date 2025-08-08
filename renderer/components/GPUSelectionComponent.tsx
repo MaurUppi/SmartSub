@@ -31,8 +31,9 @@ export interface GPUOption {
     | 'intel-discrete'
     | 'intel-integrated'
     | 'apple'
+    | 'amd'
     | 'cpu';
-  status: 'available' | 'unavailable' | 'requires-setup';
+  status: 'available' | 'unavailable' | 'requires-setup' | 'cpu-only';
   performance: 'high' | 'medium' | 'low';
   description: string;
   driverVersion?: string;
@@ -40,6 +41,8 @@ export interface GPUOption {
   powerEfficiency: 'excellent' | 'good' | 'moderate';
   estimatedSpeed?: string;
   openvinoCompatible?: boolean;
+  cpuOnlyProcessing?: boolean; // NEW: Indicates AMD GPU with CPU-only processing
+  fallbackReason?: string; // NEW: Explains why falling back to CPU-only
 }
 
 // Default GPU options that are always available
@@ -131,6 +134,52 @@ const getMockGPUOptions = (t: any): GPUOption[] => [
     estimatedSpeed: '1.5x faster',
     openvinoCompatible: false,
   },
+  // NEW: AMD GPU options for Task 2.1 (Requirements #4, #7, #8)
+  {
+    id: 'amd-radeon-rx-7900-xt-windows',
+    displayName: 'AMD Radeon RX 7900 XT',
+    type: 'amd',
+    status: 'cpu-only',
+    performance: 'medium',
+    description: t('amdRadeonRX7900XTDescription'),
+    driverVersion: '23.12.1',
+    memory: 20480,
+    powerEfficiency: 'good',
+    estimatedSpeed: '2x faster (CPU processing)',
+    openvinoCompatible: true,
+    cpuOnlyProcessing: true,
+    fallbackReason: 'AMD GPUs use CPU processing with OpenVINO acceleration',
+  },
+  {
+    id: 'amd-radeon-pro-w6800-macos',
+    displayName: 'AMD Radeon Pro W6800',
+    type: 'amd',
+    status: 'cpu-only',
+    performance: 'medium',
+    description: t('amdRadeonProW6800Description'),
+    driverVersion: 'macOS Built-in',
+    memory: 32768,
+    powerEfficiency: 'good',
+    estimatedSpeed: '2x faster (CPU processing)',
+    openvinoCompatible: true,
+    cpuOnlyProcessing: true,
+    fallbackReason: 'AMD GPUs on macOS use CPU processing with OpenVINO',
+  },
+  {
+    id: 'amd-rx-6600-linux',
+    displayName: 'AMD Radeon RX 6600',
+    type: 'amd',
+    status: 'cpu-only',
+    performance: 'medium',
+    description: t('amdRadeonRX6600Description'),
+    driverVersion: 'AMDGPU 5.4',
+    memory: 8192,
+    powerEfficiency: 'good',
+    estimatedSpeed: '2x faster (CPU processing)',
+    openvinoCompatible: true,
+    cpuOnlyProcessing: true,
+    fallbackReason: 'AMD GPUs on Linux use CPU processing with OpenVINO',
+  },
 ];
 
 const getPerformanceIcon = (performance: string) => {
@@ -164,6 +213,12 @@ const getStatusBadge = (status: string, t: any) => {
       return (
         <Badge variant="outline" className="text-red-600 border-red-300">
           {t('unavailable')}
+        </Badge>
+      );
+    case 'cpu-only':
+      return (
+        <Badge variant="outline" className="text-blue-600 border-blue-300">
+          {t('cpuOnlySupport')}
         </Badge>
       );
     default:
@@ -238,6 +293,14 @@ export const GPUSelectionComponent: React.FC<GPUSelectionProps> = ({
 
       if (selectedGPU.status === 'requires-setup') {
         toast.info(t('gpuRequiresSetup', { gpu: selectedGPU.displayName }));
+      } else if (selectedGPU.status === 'cpu-only') {
+        // NEW: CPU-only warning for AMD GPUs (Requirements #4, #7, #8)
+        toast.info(
+          t('amdGpuCpuOnlySelected', {
+            gpu: selectedGPU.displayName,
+            reason: selectedGPU.fallbackReason || t('amdGpuCpuOnlyDefault'),
+          }),
+        );
       } else {
         toast.success(t('gpuSelected', { gpu: selectedGPU.displayName }));
       }
@@ -304,14 +367,25 @@ export const GPUSelectionComponent: React.FC<GPUSelectionProps> = ({
                       >
                         {gpu.displayName}
                       </span>
+                      {/* NEW: CPU-only indicator for AMD GPUs */}
+                      {gpu.cpuOnlyProcessing && (
+                        <Badge
+                          variant="secondary"
+                          className="text-xs bg-blue-100 text-blue-800"
+                        >
+                          CPU-only
+                        </Badge>
+                      )}
                     </div>
                     <div className="flex items-center space-x-1">
                       {getStatusBadge(gpu.status, t)}
-                      {gpu.estimatedSpeed && gpu.status === 'available' && (
-                        <Badge variant="secondary" className="text-xs">
-                          {gpu.estimatedSpeed}
-                        </Badge>
-                      )}
+                      {gpu.estimatedSpeed &&
+                        (gpu.status === 'available' ||
+                          gpu.status === 'cpu-only') && (
+                          <Badge variant="secondary" className="text-xs">
+                            {gpu.estimatedSpeed}
+                          </Badge>
+                        )}
                     </div>
                   </div>
                 </SelectItem>
@@ -321,13 +395,31 @@ export const GPUSelectionComponent: React.FC<GPUSelectionProps> = ({
         </div>
 
         {selectedGPU && (
-          <div className="p-3 rounded-md bg-blue-50 border border-blue-200">
+          <div
+            className={`p-3 rounded-md border ${
+              selectedGPU.cpuOnlyProcessing
+                ? 'bg-blue-50 border-blue-200'
+                : 'bg-blue-50 border-blue-200'
+            }`}
+          >
             <div className="flex items-center justify-between">
               <div>
                 <h4 className="font-medium">{selectedGPU.displayName}</h4>
                 <p className="text-sm text-gray-600">
                   {selectedGPU.description}
                 </p>
+                {/* NEW: CPU-only processing warning for AMD GPUs */}
+                {selectedGPU.cpuOnlyProcessing &&
+                  selectedGPU.fallbackReason && (
+                    <div className="mt-2 p-2 bg-blue-100 border border-blue-300 rounded-md">
+                      <p className="text-xs text-blue-800 font-medium">
+                        💡 {t('cpuOnlyProcessingInfo')}
+                      </p>
+                      <p className="text-xs text-blue-700 mt-1">
+                        {selectedGPU.fallbackReason}
+                      </p>
+                    </div>
+                  )}
               </div>
               <div className="text-right">
                 {getStatusBadge(selectedGPU.status, t)}
@@ -337,6 +429,15 @@ export const GPUSelectionComponent: React.FC<GPUSelectionProps> = ({
                     className="ml-2 text-green-600 border-green-300"
                   >
                     OpenVINO
+                  </Badge>
+                )}
+                {/* NEW: CPU-only processing badge */}
+                {selectedGPU.cpuOnlyProcessing && (
+                  <Badge
+                    variant="outline"
+                    className="ml-2 text-blue-600 border-blue-300"
+                  >
+                    {t('cpuProcessingOnly')}
                   </Badge>
                 )}
               </div>

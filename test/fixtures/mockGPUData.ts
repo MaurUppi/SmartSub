@@ -13,6 +13,13 @@ import {
   OpenVINOCapabilities,
 } from '../../main/helpers/developmentMockSystem';
 
+// Extend the GPUDevice interface to include AMD GPU CPU-only processing
+export interface ExtendedGPUDevice extends GPUDevice {
+  capabilities: GPUDevice['capabilities'] & {
+    cpuOnlyProcessing?: boolean; // NEW: Indicates AMD GPU with CPU-only processing
+  };
+}
+
 /**
  * Intel GPU device fixtures based on real hardware specifications
  */
@@ -207,6 +214,66 @@ export const intelGPUFixtures = {
     },
     powerEfficiency: 'excellent',
     performance: 'high',
+  }),
+
+  /**
+   * AMD GPUs for CPU-only processing testing (Requirements #4, #7, #8)
+   */
+  amdRadeonRX7900XT: (): GPUDevice => ({
+    id: 'amd-radeon-rx-7900-xt',
+    name: 'AMD Radeon RX 7900 XT',
+    type: 'discrete',
+    vendor: 'amd',
+    deviceId: '7900',
+    priority: 6,
+    driverVersion: '23.12.1',
+    memory: 20480, // 20GB GDDR6
+    capabilities: {
+      openvinoCompatible: true, // CPU processing with OpenVINO
+      cudaCompatible: false,
+      coremlCompatible: false,
+      cpuOnlyProcessing: true, // NEW: AMD GPU CPU-only flag
+    },
+    powerEfficiency: 'good',
+    performance: 'medium', // Medium due to CPU-only processing
+  }),
+
+  amdRadeonProW6800: (): GPUDevice => ({
+    id: 'amd-radeon-pro-w6800',
+    name: 'AMD Radeon Pro W6800',
+    type: 'discrete',
+    vendor: 'amd',
+    deviceId: '6800',
+    priority: 6,
+    driverVersion: 'macOS Built-in',
+    memory: 32768, // 32GB GDDR6
+    capabilities: {
+      openvinoCompatible: true, // CPU processing with OpenVINO
+      cudaCompatible: false,
+      coremlCompatible: false,
+      cpuOnlyProcessing: true, // NEW: AMD GPU CPU-only flag
+    },
+    powerEfficiency: 'good',
+    performance: 'medium', // Medium due to CPU-only processing
+  }),
+
+  amdRadeonRX6600: (): GPUDevice => ({
+    id: 'amd-radeon-rx-6600',
+    name: 'AMD Radeon RX 6600',
+    type: 'discrete',
+    vendor: 'amd',
+    deviceId: '6600',
+    priority: 5,
+    driverVersion: 'AMDGPU 5.4',
+    memory: 8192, // 8GB GDDR6
+    capabilities: {
+      openvinoCompatible: true, // CPU processing with OpenVINO
+      cudaCompatible: false,
+      coremlCompatible: false,
+      cpuOnlyProcessing: true, // NEW: AMD GPU CPU-only flag
+    },
+    powerEfficiency: 'good',
+    performance: 'medium', // Medium due to CPU-only processing
   }),
 };
 
@@ -773,6 +840,73 @@ export const testScenarioFixtures = {
   },
 
   /**
+   * AMD GPU CPU-only processing scenarios (Requirements #4, #7, #8)
+   */
+  amdWindowsCPUOnly: {
+    name: 'AMD GPU Windows CPU-only Processing',
+    devices: [intelGPUFixtures.amdRadeonRX7900XT()],
+    openvinoCapabilities: openVinoCapabilityFixtures.fullInstallation(),
+    expectedPerformance: null, // CPU processing performance
+    processingMode: 'cpu-only',
+    platform: 'windows',
+    fallbackChain: ['openvino', 'no-cuda', 'cpu'],
+  },
+
+  amdMacOSCPUOnly: {
+    name: 'AMD GPU macOS CPU-only Processing',
+    devices: [intelGPUFixtures.amdRadeonProW6800()],
+    openvinoCapabilities: openVinoCapabilityFixtures.fullInstallation(),
+    expectedPerformance: null, // CPU processing performance
+    processingMode: 'cpu-only',
+    platform: 'darwin',
+    fallbackChain: ['openvino', 'cpu'],
+  },
+
+  amdLinuxCPUOnly: {
+    name: 'AMD GPU Linux CPU-only Processing',
+    devices: [intelGPUFixtures.amdRadeonRX6600()],
+    openvinoCapabilities: openVinoCapabilityFixtures.fullInstallation(),
+    expectedPerformance: null, // CPU processing performance
+    processingMode: 'cpu-only',
+    platform: 'linux',
+    fallbackChain: ['openvino', 'cpu'],
+  },
+
+  /**
+   * CUDA version-specific testing scenarios (Requirement #2)
+   */
+  cudaVersionSpecific: {
+    name: 'CUDA Version-Specific Addon Selection',
+    testCases: [
+      {
+        cudaVersion: '12.41',
+        expectedAddon: 'addon-windows-cuda-1241-generic.node',
+        platform: 'windows',
+      },
+      {
+        cudaVersion: '12.20',
+        expectedAddon: 'addon-windows-cuda-1220-generic.node',
+        platform: 'windows',
+      },
+      {
+        cudaVersion: '11.80',
+        expectedAddon: 'addon-windows-cuda-1180-generic.node',
+        platform: 'windows',
+      },
+      {
+        cudaVersion: '11.50',
+        expectedAddon: 'addon-windows-cuda-1180-generic.node', // Fallback to oldest supported
+        platform: 'windows',
+      },
+      {
+        cudaVersion: '10.20',
+        expectedAddon: 'addon-windows-no-cuda.node', // Too old, fallback
+        platform: 'windows',
+      },
+    ],
+  },
+
+  /**
    * Error simulation scenario
    */
   errorSimulation: {
@@ -809,9 +943,18 @@ export const fixtureUtils = {
    */
   filterDevicesByVendor(
     devices: GPUDevice[],
-    vendor: 'intel' | 'nvidia' | 'apple',
+    vendor: 'intel' | 'nvidia' | 'apple' | 'amd',
   ): GPUDevice[] {
     return devices.filter((device) => device.vendor === vendor);
+  },
+
+  /**
+   * Filter devices by CPU-only processing capability (AMD GPUs)
+   */
+  filterCPUOnlyDevices(devices: any[]): any[] {
+    return devices.filter(
+      (device) => device.capabilities?.cpuOnlyProcessing === true,
+    );
   },
 
   /**
