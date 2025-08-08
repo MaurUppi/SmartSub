@@ -109,8 +109,8 @@ async function validateParameterConfiguration(
 
     // Convert validation result to ValidationError format
     return result.errors.map((error) => ({
-      key: error.field || 'unknown',
-      type: 'validation' as const,
+      key: error.key || 'unknown',
+      type: 'format' as const,
       message: error.message,
       suggestion: 'Check the parameter configuration and try again',
     }));

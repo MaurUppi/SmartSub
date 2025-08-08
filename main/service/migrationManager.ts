@@ -68,7 +68,7 @@ export class MigrationManager {
   async needsMigration(
     configurations: Map<string, StoredConfiguration>,
   ): Promise<boolean> {
-    for (const [_, stored] of configurations) {
+    for (const [_, stored] of Array.from(configurations.entries())) {
       if (this.getConfigurationVersion(stored) !== this.getCurrentVersion()) {
         return true;
       }
@@ -92,7 +92,7 @@ export class MigrationManager {
       // Create backup before migration
       result.backupPath = await this.createMigrationBackup(configurations);
 
-      for (const [providerId, stored] of configurations) {
+      for (const [providerId, stored] of Array.from(configurations.entries())) {
         try {
           const migrated = await this.migrateConfiguration(stored);
           if (migrated !== stored) {
@@ -192,7 +192,7 @@ export class MigrationManager {
 
     let healthyConfigurations = 0;
 
-    for (const [providerId, stored] of configurations.entries()) {
+    for (const [providerId, stored] of Array.from(configurations.entries())) {
       const configIssues = await this.validateSingleConfiguration(
         providerId,
         stored,
@@ -345,37 +345,21 @@ export class MigrationManager {
     const target = this.parseVersion(targetVersion);
 
     // Major version difference = critical
-    if (current.major < target.major) {
+    if (current[0] < target[0]) {
       return 'critical';
     }
 
     // Minor version difference = high
-    if (current.minor < target.minor) {
+    if (current[1] < target[1]) {
       return 'high';
     }
 
     // Patch version difference = medium
-    if (current.patch < target.patch) {
+    if (current[2] < target[2]) {
       return 'medium';
     }
 
     return 'low';
-  }
-
-  /**
-   * Parse semantic version string
-   */
-  private parseVersion(version: string): {
-    major: number;
-    minor: number;
-    patch: number;
-  } {
-    const parts = version.split('.').map(Number);
-    return {
-      major: parts[0] || 0,
-      minor: parts[1] || 0,
-      patch: parts[2] || 0,
-    };
   }
 
   /**
@@ -496,7 +480,7 @@ export class MigrationManager {
 
       if (duplicates.size > 0) {
         // Remove duplicates from body parameters (keep header parameters)
-        for (const dupKey of duplicates) {
+        for (const dupKey of Array.from(duplicates)) {
           if (config.bodyParameters && dupKey in config.bodyParameters) {
             delete config.bodyParameters[dupKey];
             result.repairsApplied.push(

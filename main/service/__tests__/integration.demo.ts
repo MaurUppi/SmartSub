@@ -23,15 +23,14 @@ const qwenProvider: ExtendedProvider = {
   apiUrl: 'https://dashscope.aliyuncs.com',
   modelName: 'qwen-turbo',
   customParameters: {
-    headerConfigs: {
+    headerParameters: {
       'X-Custom-Auth': 'Bearer ${API_KEY}',
     },
-    bodyConfigs: {
+    bodyParameters: {
       enable_thinking: true, // Will be overridden by hard-coded logic
       temperature: 0.8,
       max_tokens: 2000,
     },
-    templates: [],
     configVersion: '1.0.0',
     lastModified: Date.now(),
   },
@@ -69,19 +68,18 @@ const customProvider: ExtendedProvider = {
   apiUrl: 'https://api.anthropic.com',
   modelName: 'claude-3-sonnet',
   customParameters: {
-    headerConfigs: {
+    headerParameters: {
       'anthropic-version': '2023-06-01',
       'x-api-key': '${API_KEY}',
       'x-custom-header': 'SmartSub-v2.5.2',
     },
-    bodyConfigs: {
+    bodyParameters: {
       temperature: 0.7,
       max_tokens: 4000,
       top_p: 0.9,
       stream: false,
       custom_system_prompt: 'Enhanced translation mode',
     },
-    templates: [],
     configVersion: '1.0.0',
     lastModified: Date.now(),
   },
@@ -127,16 +125,15 @@ const providerWithErrors: ExtendedProvider = {
   apiUrl: 'https://api.example.com',
   modelName: 'test-model',
   customParameters: {
-    headerConfigs: {
+    headerParameters: {
       'valid-header': 'valid-value',
     },
-    bodyConfigs: {
+    bodyParameters: {
       temperature: 5.0, // Invalid: outside range 0.0-2.0
       max_tokens: 'invalid-number', // Invalid: not a number
       stream: 'yes', // Invalid: not a valid boolean
       valid_param: 'valid-value',
     },
-    templates: [],
     configVersion: '1.0.0',
     lastModified: Date.now(),
   },

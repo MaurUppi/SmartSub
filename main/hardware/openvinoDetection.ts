@@ -313,7 +313,7 @@ except Exception as e:
    */
   private parseScriptOutput(
     output: string,
-    installationMethod: string,
+    installationMethod: 'package' | 'manual' | 'conda' | 'unknown',
   ): OpenVINOInfo | null {
     try {
       const lines = output.trim().split('\n');

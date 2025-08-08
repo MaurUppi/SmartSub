@@ -186,15 +186,17 @@ global.URL.revokeObjectURL = jest.fn();
 
 describe('ParameterPreviewSystem', () => {
   const mockConfig: CustomParameterConfig = {
-    headerConfigs: {
+    headerParameters: {
       Authorization: 'Bearer test-token',
       'Content-Type': 'application/json',
     },
-    bodyConfigs: {
+    bodyParameters: {
       temperature: 0.7,
       max_tokens: 1000,
       top_p: 1.0,
     },
+    configVersion: '1.0.0',
+    lastModified: Date.now(),
   };
 
   const mockCallbacks = {
@@ -444,8 +446,10 @@ describe('ParameterPreviewSystem', () => {
 
     it('disables send button when validation fails', () => {
       const invalidConfig: CustomParameterConfig = {
-        headerConfigs: {},
-        bodyConfigs: {},
+        headerParameters: {},
+        bodyParameters: {},
+        configVersion: '1.0.0',
+        lastModified: Date.now(),
       };
 
       render(
@@ -460,8 +464,10 @@ describe('ParameterPreviewSystem', () => {
   describe('Validation', () => {
     it('shows validation errors for missing API key', () => {
       const invalidConfig: CustomParameterConfig = {
-        headerConfigs: {},
-        bodyConfigs: { temperature: 0.7 },
+        headerParameters: {},
+        bodyParameters: { temperature: 0.7 },
+        configVersion: '1.0.0',
+        lastModified: Date.now(),
       };
 
       render(<ParameterPreviewSystem config={invalidConfig} />);
@@ -477,11 +483,13 @@ describe('ParameterPreviewSystem', () => {
 
     it('shows validation warnings for invalid parameters', () => {
       const configWithWarnings: CustomParameterConfig = {
-        headerConfigs: { Authorization: 'Bearer test' },
-        bodyConfigs: {
+        headerParameters: { Authorization: 'Bearer test' },
+        bodyParameters: {
           temperature: 3.0, // Invalid temperature
           max_tokens: -100, // Invalid max_tokens
         },
+        configVersion: '1.0.0',
+        lastModified: Date.now(),
       };
 
       render(
@@ -507,8 +515,10 @@ describe('ParameterPreviewSystem', () => {
   describe('Metrics Calculation', () => {
     it('calculates correct complexity for simple config', () => {
       const simpleConfig: CustomParameterConfig = {
-        headerConfigs: { Authorization: 'Bearer test' },
-        bodyConfigs: { temperature: 0.7 },
+        headerParameters: { Authorization: 'Bearer test' },
+        bodyParameters: { temperature: 0.7 },
+        configVersion: '1.0.0',
+        lastModified: Date.now(),
       };
 
       render(<ParameterPreviewSystem config={simpleConfig} />);
@@ -518,12 +528,12 @@ describe('ParameterPreviewSystem', () => {
 
     it('calculates correct complexity for complex config', () => {
       const complexConfig: CustomParameterConfig = {
-        headerConfigs: {
+        headerParameters: {
           Authorization: 'Bearer test',
           'Custom-Header': 'value',
           'Another-Header': 'value',
         },
-        bodyConfigs: {
+        bodyParameters: {
           temperature: 0.7,
           max_tokens: 1000,
           top_p: 1.0,
@@ -537,6 +547,8 @@ describe('ParameterPreviewSystem', () => {
           echo: false,
           best_of: 1,
         },
+        configVersion: '1.0.0',
+        lastModified: Date.now(),
       };
 
       render(<ParameterPreviewSystem config={complexConfig} />);

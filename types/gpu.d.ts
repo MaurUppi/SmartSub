@@ -10,7 +10,7 @@ export interface GPUDevice {
   id: string;
   name: string;
   type: 'discrete' | 'integrated';
-  vendor: 'nvidia' | 'intel' | 'apple';
+  vendor: 'nvidia' | 'intel' | 'apple' | 'amd';
   deviceId: string;
   priority: number;
   driverVersion: string;
@@ -23,6 +23,7 @@ export interface GPUDevice {
   powerEfficiency: 'excellent' | 'good' | 'moderate';
   performance: 'high' | 'medium' | 'low';
   detectionMethod: 'wmi' | 'lspci' | 'systeminformation' | 'mock';
+  cpuOnlyProcessing?: boolean;
   platformInfo?: {
     windowsDeviceId?: string;
     linuxPciId?: string;
@@ -46,15 +47,27 @@ export interface OpenVINOInfo {
 // Comprehensive GPU capabilities assessment
 export interface GPUCapabilities {
   totalGPUs: number;
-  intelGPUs: GPUDevice[];
-  nvidiaGPUs: GPUDevice[];
-  appleGPUs: GPUDevice[];
+  nvidia: boolean;
+  intel: GPUDevice[];
+  amd: GPUDevice[];
+  apple: boolean;
+  openvinoVersion: boolean | string;
   recommendedGPU: GPUDevice | null;
   openvinoInfo: OpenVINOInfo | null;
   detectionTimestamp: Date;
   detectionPlatform: 'windows' | 'linux' | 'darwin';
   detectionSuccess: boolean;
   detectionErrors: string[];
+  capabilities: {
+    hasIntelGPU: boolean;
+    hasNvidiaGPU: boolean;
+    hasAMDGPU: boolean;
+    hasAppleGPU: boolean;
+    hasOpenVINO: boolean;
+  };
+  // Backward compatibility arrays
+  nvidiaGPUs?: GPUDevice[];
+  appleGPUs?: GPUDevice[];
 }
 
 // Hardware detection configuration
@@ -90,6 +103,17 @@ export interface LinuxGPUInfo {
   kernelModule: string;
   memorySize?: string;
   busInfo: string;
+}
+
+// AMD GPU specific information
+export interface AMDGPUInfo {
+  name: string;
+  deviceId: string;
+  memory: number | 'shared';
+  type: 'discrete' | 'integrated';
+  driver: string;
+  openclSupport: boolean;
+  vulkanSupport: boolean;
 }
 
 // Detection result types

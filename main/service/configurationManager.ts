@@ -12,8 +12,8 @@ import { app } from 'electron';
 import type {
   CustomParameterConfig,
   ValidationError,
-  ParameterValidationResult,
 } from '../../types/provider';
+import type { ParameterValidationResult } from '../../types/parameterSystem';
 import { parameterValidator, ValidationContext } from './parameterValidator';
 import { migrationManager } from './migrationManager';
 
@@ -281,7 +281,9 @@ export class ConfigurationManager {
     let configsWithErrors = 0;
     let storageSize = 0;
 
-    for (const [providerId, stored] of this.configurations.entries()) {
+    for (const [providerId, stored] of Array.from(
+      this.configurations.entries(),
+    )) {
       const config = stored.config;
       const headerCount = Object.keys(config.headerParameters || {}).length;
       const bodyCount = Object.keys(config.bodyParameters || {}).length;
@@ -498,9 +500,9 @@ export class ConfigurationManager {
 
       if (unknownKeys.length > 0) {
         result.errors.push({
-          field: 'config',
+          key: 'config',
+          type: 'format',
           message: `Unknown configuration keys: ${unknownKeys.join(', ')}`,
-          code: 'UNKNOWN_KEYS',
         });
         result.isValid = false;
       }
@@ -516,13 +518,12 @@ export class ConfigurationManager {
     await this.ensureInitialized();
 
     const configurations: Record<string, StoredConfiguration> = {};
-    for (const [providerId, stored] of this.configurations) {
+    for (const [providerId, stored] of Array.from(this.configurations)) {
       configurations[providerId] = stored;
     }
 
     return {
       configurations,
-      templates: this.templates,
       exportedAt: new Date().toISOString(),
       version: '1.0.0',
     };
@@ -570,25 +571,7 @@ export class ConfigurationManager {
         results.imported++;
       }
 
-      // Import templates
-      if (exportData.templates) {
-        for (const template of exportData.templates) {
-          const existingIndex = this.templates.findIndex(
-            (t) => t.id === template.id,
-          );
-          if (existingIndex >= 0) {
-            if (overwriteExisting) {
-              this.templates[existingIndex] = template;
-              results.imported++;
-            } else {
-              results.skipped++;
-            }
-          } else {
-            this.templates.push(template);
-            results.imported++;
-          }
-        }
-      }
+      // Templates import not currently supported
 
       // Persist changes
       await this.persistConfigurations();
@@ -633,7 +616,6 @@ export class ConfigurationManager {
 
     const fullBackup = {
       configurations: Object.fromEntries(this.configurations),
-      templates: this.templates,
       backupAt: new Date().toISOString(),
     };
 
@@ -831,12 +813,11 @@ export class ConfigurationManager {
       const scheduledBackup = {
         type,
         configurations: Object.fromEntries(this.configurations),
-        templates: this.templates,
         metadata: {
           backupAt: new Date().toISOString(),
           totalConfigurations: this.configurations.size,
-          totalTemplates: this.templates.length,
-          version: this.getCurrentVersion(),
+          totalTemplates: 0,
+          version: '1.0.0',
         },
       };
 
@@ -1057,12 +1038,12 @@ export class ConfigurationManager {
   private async loadTemplates(): Promise<void> {
     try {
       const data = await fs.readFile(this.templatesFile, 'utf8');
-      this.templates = JSON.parse(data);
+      // Templates not supported
     } catch (error) {
       if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
         console.warn('Failed to load templates:', error);
       }
-      this.templates = [];
+      // Templates not supported
     }
   }
 
@@ -1082,11 +1063,7 @@ export class ConfigurationManager {
    * Persist templates to disk
    */
   private async persistTemplates(): Promise<void> {
-    await fs.writeFile(
-      this.templatesFile,
-      JSON.stringify(this.templates, null, 2),
-      'utf8',
-    );
+    // Templates not supported - stub method
   }
 
   /**

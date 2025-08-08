@@ -45,12 +45,11 @@ describe('OpenAI Service Integration with Parameter Processor', () => {
         apiUrl: 'https://dashscope.aliyuncs.com',
         modelName: 'qwen-turbo',
         customParameters: {
-          headerConfigs: {},
-          bodyConfigs: {
+          headerParameters: {},
+          bodyParameters: {
             enable_thinking: true, // Should be overridden by hard-coded logic
             temperature: 0.8,
           },
-          templates: [],
           configVersion: '1.0.0',
           lastModified: Date.now(),
         },
@@ -77,15 +76,14 @@ describe('OpenAI Service Integration with Parameter Processor', () => {
         apiUrl: 'https://api.custom.com',
         modelName: 'custom-model',
         customParameters: {
-          headerConfigs: {
+          headerParameters: {
             'X-Custom-Auth': 'Bearer ${API_KEY}',
             'X-Model-Version': '${MODEL_NAME}-v1',
           },
-          bodyConfigs: {
+          bodyParameters: {
             temperature: 0.7,
             max_tokens: 1500,
           },
-          templates: [],
           configVersion: '1.0.0',
           lastModified: Date.now(),
         },
@@ -136,13 +134,12 @@ describe('OpenAI Service Integration with Parameter Processor', () => {
         apiUrl: 'url',
         modelName: 'model',
         customParameters: {
-          headerConfigs: {},
-          bodyConfigs: {
+          headerParameters: {},
+          bodyParameters: {
             temperature: 5.0, // Invalid range (should be 0.0-2.0)
             max_tokens: 'invalid', // Invalid type (should be number)
             stream: 'true', // Valid (string to boolean conversion)
           },
-          templates: [],
           configVersion: '1.0.0',
           lastModified: Date.now(),
         },
@@ -173,15 +170,14 @@ describe('OpenAI Service Integration with Parameter Processor', () => {
         apiUrl: 'https://api.example.com',
         modelName: 'gpt-4',
         customParameters: {
-          headerConfigs: {
+          headerParameters: {
             Authorization: 'Bearer ${API_KEY}',
             'X-Base-URL': '${BASE_URL}/v1',
             'X-Model': '${MODEL_NAME}',
           },
-          bodyConfigs: {
+          bodyParameters: {
             custom_field: 'Using ${MODEL_NAME} model',
           },
-          templates: [],
           configVersion: '1.0.0',
           lastModified: Date.now(),
         },
@@ -211,12 +207,11 @@ describe('OpenAI Service Integration with Parameter Processor', () => {
         apiUrl: 'url',
         modelName: 'model',
         customParameters: {
-          headerConfigs: {},
-          bodyConfigs: {
+          headerParameters: {},
+          bodyParameters: {
             temperature: 0.9,
             custom_param: 'custom-value',
           },
-          templates: [],
           configVersion: '1.0.0',
           lastModified: Date.now(),
         },

@@ -9,8 +9,6 @@ import {
   generateCorrelationId,
   LogCategory,
 } from './logger';
-import { detectAvailableGPUs } from './hardware/hardwareDetection';
-import { checkOpenVINOSupport } from './hardware/openvinoDetection';
 import {
   checkCudaSupport,
   getCUDAAddonName as getCUDAAddonNameFromUtils,
@@ -331,7 +329,6 @@ function tryWindowsFallbackChain(
         },
         correlationId,
       );
-      continue;
     }
   }
 
@@ -344,8 +341,8 @@ function tryWindowsFallbackChain(
 function tryWindowsFallbackOption(
   option: string,
   capabilities: GPUCapabilities,
-  model: string,
-  correlationId?: string,
+  _model: string,
+  _correlationId?: string,
 ): AddonInfo | null {
   switch (option) {
     case 'openvino':
@@ -429,7 +426,6 @@ function tryLinuxFallbackChain(
         },
         correlationId,
       );
-      continue;
     }
   }
 
@@ -442,8 +438,8 @@ function tryLinuxFallbackChain(
 function tryLinuxFallbackOption(
   option: string,
   capabilities: GPUCapabilities,
-  model: string,
-  correlationId?: string,
+  _model: string,
+  _correlationId?: string,
 ): AddonInfo | null {
   switch (option) {
     case 'openvino':
@@ -523,7 +519,6 @@ function tryMacOSFallbackChain(
         },
         correlationId,
       );
-      continue;
     }
   }
 
@@ -536,9 +531,9 @@ function tryMacOSFallbackChain(
 function tryMacOSFallbackOption(
   option: string,
   capabilities: GPUCapabilities,
-  model: string,
+  _model: string,
   arch: string,
-  correlationId?: string,
+  _correlationId?: string,
 ): AddonInfo | null {
   switch (option) {
     case 'coreml':
@@ -585,9 +580,9 @@ function tryMacOSFallbackOption(
  * Generic cross-platform fallback chain
  */
 function tryGenericFallbackChain(
-  capabilities: GPUCapabilities,
-  model: string,
-  correlationId?: string,
+  _capabilities: GPUCapabilities,
+  _model: string,
+  _correlationId?: string,
 ): AddonInfo | null {
   // Last resort: try basic CPU processing
   return {
@@ -672,10 +667,40 @@ function tryNVIDIAGPU(
       {
         gpuType: 'nvidia',
         validated: false,
-        reason: 'CUDA not available or detection failed',
+        reason:
+          'CUDA not available or detection failed - attempting OpenVINO fallback',
       },
       correlationId,
     );
+
+    // Edge case: CUDA installation failures - Automatic fallback to OpenVINO
+    logMessage(
+      'CUDA installation failure detected, attempting OpenVINO fallback',
+      'info',
+    );
+
+    // Check if Intel GPUs are available for OpenVINO fallback
+    if (capabilities.intel.length > 0) {
+      logMessage(
+        'Intel GPU detected, falling back to OpenVINO processing',
+        'info',
+      );
+      return tryIntelGPU(capabilities, model, correlationId);
+    }
+
+    // If no Intel GPU, try CPU with OpenVINO if available
+    if (capabilities.openvinoVersion) {
+      logMessage('No Intel GPU for fallback, trying CPU with OpenVINO', 'info');
+      return {
+        type: 'openvino',
+        path: getOpenVINOAddonName(),
+        displayName: 'CPU Processing with OpenVINO (CUDA Fallback)',
+        deviceConfig: {
+          driverVersion: 'CUDA fallback',
+        },
+      };
+    }
+
     return null;
   }
 
@@ -987,9 +1012,9 @@ function tryAMDWindowsFallbackChain(
 function tryFallbackOption(
   fallbackType: string,
   capabilities: GPUCapabilities,
-  model: string,
-  platform: string,
-  correlationId?: string,
+  _model: string,
+  _platform: string,
+  _correlationId?: string,
 ): AddonInfo | null {
   switch (fallbackType) {
     case 'openvino':
@@ -1406,7 +1431,7 @@ export function validateModelSupport(
  * Get GPU selection configuration from settings
  */
 export function getGPUSelectionConfig() {
-  const settings = store.get('settings') || {};
+  const settings: any = store.get('settings') || {};
 
   return {
     useCuda: settings.useCuda || false,

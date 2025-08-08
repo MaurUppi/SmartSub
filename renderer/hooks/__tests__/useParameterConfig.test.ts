@@ -101,17 +101,16 @@ function createMockHook() {
 
     addHeaderParameter: (key: string, value: any) => {
       const currentConfig = state.config || {
-        headerConfigs: {},
-        bodyConfigs: {},
-        templates: [],
+        headerParameters: {},
+        bodyParameters: {},
         configVersion: '1.0.0',
         lastModified: Date.now(),
       };
 
       const newConfig = {
         ...currentConfig,
-        headerConfigs: {
-          ...currentConfig.headerConfigs,
+        headerParameters: {
+          ...currentConfig.headerParameters,
           [key]: value,
         },
       };
@@ -124,17 +123,16 @@ function createMockHook() {
 
     addBodyParameter: (key: string, value: any) => {
       const currentConfig = state.config || {
-        headerConfigs: {},
-        bodyConfigs: {},
-        templates: [],
+        headerParameters: {},
+        bodyParameters: {},
         configVersion: '1.0.0',
         lastModified: Date.now(),
       };
 
       const newConfig = {
         ...currentConfig,
-        bodyConfigs: {
-          ...currentConfig.bodyConfigs,
+        bodyParameters: {
+          ...currentConfig.bodyParameters,
           [key]: value,
         },
       };
@@ -205,9 +203,8 @@ function runHookTests() {
 
     // Mock successful config load
     const mockConfig: CustomParameterConfig = {
-      headerConfigs: { Authorization: 'Bearer test' },
-      bodyConfigs: { temperature: 0.7 },
-      templates: [],
+      headerParameters: { Authorization: 'Bearer test' },
+      bodyParameters: { temperature: 0.7 },
       configVersion: '1.0.0',
       lastModified: Date.now(),
     };
@@ -220,10 +217,10 @@ function runHookTests() {
       if (!state.config) {
         throw new Error('Config should be loaded');
       }
-      if (state.config.headerConfigs['Authorization'] !== 'Bearer test') {
+      if (state.config.headerParameters['Authorization'] !== 'Bearer test') {
         throw new Error('Header config not loaded correctly');
       }
-      if (state.config.bodyConfigs['temperature'] !== 0.7) {
+      if (state.config.bodyParameters['temperature'] !== 0.7) {
         throw new Error('Body config not loaded correctly');
       }
       if (state.hasUnsavedChanges !== false) {
@@ -248,7 +245,7 @@ function runHookTests() {
     if (!state.config) {
       throw new Error('Config should be created when adding parameter');
     }
-    if (state.config.headerConfigs['X-Custom-Header'] !== 'custom-value') {
+    if (state.config.headerParameters['X-Custom-Header'] !== 'custom-value') {
       throw new Error('Header parameter not added correctly');
     }
     if (state.hasUnsavedChanges !== true) {
@@ -272,7 +269,7 @@ function runHookTests() {
     if (!state.config) {
       throw new Error('Config should be created when adding parameter');
     }
-    if (state.config.bodyConfigs['temperature'] !== 0.8) {
+    if (state.config.bodyParameters['temperature'] !== 0.8) {
       throw new Error('Body parameter not added correctly');
     }
     if (state.hasUnsavedChanges !== true) {
@@ -367,22 +364,19 @@ function testHookUtilities() {
   console.log('Testing configuration structure...');
   try {
     const defaultConfig: CustomParameterConfig = {
-      headerConfigs: {},
-      bodyConfigs: {},
-      templates: [],
+      headerParameters: {},
+      bodyParameters: {},
       configVersion: '1.0.0',
       lastModified: Date.now(),
     };
 
-    if (typeof defaultConfig.headerConfigs !== 'object') {
-      throw new Error('headerConfigs should be object');
+    if (typeof defaultConfig.headerParameters !== 'object') {
+      throw new Error('headerParameters should be object');
     }
-    if (typeof defaultConfig.bodyConfigs !== 'object') {
-      throw new Error('bodyConfigs should be object');
+    if (typeof defaultConfig.bodyParameters !== 'object') {
+      throw new Error('bodyParameters should be object');
     }
-    if (!Array.isArray(defaultConfig.templates)) {
-      throw new Error('templates should be array');
-    }
+
     if (typeof defaultConfig.configVersion !== 'string') {
       throw new Error('configVersion should be string');
     }

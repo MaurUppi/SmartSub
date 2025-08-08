@@ -262,7 +262,7 @@ function generateEnvironmentConfig(addonInfo: AddonInfo): EnvironmentConfig {
   const config: EnvironmentConfig = {};
 
   if (addonInfo.type === 'openvino') {
-    const settings = store.get('settings') || {};
+    const settings = (store.get('settings') as any) || {};
     const openvinoPreferences = settings.openvinoPreferences || {};
 
     config.openvinoDeviceId = addonInfo.deviceConfig?.deviceId || 'GPU';
@@ -281,7 +281,7 @@ function generateEnvironmentConfig(addonInfo: AddonInfo): EnvironmentConfig {
  * Get VAD settings from store with intelligent defaults
  */
 export function getVADSettings(): VADSettings {
-  const settings = store.get('settings') || {};
+  const settings = (store.get('settings') as any) || {};
 
   return {
     useVAD: settings.useVAD !== false,

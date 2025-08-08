@@ -70,17 +70,16 @@ const mockProvider: ExtendedProvider = {
   apiUrl: 'https://api.test.com',
   modelName: 'test-model',
   customParameters: {
-    headerConfigs: {
+    headerParameters: {
       Authorization: 'Bearer ${API_KEY}',
       'X-Custom-Header': 'test-value',
     },
-    bodyConfigs: {
+    bodyParameters: {
       temperature: 0.8,
       max_tokens: 2000,
       stream: true,
       custom_param: 'custom-value',
     },
-    templates: [],
     configVersion: '1.0.0',
     lastModified: Date.now(),
   },
@@ -95,12 +94,11 @@ const mockQwenProvider: ExtendedProvider = {
   apiUrl: 'https://dashscope.aliyuncs.com',
   modelName: 'qwen-turbo',
   customParameters: {
-    headerConfigs: {},
-    bodyConfigs: {
+    headerParameters: {},
+    bodyParameters: {
       enable_thinking: true, // Should be overridden by hard-coded logic
       temperature: 0.5,
     },
-    templates: [],
     configVersion: '1.0.0',
     lastModified: Date.now(),
   },
@@ -398,7 +396,7 @@ function runTests() {
         throw new Error(`Invalid providerSupport for parameter ${param.key}`);
 
       if (param.validation) {
-        if (param.type === 'number') {
+        if (param.type === 'integer' || param.type === 'float') {
           if (
             param.validation.min !== undefined &&
             typeof param.validation.min !== 'number'

@@ -308,7 +308,7 @@ export class LinuxGPUDetector {
             detectionMethod: 'lspci',
             platformInfo: {
               linuxPciId: pciId,
-              driver,
+              driverPath: driver,
               kernelModule,
             },
           };

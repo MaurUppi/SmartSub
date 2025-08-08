@@ -111,41 +111,45 @@ jest.mock('@/components/ui/label', () => ({
 }));
 
 jest.mock('@/components/ui/tabs', () => ({
-  Tabs: ({ children, value, onValueChange, ...props }: any) => (
-    <div data-testid="tabs" data-value={value} {...props}>
-      {React.Children.map(children, (child) => {
-        if (React.isValidElement(child)) {
-          return React.cloneElement(child, {
-            activeTab: value,
-            onTabChange: onValueChange,
-          });
-        }
-        return child;
-      })}
-    </div>
-  ),
+  Tabs: ({ children, value, onValueChange, ...props }: any) => {
+    // Remove invalid props that React doesn't recognize
+    const { value: _, onValueChange: __, ...validProps } = props;
+    return (
+      <div data-testid="tabs" data-value={value} {...validProps}>
+        {React.Children.map(children, (child) => {
+          if (React.isValidElement(child)) {
+            // Don't pass invalid props to React elements
+            return React.cloneElement(child as React.ReactElement<any>);
+          }
+          return child;
+        })}
+      </div>
+    );
+  },
   TabsContent: ({ children, value, activeTab, ...props }: any) => {
     // Remove invalid props that React doesn't recognize
-    const { onTabChange, ...validProps } = props;
+    const { onTabChange, activeTab: _, ...validProps } = props;
     return activeTab === value ? (
       <div data-testid={`tab-content-${value}`} {...validProps}>
         {children}
       </div>
     ) : null;
   },
-  TabsList: ({ children, activeTab, onTabChange, ...props }: any) => (
-    <div data-testid="tabs-list" {...props}>
-      {React.Children.map(children, (child) => {
-        if (React.isValidElement(child)) {
-          return React.cloneElement(child, {
-            activeTab,
-            onTabChange,
-          });
-        }
-        return child;
-      })}
-    </div>
-  ),
+  TabsList: ({ children, activeTab, onTabChange, ...props }: any) => {
+    // Remove invalid props that React doesn't recognize
+    const { activeTab: _, onTabChange: __, ...validProps } = props;
+    return (
+      <div data-testid="tabs-list" {...validProps}>
+        {React.Children.map(children, (child) => {
+          if (React.isValidElement(child)) {
+            // Don't pass invalid props to React elements
+            return React.cloneElement(child as React.ReactElement<any>);
+          }
+          return child;
+        })}
+      </div>
+    );
+  },
   TabsTrigger: ({ children, value, activeTab, onTabChange, ...props }: any) => {
     // Remove invalid props that React doesn't recognize
     const { activeTab: _, onTabChange: __, ...validProps } = props;
@@ -166,7 +170,8 @@ jest.mock('@/components/ui/select', () => ({
     <div data-testid="select" data-value={value} {...props}>
       {React.Children.map(children, (child) => {
         if (React.isValidElement(child)) {
-          return React.cloneElement(child, { onValueChange, value });
+          // Don't pass invalid props to React elements
+          return React.cloneElement(child as React.ReactElement<any>);
         }
         return child;
       })}
@@ -230,18 +235,15 @@ jest.mock('@/components/ui/alert-dialog', () => ({
   AlertDialog: ({ children, open, onOpenChange, ...props }: any) => {
     // Use internal state if open prop is not controlled
     const isOpen = open !== undefined ? open : AlertDialogState.isOpen;
+    // Remove invalid props that React doesn't recognize
+    const { open: _, onOpenChange: __, ...validProps } = props;
 
     return (
-      <div data-testid="alert-dialog-container" {...props}>
+      <div data-testid="alert-dialog-container" {...validProps}>
         {React.Children.map(children, (child) => {
           if (React.isValidElement(child)) {
-            return React.cloneElement(child, {
-              open: isOpen,
-              onOpenChange: (newOpen: boolean) => {
-                AlertDialogState.setOpen(newOpen);
-                onOpenChange?.(newOpen);
-              },
-            });
+            // Don't pass invalid props to React elements
+            return React.cloneElement(child as React.ReactElement<any>);
           }
           return child;
         })}
@@ -253,19 +255,23 @@ jest.mock('@/components/ui/alert-dialog', () => ({
       {children}
     </button>
   ),
-  AlertDialogCancel: ({ children, onClick, onOpenChange, ...props }: any) => (
-    <button
-      data-testid="alert-dialog-cancel"
-      onClick={() => {
-        AlertDialogState.setOpen(false);
-        onOpenChange?.(false);
-        onClick?.();
-      }}
-      {...props}
-    >
-      {children}
-    </button>
-  ),
+  AlertDialogCancel: ({ children, onClick, onOpenChange, ...props }: any) => {
+    // Remove invalid props that React doesn't recognize
+    const { onOpenChange: _, ...validProps } = props;
+    return (
+      <button
+        data-testid="alert-dialog-cancel"
+        onClick={() => {
+          AlertDialogState.setOpen(false);
+          onOpenChange?.(false);
+          onClick?.();
+        }}
+        {...validProps}
+      >
+        {children}
+      </button>
+    );
+  },
   AlertDialogContent: ({ children, open, onOpenChange, ...props }: any) => {
     // Remove invalid props that React doesn't recognize
     const { onOpenChange: _, ...validProps } = props;
@@ -379,6 +385,8 @@ describe('CustomParameterEditor', () => {
       max_tokens: 1000,
       enable_thinking: false,
     },
+    configVersion: '1.0.0',
+    lastModified: Date.now(),
   };
 
   const mockParameterConfig = {

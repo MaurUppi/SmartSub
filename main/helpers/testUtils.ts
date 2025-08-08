@@ -418,6 +418,7 @@ export const predefinedTestEnvironments = {
         },
         powerEfficiency: 'good',
         performance: 'high',
+        detectionMethod: 'mock',
       },
     ],
     openvinoCapabilities: {
@@ -426,6 +427,8 @@ export const predefinedTestEnvironments = {
       supportedDevices: ['mock-intel-arc-a770'],
       runtimePath: '/opt/intel/openvino_2024/runtime',
       modelFormats: ['ONNX', 'TensorFlow', 'PyTorch', 'OpenVINO IR'],
+      validationStatus: 'valid',
+      installationMethod: 'package',
     },
     environmentVariables: {
       NODE_ENV: 'development',
@@ -456,6 +459,7 @@ export const predefinedTestEnvironments = {
         },
         powerEfficiency: 'good',
         performance: 'high',
+        detectionMethod: 'mock',
       },
       {
         id: 'mock-intel-xe-graphics',
@@ -473,6 +477,7 @@ export const predefinedTestEnvironments = {
         },
         powerEfficiency: 'excellent',
         performance: 'medium',
+        detectionMethod: 'mock',
       },
     ],
     openvinoCapabilities: {
@@ -481,6 +486,8 @@ export const predefinedTestEnvironments = {
       supportedDevices: ['mock-intel-arc-a770', 'mock-intel-xe-graphics'],
       runtimePath: '/opt/intel/openvino_2024/runtime',
       modelFormats: ['ONNX', 'TensorFlow', 'PyTorch', 'OpenVINO IR'],
+      validationStatus: 'valid',
+      installationMethod: 'package',
     },
     environmentVariables: {
       NODE_ENV: 'development',
@@ -499,7 +506,10 @@ export const predefinedTestEnvironments = {
       isInstalled: false,
       version: '',
       supportedDevices: [],
+      runtimePath: '',
       modelFormats: [],
+      validationStatus: 'unknown',
+      installationMethod: 'unknown',
     },
     environmentVariables: {
       NODE_ENV: 'development',
@@ -519,7 +529,10 @@ export const predefinedTestEnvironments = {
       isInstalled: false,
       version: '',
       supportedDevices: [],
+      runtimePath: '',
       modelFormats: [],
+      validationStatus: 'unknown',
+      installationMethod: 'unknown',
     },
     environmentVariables: {
       NODE_ENV: 'production',

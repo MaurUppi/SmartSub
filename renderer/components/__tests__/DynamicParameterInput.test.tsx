@@ -144,7 +144,7 @@ describe('DynamicParameterInput', () => {
       const onChange = jest.fn();
       const definition: ParameterDefinition = {
         key: 'numberParam',
-        type: 'number',
+        type: 'integer',
         category: 'performance',
         required: false,
         description: 'Test parameter',

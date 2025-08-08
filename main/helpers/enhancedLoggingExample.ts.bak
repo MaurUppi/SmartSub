@@ -54,6 +54,7 @@ export async function demonstrateOpenVINOWorkflowLogging() {
 
     // Mock GPU capabilities for demonstration
     const mockCapabilities = {
+      totalGPUs: 2,
       nvidia: false,
       intel: [
         {
@@ -80,12 +81,21 @@ export async function demonstrateOpenVINOWorkflowLogging() {
           type: 'discrete',
         },
       ],
+      amd: [],
       apple: false,
-      cpu: true,
       openvinoVersion: '2024.6.0',
+      recommendedGPU: null,
+      openvinoInfo: null,
+      detectionTimestamp: new Date(),
+      detectionPlatform: 'darwin' as const,
+      detectionSuccess: true,
+      detectionErrors: [],
       capabilities: {
-        multiGPU: true,
-        hybridSystem: true,
+        hasIntelGPU: true,
+        hasNvidiaGPU: false,
+        hasAMDGPU: false,
+        hasAppleGPU: false,
+        hasOpenVINO: true,
       },
     };
 

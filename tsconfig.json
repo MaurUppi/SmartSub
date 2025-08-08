@@ -14,7 +14,23 @@
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "jsx": "preserve"
+    "jsx": "preserve",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["renderer/*"],
+      "lib/*": ["renderer/lib/*"],
+      "components/*": ["renderer/components/*"],
+      "hooks/*": ["renderer/hooks/*"],
+      "types/*": ["types/*"]
+    }
   },
-  "exclude": ["node_modules", "renderer/next.config.js", "app", "dist"]
+  "include": ["renderer/**/*", "main/**/*", "types/**/*"],
+  "exclude": [
+    "node_modules",
+    "renderer/next.config.js",
+    "app",
+    "dist",
+    "docs",
+    "test"
+  ]
 }

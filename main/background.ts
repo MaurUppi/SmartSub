@@ -166,12 +166,12 @@ process.on('warning', (warning) => {
 });
 
 // Prevent the default crash behavior
-app.on('gpu-process-crashed', (event, killed) => {
-  console.log('GPU process crashed, killed:', killed);
+app.on('child-process-gone' as any, (event, details) => {
+  console.log('Child process gone:', details);
   // Don't quit, just log
 });
 
-app.on('renderer-process-crashed', (event, webContents, killed) => {
-  console.log('Renderer process crashed, killed:', killed);
+app.on('render-process-gone' as any, (event, webContents, details) => {
+  console.log('Render process gone:', details);
   // Don't quit, just log
 });

@@ -12,30 +12,16 @@ import {
 
 // Mock parameter configuration data
 const mockParameterConfig: CustomParameterConfig = {
-  providerId: 'test-provider',
-  customHeaders: {
-    Authorization: { type: 'string', value: 'Bearer mock-token' },
-    'Content-Type': { type: 'string', value: 'application/json' },
+  headerParameters: {
+    Authorization: 'Bearer mock-token',
+    'Content-Type': 'application/json',
   },
-  customBodyParameters: {
-    temperature: { type: 'number', value: 0.7 },
-    max_tokens: { type: 'number', value: 1000 },
-    model: { type: 'string', value: 'gpt-3.5-turbo' },
+  bodyParameters: {
+    temperature: 0.7,
+    max_tokens: 1000,
+    model: 'gpt-3.5-turbo',
   },
-  requestTemplate: 'default',
-  presets: {
-    default: {
-      name: 'Default Settings',
-      description: 'Standard configuration',
-      headers: {
-        'Content-Type': { type: 'string', value: 'application/json' },
-      },
-      bodyParameters: {
-        temperature: { type: 'number', value: 0.7 },
-      },
-    },
-  },
-  version: '1.0.0',
+  configVersion: '1.0.0',
   lastModified: Date.now(),
 };
 
@@ -82,7 +68,8 @@ export const useParameterConfig = jest.fn(() => {
     case 'withErrors':
       mockState.validationErrors = [
         {
-          field: 'temperature',
+          key: 'temperature',
+          type: 'range',
           message: 'Temperature must be between 0 and 1',
         },
       ];
@@ -134,15 +121,15 @@ export const useParameterConfig = jest.fn(() => {
 
   const addHeaderParameter = jest.fn((key: string, value: ParameterValue) => {
     if (mockState.config) {
-      mockState.config.customHeaders[key] = value;
+      mockState.config.headerParameters[key] = value;
       mockState.hasUnsavedChanges = true;
     }
   });
 
   const updateHeaderParameter = jest.fn(
     (key: string, value: ParameterValue) => {
-      if (mockState.config && mockState.config.customHeaders[key]) {
-        mockState.config.customHeaders[key] = value;
+      if (mockState.config && mockState.config.headerParameters[key]) {
+        mockState.config.headerParameters[key] = value;
         mockState.hasUnsavedChanges = true;
       }
     },
@@ -150,28 +137,28 @@ export const useParameterConfig = jest.fn(() => {
 
   const removeHeaderParameter = jest.fn((key: string) => {
     if (mockState.config) {
-      delete mockState.config.customHeaders[key];
+      delete mockState.config.headerParameters[key];
       mockState.hasUnsavedChanges = true;
     }
   });
 
   const addBodyParameter = jest.fn((key: string, value: ParameterValue) => {
     if (mockState.config) {
-      mockState.config.customBodyParameters[key] = value;
+      mockState.config.bodyParameters[key] = value;
       mockState.hasUnsavedChanges = true;
     }
   });
 
   const updateBodyParameter = jest.fn((key: string, value: ParameterValue) => {
-    if (mockState.config && mockState.config.customBodyParameters[key]) {
-      mockState.config.customBodyParameters[key] = value;
+    if (mockState.config && mockState.config.bodyParameters[key]) {
+      mockState.config.bodyParameters[key] = value;
       mockState.hasUnsavedChanges = true;
     }
   });
 
   const removeBodyParameter = jest.fn((key: string) => {
     if (mockState.config) {
-      delete mockState.config.customBodyParameters[key];
+      delete mockState.config.bodyParameters[key];
       mockState.hasUnsavedChanges = true;
     }
   });
@@ -185,10 +172,8 @@ export const useParameterConfig = jest.fn(() => {
   });
 
   const applyPreset = jest.fn((presetName: string) => {
-    if (mockState.config && mockState.config.presets[presetName]) {
-      const preset = mockState.config.presets[presetName];
-      mockState.config.customHeaders = { ...preset.headers };
-      mockState.config.customBodyParameters = { ...preset.bodyParameters };
+    // Mock preset application - simplified for testing
+    if (mockState.config) {
       mockState.hasUnsavedChanges = true;
     }
   });

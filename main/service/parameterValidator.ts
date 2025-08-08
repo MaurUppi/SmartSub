@@ -9,7 +9,6 @@ import type {
   CustomParameterConfig,
   ParameterValue,
   ValidationError,
-  ParameterValidationResult,
 } from '../../types/provider';
 
 export interface ValidationRules {
@@ -73,7 +72,7 @@ export class ParameterValidator {
     config: CustomParameterConfig,
     context: ValidationContext,
     customRules?: Partial<ValidationRules>,
-  ): Promise<ParameterValidationResult> {
+  ): Promise<{ isValid: boolean; errors: ValidationError[] }> {
     const rules = { ...this.defaultRules, ...customRules };
     const errors: ValidationError[] = [];
 
@@ -123,9 +122,9 @@ export class ParameterValidator {
       }
     } catch (error) {
       errors.push({
-        field: 'config',
+        key: 'config',
+        type: 'system',
         message: `Validation error: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        code: 'VALIDATION_ERROR',
       });
     }
 
@@ -143,9 +142,9 @@ export class ParameterValidator {
 
     if (!config || typeof config !== 'object') {
       errors.push({
-        field: 'config',
+        key: 'config',
         message: 'Configuration must be a valid object',
-        code: 'INVALID_TYPE',
+        type: 'type',
       });
       return errors;
     }
@@ -156,26 +155,26 @@ export class ParameterValidator {
       typeof config.headerParameters !== 'object'
     ) {
       errors.push({
-        field: 'headerParameters',
+        key: 'headerParameters',
         message: 'Header parameters must be an object',
-        code: 'INVALID_TYPE',
+        type: 'type',
       });
     }
 
     if (config.bodyParameters && typeof config.bodyParameters !== 'object') {
       errors.push({
-        field: 'bodyParameters',
+        key: 'bodyParameters',
         message: 'Body parameters must be an object',
-        code: 'INVALID_TYPE',
+        type: 'type',
       });
     }
 
     // Validate version if present
     if (config.configVersion && typeof config.configVersion !== 'string') {
       errors.push({
-        field: 'configVersion',
+        key: 'configVersion',
         message: 'Configuration version must be a string',
-        code: 'INVALID_TYPE',
+        type: 'type',
       });
     }
 
@@ -197,9 +196,9 @@ export class ParameterValidator {
     // Check parameter count limit
     if (rules.maxParameterCount && parameterCount > rules.maxParameterCount) {
       errors.push({
-        field: `${parameterType}Parameters`,
+        key: `${parameterType}Parameters`,
         message: `Too many ${parameterType} parameters. Maximum allowed: ${rules.maxParameterCount}`,
-        code: 'PARAMETER_COUNT_EXCEEDED',
+        type: 'range',
       });
     }
 
@@ -237,36 +236,36 @@ export class ParameterValidator {
     // Check key length
     if (rules.maxKeyLength && key.length > rules.maxKeyLength) {
       errors.push({
-        field: key,
+        key: key,
         message: `Parameter key too long. Maximum length: ${rules.maxKeyLength}`,
-        code: 'KEY_TOO_LONG',
+        type: 'range',
       });
     }
 
     // Check for empty key
     if (!key || key.trim().length === 0) {
       errors.push({
-        field: key,
+        key: key,
         message: 'Parameter key cannot be empty',
-        code: 'EMPTY_KEY',
+        type: 'format',
       });
     }
 
     // Check for reserved keys
     if (rules.reservedKeys && rules.reservedKeys.includes(key.toLowerCase())) {
       errors.push({
-        field: key,
+        key: key,
         message: `Parameter key '${key}' is reserved and cannot be used`,
-        code: 'RESERVED_KEY',
+        type: 'format',
       });
     }
 
     // Check for invalid characters in key
     if (parameterType === 'header' && !/^[a-zA-Z0-9\-_]+$/.test(key)) {
       errors.push({
-        field: key,
+        key: key,
         message: `Invalid characters in header key '${key}'. Only alphanumeric, hyphens, and underscores are allowed`,
-        code: 'INVALID_KEY_CHARACTERS',
+        type: 'format',
       });
     }
 
@@ -297,9 +296,9 @@ export class ParameterValidator {
       !rules.allowedValueTypes.includes(valueType as any)
     ) {
       errors.push({
-        field: key,
+        key: key,
         message: `Invalid value type '${valueType}' for parameter '${key}'. Allowed types: ${rules.allowedValueTypes.join(', ')}`,
-        code: 'INVALID_VALUE_TYPE',
+        type: 'type',
       });
     }
 
@@ -307,9 +306,9 @@ export class ParameterValidator {
     if (typeof value === 'string') {
       if (rules.maxValueLength && value.length > rules.maxValueLength) {
         errors.push({
-          field: key,
+          key: key,
           message: `Parameter value too long. Maximum length: ${rules.maxValueLength}`,
-          code: 'VALUE_TOO_LONG',
+          type: 'range',
         });
       }
 
@@ -318,9 +317,9 @@ export class ParameterValidator {
         for (const pattern of rules.disallowedPatterns) {
           if (pattern.test(key) || pattern.test(value)) {
             errors.push({
-              field: key,
+              key: key,
               message: `Parameter '${key}' may contain sensitive data. Consider using environment variables or secure storage`,
-              code: 'POTENTIAL_SENSITIVE_DATA',
+              type: 'system',
             });
             break;
           }
@@ -334,9 +333,9 @@ export class ParameterValidator {
         JSON.stringify(value);
       } catch (error) {
         errors.push({
-          field: key,
+          key: key,
           message: `Parameter '${key}' contains non-serializable object`,
-          code: 'NON_SERIALIZABLE_VALUE',
+          type: 'type',
         });
       }
     }
@@ -364,18 +363,18 @@ export class ParameterValidator {
     // Headers should typically be strings
     if (typeof value !== 'string' && value !== null && value !== undefined) {
       errors.push({
-        field: key,
+        key: key,
         message: `Header '${key}' should be a string value`,
-        code: 'INVALID_HEADER_VALUE_TYPE',
+        type: 'type',
       });
     }
 
     // Check for control characters in header values
     if (typeof value === 'string' && /[\x00-\x1F\x7F]/.test(value)) {
       errors.push({
-        field: key,
+        key: key,
         message: `Header '${key}' contains invalid control characters`,
-        code: 'INVALID_HEADER_CHARACTERS',
+        type: 'format',
       });
     }
 
@@ -404,9 +403,9 @@ export class ParameterValidator {
 
     if (duplicates.length > 0) {
       errors.push({
-        field: 'parameters',
+        key: 'parameters',
         message: `Duplicate parameter keys found in headers and body: ${duplicates.join(', ')}`,
-        code: 'DUPLICATE_PARAMETER_KEYS',
+        type: 'dependency',
       });
     }
 
@@ -419,10 +418,10 @@ export class ParameterValidator {
     if (hasContentTypeHeader && hasBodyParams) {
       // This might be intentional, but worth flagging
       errors.push({
-        field: 'parameters',
+        key: 'parameters',
         message:
           'Both Content-Type header and body parameters are specified. Ensure they are compatible',
-        code: 'POTENTIAL_CONTENT_TYPE_CONFLICT',
+        type: 'dependency',
       });
     }
 
@@ -452,20 +451,18 @@ export class ParameterValidator {
           const severity =
             context.securityLevel === 'high' ? 'error' : 'warning';
           errors.push({
-            field: key,
+            key: key,
             message: `Parameter '${key}' appears to contain hardcoded credentials. Use environment variables or secure configuration`,
-            code: 'HARDCODED_CREDENTIALS',
-            severity,
+            type: 'system',
           });
         }
 
         // Check for URLs with embedded credentials
         if (this.containsUrlWithCredentials(value)) {
           errors.push({
-            field: key,
+            key: key,
             message: `Parameter '${key}' contains URL with embedded credentials`,
-            code: 'URL_WITH_CREDENTIALS',
-            severity: 'error',
+            type: 'system',
           });
         }
       }
@@ -483,10 +480,9 @@ export class ParameterValidator {
             value.includes('test'))
         ) {
           errors.push({
-            field: key,
+            key: key,
             message: `Parameter '${key}' contains development/test values in production environment`,
-            code: 'DEV_VALUES_IN_PRODUCTION',
-            severity: 'warning',
+            type: 'system',
           });
         }
       }
@@ -544,12 +540,12 @@ export class ParameterValidator {
   /**
    * Validate a single parameter value with type coercion
    */
-  async validateParameterValue(
+  async validateSingleParameterValue(
     key: string,
     value: any,
     expectedType?: string,
     constraints?: any,
-  ): Promise<ParameterValidationResult> {
+  ): Promise<{ isValid: boolean; errors: ValidationError[] }> {
     const errors: ValidationError[] = [];
     let convertedValue = value;
 
@@ -564,9 +560,9 @@ export class ParameterValidator {
             convertedValue = Number(value);
             if (isNaN(convertedValue)) {
               errors.push({
-                field: key,
+                key: key,
                 message: `Cannot convert '${value}' to number`,
-                code: 'TYPE_CONVERSION_ERROR',
+                type: 'type',
               });
             }
             break;
@@ -583,9 +579,9 @@ export class ParameterValidator {
                 convertedValue = JSON.parse(value);
               } catch {
                 errors.push({
-                  field: key,
+                  key: key,
                   message: `Invalid JSON string for parameter '${key}'`,
-                  code: 'INVALID_JSON',
+                  type: 'format',
                 });
               }
             }
@@ -601,16 +597,15 @@ export class ParameterValidator {
       }
     } catch (error) {
       errors.push({
-        field: key,
+        key: key,
         message: `Validation error for parameter '${key}': ${error instanceof Error ? error.message : 'Unknown error'}`,
-        code: 'VALIDATION_ERROR',
+        type: 'system',
       });
     }
 
     return {
       isValid: errors.length === 0,
       errors,
-      convertedValue: errors.length === 0 ? convertedValue : undefined,
     };
   }
 
@@ -626,17 +621,17 @@ export class ParameterValidator {
 
     if (constraints.min !== undefined && value < constraints.min) {
       errors.push({
-        field: key,
+        key: key,
         message: `Value ${value} is less than minimum ${constraints.min}`,
-        code: 'VALUE_TOO_SMALL',
+        type: 'range',
       });
     }
 
     if (constraints.max !== undefined && value > constraints.max) {
       errors.push({
-        field: key,
+        key: key,
         message: `Value ${value} is greater than maximum ${constraints.max}`,
-        code: 'VALUE_TOO_LARGE',
+        type: 'range',
       });
     }
 
@@ -644,18 +639,18 @@ export class ParameterValidator {
       const pattern = new RegExp(constraints.pattern);
       if (!pattern.test(value)) {
         errors.push({
-          field: key,
+          key: key,
           message: `Value does not match required pattern`,
-          code: 'PATTERN_MISMATCH',
+          type: 'format',
         });
       }
     }
 
     if (constraints.enum && !constraints.enum.includes(value)) {
       errors.push({
-        field: key,
+        key: key,
         message: `Value must be one of: ${constraints.enum.join(', ')}`,
-        code: 'INVALID_ENUM_VALUE',
+        type: 'format',
       });
     }
 

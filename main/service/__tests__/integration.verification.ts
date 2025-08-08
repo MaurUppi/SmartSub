@@ -54,12 +54,11 @@ function runIntegrationTests() {
       apiUrl: 'https://dashscope.aliyuncs.com',
       modelName: 'qwen-turbo',
       customParameters: {
-        headerConfigs: {},
-        bodyConfigs: {
+        headerParameters: {},
+        bodyParameters: {
           enable_thinking: true, // Should be overridden
           temperature: 0.8,
         },
-        templates: [],
         configVersion: '1.0.0',
         lastModified: Date.now(),
       },
@@ -87,16 +86,15 @@ function runIntegrationTests() {
       apiUrl: 'https://api.custom.com',
       modelName: 'custom-model-v1',
       customParameters: {
-        headerConfigs: {
+        headerParameters: {
           Authorization: 'Bearer ${API_KEY}',
           'X-Custom-Header': 'custom-value',
           'X-Model-Info': '${MODEL_NAME}-enhanced',
         },
-        bodyConfigs: {
+        bodyParameters: {
           temperature: 0.7,
           max_tokens: 2000,
         },
-        templates: [],
         configVersion: '1.0.0',
         lastModified: Date.now(),
       },
@@ -129,13 +127,12 @@ function runIntegrationTests() {
       apiUrl: 'url',
       modelName: 'model',
       customParameters: {
-        headerConfigs: {},
-        bodyConfigs: {
+        headerParameters: {},
+        bodyParameters: {
           temperature: 5.0, // Invalid range
           max_tokens: 'not-a-number', // Invalid type
           stream: 'true', // Valid conversion
         },
-        templates: [],
         configVersion: '1.0.0',
         lastModified: Date.now(),
       },
@@ -195,12 +192,11 @@ function runIntegrationTests() {
       apiUrl: 'url',
       modelName: 'model',
       customParameters: {
-        headerConfigs: {},
-        bodyConfigs: {
+        headerParameters: {},
+        bodyParameters: {
           temperature: 0.9,
           custom_param: 'custom-value',
         },
-        templates: [],
         configVersion: '1.0.0',
         lastModified: Date.now(),
       },

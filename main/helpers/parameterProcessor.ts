@@ -22,7 +22,7 @@ export const PARAMETER_REGISTRY: Record<string, ParameterDefinition> = {
   // Core AI parameters
   temperature: {
     key: 'temperature',
-    type: 'number',
+    type: 'float',
     category: 'behavior',
     required: false,
     defaultValue: 0.7,
@@ -32,7 +32,7 @@ export const PARAMETER_REGISTRY: Record<string, ParameterDefinition> = {
   },
   max_tokens: {
     key: 'max_tokens',
-    type: 'number',
+    type: 'integer',
     category: 'response',
     required: false,
     defaultValue: 1000,
@@ -42,7 +42,7 @@ export const PARAMETER_REGISTRY: Record<string, ParameterDefinition> = {
   },
   top_p: {
     key: 'top_p',
-    type: 'number',
+    type: 'float',
     category: 'behavior',
     required: false,
     defaultValue: 1.0,
@@ -52,7 +52,7 @@ export const PARAMETER_REGISTRY: Record<string, ParameterDefinition> = {
   },
   top_k: {
     key: 'top_k',
-    type: 'number',
+    type: 'integer',
     category: 'behavior',
     required: false,
     defaultValue: 50,
@@ -91,7 +91,7 @@ export const PARAMETER_REGISTRY: Record<string, ParameterDefinition> = {
   },
   presence_penalty: {
     key: 'presence_penalty',
-    type: 'number',
+    type: 'float',
     category: 'behavior',
     required: false,
     defaultValue: 0.0,
@@ -101,7 +101,7 @@ export const PARAMETER_REGISTRY: Record<string, ParameterDefinition> = {
   },
   frequency_penalty: {
     key: 'frequency_penalty',
-    type: 'number',
+    type: 'float',
     category: 'behavior',
     required: false,
     defaultValue: 0.0,
@@ -634,7 +634,7 @@ export class ParameterProcessor {
     }
 
     // Validate header parameters
-    Object.entries(provider.customParameters.headerConfigs).forEach(
+    Object.entries(provider.customParameters.headerParameters).forEach(
       ([key, value]) => {
         const result = this.validateParameter(key, value, provider);
         if (!result.isValid) {
@@ -644,7 +644,7 @@ export class ParameterProcessor {
     );
 
     // Validate body parameters
-    Object.entries(provider.customParameters.bodyConfigs).forEach(
+    Object.entries(provider.customParameters.bodyParameters).forEach(
       ([key, value]) => {
         const result = this.validateParameter(key, value, provider);
         if (!result.isValid) {

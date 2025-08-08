@@ -18,7 +18,7 @@ export interface GPUDevice {
   id: string;
   name: string;
   type: 'discrete' | 'integrated';
-  vendor: 'nvidia' | 'intel' | 'apple';
+  vendor: 'nvidia' | 'intel' | 'apple' | 'amd';
   deviceId: string;
   priority: number;
   driverVersion: string;
@@ -30,14 +30,24 @@ export interface GPUDevice {
   };
   powerEfficiency: 'excellent' | 'good' | 'moderate';
   performance: 'high' | 'medium' | 'low';
+  detectionMethod: 'wmi' | 'lspci' | 'systeminformation' | 'mock';
+  platformInfo?: {
+    windowsDeviceId?: string;
+    linuxPciId?: string;
+    driverPath?: string;
+    kernelModule?: string;
+  };
 }
 
 export interface OpenVINOCapabilities {
   isInstalled: boolean;
   version: string;
   supportedDevices: string[];
-  runtimePath?: string;
+  runtimePath: string;
   modelFormats: string[];
+  validationStatus: 'valid' | 'invalid' | 'unknown';
+  installationMethod: 'package' | 'manual' | 'conda' | 'unknown';
+  detectionErrors?: string[];
 }
 
 export interface MockEnvironmentConfig {
@@ -165,6 +175,7 @@ export class DevelopmentMockSystem {
         },
         powerEfficiency: 'good',
         performance: 'high',
+        detectionMethod: 'mock',
       },
       {
         id: 'mock-intel-arc-a750',
@@ -182,6 +193,7 @@ export class DevelopmentMockSystem {
         },
         powerEfficiency: 'good',
         performance: 'high',
+        detectionMethod: 'mock',
       },
       {
         id: 'mock-intel-xe-graphics',
@@ -199,6 +211,7 @@ export class DevelopmentMockSystem {
         },
         powerEfficiency: 'excellent',
         performance: 'medium',
+        detectionMethod: 'mock',
       },
       {
         id: 'mock-intel-iris-xe',
@@ -216,6 +229,7 @@ export class DevelopmentMockSystem {
         },
         powerEfficiency: 'excellent',
         performance: 'medium',
+        detectionMethod: 'mock',
       },
     ];
   }
@@ -264,7 +278,10 @@ export class DevelopmentMockSystem {
         isInstalled: false,
         version: '',
         supportedDevices: [],
+        runtimePath: '',
         modelFormats: [],
+        validationStatus: 'unknown',
+        installationMethod: 'unknown',
       };
     }
 
@@ -288,6 +305,8 @@ export class DevelopmentMockSystem {
         .map((device) => device.id),
       runtimePath: '/opt/intel/openvino_2024/runtime',
       modelFormats: ['ONNX', 'TensorFlow', 'PyTorch', 'OpenVINO IR'],
+      validationStatus: 'valid',
+      installationMethod: 'package',
     };
 
     logMessage(
@@ -456,6 +475,7 @@ export const mockSystemUtils = {
       },
       powerEfficiency: 'good',
       performance: 'medium',
+      detectionMethod: 'mock',
       ...overrides,
     };
   },
@@ -472,6 +492,8 @@ export const mockSystemUtils = {
       supportedDevices: ['test-device'],
       runtimePath: '/test/openvino',
       modelFormats: ['ONNX'],
+      validationStatus: 'valid',
+      installationMethod: 'package',
       ...overrides,
     };
   },

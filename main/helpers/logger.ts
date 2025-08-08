@@ -119,7 +119,10 @@ export function logGPUDetectionEvent(
     | 'gpu_found'
     | 'gpu_validated'
     | 'detection_completed'
-    | 'detection_failed',
+    | 'detection_failed'
+    | 'fallback_chain_started'
+    | 'fallback_chain_success'
+    | 'fallback_chain_option_failed',
   context: Record<string, any>,
   correlationId?: string,
 ): void {
@@ -129,6 +132,9 @@ export function logGPUDetectionEvent(
     gpu_validated: 'GPU device validated',
     detection_completed: 'GPU detection completed',
     detection_failed: 'GPU detection failed',
+    fallback_chain_started: 'Fallback chain started',
+    fallback_chain_success: 'Fallback chain succeeded',
+    fallback_chain_option_failed: 'Fallback chain option failed',
   };
 
   const eventTypes = {
@@ -137,6 +143,9 @@ export function logGPUDetectionEvent(
     gpu_validated: 'success' as const,
     detection_completed: 'info' as const,
     detection_failed: 'error' as const,
+    fallback_chain_started: 'warning' as const,
+    fallback_chain_success: 'success' as const,
+    fallback_chain_option_failed: 'warning' as const,
   };
 
   // Create more specific message based on context

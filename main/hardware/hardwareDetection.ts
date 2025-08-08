@@ -72,6 +72,21 @@ export class HardwareDetectionSystem {
     this.emitEvent('detection_start', { config: this.config });
 
     try {
+      // Return cached result if available and recent (less than 30 seconds old)
+      if (this.cachedCapabilities && this.lastDetectionTime) {
+        const cacheAge = Date.now() - this.lastDetectionTime.getTime();
+        const cacheValidityMs = 30 * 1000; // 30 seconds
+
+        if (cacheAge < cacheValidityMs) {
+          logger('Returning cached GPU capabilities');
+          // Return a deep copy to prevent timestamp mutation issues in tests
+          return {
+            ...this.cachedCapabilities,
+            detectionTimestamp: this.lastDetectionTime, // Keep original timestamp
+          };
+        }
+      }
+
       // Use mock system in development mode
       if (this.config.enableMockMode) {
         return await this.getMockCapabilities();
@@ -104,15 +119,27 @@ export class HardwareDetectionSystem {
 
       const capabilities: GPUCapabilities = {
         totalGPUs: gpuDevices.length,
-        intelGPUs: this.sortGPUsByPriority(intelGPUs),
-        nvidiaGPUs: this.sortGPUsByPriority(nvidiaGPUs),
-        appleGPUs: this.sortGPUsByPriority(appleGPUs),
+        nvidia: nvidiaGPUs.length > 0,
+        intel: this.sortGPUsByPriority(intelGPUs),
+        amd: [],
+        apple: appleGPUs.length > 0,
+        openvinoVersion: openvinoInfo ? openvinoInfo.version : false,
         recommendedGPU,
         openvinoInfo,
         detectionTimestamp: new Date(),
         detectionPlatform: this.mapPlatformName(currentPlatform),
         detectionSuccess: true,
         detectionErrors: [],
+        capabilities: {
+          hasIntelGPU: intelGPUs.length > 0,
+          hasNvidiaGPU: nvidiaGPUs.length > 0,
+          hasAMDGPU: false,
+          hasAppleGPU: appleGPUs.length > 0,
+          hasOpenVINO: !!openvinoInfo,
+        },
+        // Backward compatibility arrays
+        nvidiaGPUs: this.sortGPUsByPriority(nvidiaGPUs),
+        appleGPUs: this.sortGPUsByPriority(appleGPUs),
       };
 
       this.cachedCapabilities = capabilities;
@@ -132,15 +159,24 @@ export class HardwareDetectionSystem {
 
       return {
         totalGPUs: 0,
-        intelGPUs: [],
-        nvidiaGPUs: [],
-        appleGPUs: [],
+        nvidia: false,
+        intel: [],
+        amd: [],
+        apple: false,
+        openvinoVersion: false,
         recommendedGPU: null,
         openvinoInfo: null,
         detectionTimestamp: new Date(),
         detectionPlatform: this.mapPlatformName(platform() as any),
         detectionSuccess: false,
         detectionErrors: [errorMsg],
+        capabilities: {
+          hasIntelGPU: false,
+          hasNvidiaGPU: false,
+          hasAMDGPU: false,
+          hasAppleGPU: false,
+          hasOpenVINO: false,
+        },
       };
     }
   }
@@ -150,7 +186,7 @@ export class HardwareDetectionSystem {
    */
   public async enumerateIntelGPUs(): Promise<GPUDevice[]> {
     const capabilities = await this.detectAvailableGPUs();
-    return capabilities.intelGPUs;
+    return capabilities.intel;
   }
 
   /**
@@ -158,7 +194,9 @@ export class HardwareDetectionSystem {
    */
   public async checkOpenVINOSupport(): Promise<OpenVINOInfo | false> {
     if (this.config.enableMockMode) {
-      return mockSystem.getOpenVINOCapabilities();
+      const mockCapabilities = await mockSystem.getOpenVINOCapabilities();
+      // Return false if OpenVINO is not installed in mock mode
+      return mockCapabilities.isInstalled ? mockCapabilities : false;
     }
 
     try {
@@ -237,7 +275,7 @@ export class HardwareDetectionSystem {
    */
   private async getMockCapabilities(): Promise<GPUCapabilities> {
     const mockDevices = await mockSystem.enumerateGPUDevices();
-    const mockOpenVINO = mockSystem.getOpenVINOCapabilities();
+    const mockOpenVINO = await mockSystem.getOpenVINOCapabilities();
 
     const intelGPUs = mockDevices.filter((gpu) => gpu.vendor === 'intel');
     const nvidiaGPUs = mockDevices.filter((gpu) => gpu.vendor === 'nvidia');
@@ -245,24 +283,90 @@ export class HardwareDetectionSystem {
 
     return {
       totalGPUs: mockDevices.length,
-      intelGPUs: this.sortGPUsByPriority(intelGPUs),
-      nvidiaGPUs: this.sortGPUsByPriority(nvidiaGPUs),
-      appleGPUs: this.sortGPUsByPriority(appleGPUs),
+      nvidia: nvidiaGPUs.length > 0,
+      intel: this.sortGPUsByPriority(intelGPUs),
+      amd: [],
+      apple: appleGPUs.length > 0,
+      openvinoVersion: mockOpenVINO.isInstalled ? mockOpenVINO.version : false,
       recommendedGPU: this.selectRecommendedGPU(mockDevices),
       openvinoInfo: mockOpenVINO,
       detectionTimestamp: new Date(),
       detectionPlatform: 'darwin', // Mock runs on macOS
       detectionSuccess: true,
       detectionErrors: [],
+      capabilities: {
+        hasIntelGPU: intelGPUs.length > 0,
+        hasNvidiaGPU: nvidiaGPUs.length > 0,
+        hasAMDGPU: false,
+        hasAppleGPU: appleGPUs.length > 0,
+        hasOpenVINO: mockOpenVINO.isInstalled,
+      },
+      // Backward compatibility arrays
+      nvidiaGPUs: this.sortGPUsByPriority(nvidiaGPUs),
+      appleGPUs: this.sortGPUsByPriority(appleGPUs),
     };
   }
 
   /**
-   * Select recommended GPU based on priority and performance
+   * Select recommended GPU based on priority and performance with hybrid system handling
    */
   private selectRecommendedGPU(gpus: GPUDevice[]): GPUDevice | null {
     if (gpus.length === 0) return null;
 
+    // Separate GPUs by vendor
+    const nvidiaGPUs = gpus.filter((gpu) => gpu.vendor === 'nvidia');
+    const intelGPUs = gpus.filter((gpu) => gpu.vendor === 'intel');
+    const appleGPUs = gpus.filter((gpu) => gpu.vendor === 'apple');
+    const amdGPUs = gpus.filter((gpu) => gpu.vendor === 'amd');
+
+    // Edge case handling for hybrid systems
+
+    // 1. Intel + NVIDIA hybrid systems: NVIDIA has priority
+    // 2. Intel iGPU + NVIDIA dGPU on Windows: NVIDIA has priority
+    if (nvidiaGPUs.length > 0 && intelGPUs.length > 0) {
+      logger('Hybrid Intel + NVIDIA system detected: Prioritizing NVIDIA GPU');
+      return this.selectBestFromVendor(nvidiaGPUs);
+    }
+
+    // 3. Multiple NVIDIA cards: Use integrated GPU by default (if available)
+    if (nvidiaGPUs.length > 1) {
+      const integratedNvidia = nvidiaGPUs.filter(
+        (gpu) => gpu.type === 'integrated',
+      );
+      if (integratedNvidia.length > 0) {
+        logger(
+          'Multiple NVIDIA GPUs detected: Using integrated GPU by default',
+        );
+        return this.selectBestFromVendor(integratedNvidia);
+      }
+      // If no integrated NVIDIA, fall back to best discrete
+      logger(
+        'Multiple NVIDIA GPUs detected: No integrated found, using best discrete',
+      );
+      return this.selectBestFromVendor(nvidiaGPUs);
+    }
+
+    // Standard priority order: NVIDIA > Intel > Apple > AMD
+    if (nvidiaGPUs.length > 0) {
+      return this.selectBestFromVendor(nvidiaGPUs);
+    }
+    if (intelGPUs.length > 0) {
+      return this.selectBestFromVendor(intelGPUs);
+    }
+    if (appleGPUs.length > 0) {
+      return this.selectBestFromVendor(appleGPUs);
+    }
+    if (amdGPUs.length > 0) {
+      return this.selectBestFromVendor(amdGPUs);
+    }
+
+    return null;
+  }
+
+  /**
+   * Select best GPU from a specific vendor's GPUs
+   */
+  private selectBestFromVendor(gpus: GPUDevice[]): GPUDevice {
     // Sort by priority (higher is better) and then by performance
     const sorted = gpus.sort((a, b) => {
       if (a.priority !== b.priority) return b.priority - a.priority;

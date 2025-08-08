@@ -7,6 +7,7 @@ import decompress from 'decompress';
 import fs from 'fs-extra';
 import { store } from './storeManager';
 import { checkCudaSupport } from './cudaUtils';
+import { logMessage } from './logger';
 
 export const getPath = (key?: string) => {
   const userDataPath = app.getPath('userData');
@@ -246,11 +247,10 @@ export async function loadWhisperAddon(
   model: string,
   existingGpuCapabilities?: any,
 ) {
-  const settings = store.get('settings') || {};
+  const settings = (store.get('settings') as any) || {};
   const { useCuda, useOpenVINO, selectedGPUId, gpuPreference } = settings;
 
-  // Import logging function
-  const { logMessage } = require('./logger');
+  // GPU selection and addon loading logic
 
   logMessage('Starting enhanced whisper addon loading', 'info');
   logMessage(`Model: ${model}`, 'info');

@@ -14,7 +14,7 @@ import {
   ParameterDefinition,
   ValidationError,
   CustomParameterConfig,
-} from '../../types/provider';
+} from '../../types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -44,7 +44,6 @@ import {
   Plus,
   Search,
   Settings,
-  Trash2,
   Copy,
   Download,
   Upload,
@@ -79,33 +78,27 @@ interface NewParameterForm {
 
 export const CustomParameterEditor: React.FC<CustomParameterEditorProps> = ({
   providerId,
-  initialConfig,
   onConfigChange,
-  onSave,
   disabled = false,
   className = '',
 }) => {
   const {
     state,
     loadConfig,
-    saveConfig,
     addHeaderParameter,
     updateHeaderParameter,
     removeHeaderParameter,
     addBodyParameter,
     updateBodyParameter,
     removeBodyParameter,
-    validateConfiguration,
     exportConfiguration,
     importConfiguration,
-    getSupportedParameters,
-    getParameterDefinition,
   } = useParameterConfig();
 
   // Load configuration on mount
   useEffect(() => {
     if (providerId) {
-      loadConfig(providerId);
+      loadConfig(providerId).catch(console.error);
     }
   }, [providerId, loadConfig]);
 
@@ -435,14 +428,14 @@ export const CustomParameterEditor: React.FC<CustomParameterEditorProps> = ({
     if (state.hasUnsavedChanges) {
       setShowRefreshDialog(true);
     } else {
-      loadConfig(providerId);
+      loadConfig(providerId).catch(console.error);
     }
   }, [state.hasUnsavedChanges, loadConfig, providerId]);
 
   // Confirm refresh with unsaved changes
   const confirmRefresh = useCallback(() => {
     setShowRefreshDialog(false);
-    loadConfig(providerId);
+    loadConfig(providerId).catch(console.error);
   }, [loadConfig, providerId]);
 
   return (

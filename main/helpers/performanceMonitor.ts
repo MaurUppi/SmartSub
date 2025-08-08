@@ -404,7 +404,7 @@ export class GPUPerformanceMonitor {
   private static analyzeTrends(
     metrics: PerformanceMetrics[],
   ): PerformanceTrend[] {
-    const addonTypes = [...new Set(metrics.map((m) => m.addonType))];
+    const addonTypes = Array.from(new Set(metrics.map((m) => m.addonType)));
 
     return addonTypes.map((addonType) => {
       const addonMetrics = metrics.filter((m) => m.addonType === addonType);

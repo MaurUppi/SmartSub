@@ -1,15 +1,56 @@
-node_modules
-*.log
-.next
-app
-dist
-.idea
+# OS and System Files
 .DS_Store
+Thumbs.db
+*.tmp
+*.swp
+*~
+
+# Dependencies
+node_modules
+.pnpm-store
+.yarn
+
+# Build Output
+dist
+app
+.next
+out
+build
+
+# Development Tools and IDEs
+.idea
 .vscode
-.env
-docs/.docusaurus
-.claude
 .cursor
-.husky
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment and Configuration
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Documentation
+docs/.docusaurus
+
+# Runtime and Cache
+.cache
+.parcel-cache
+*.tsbuildinfo
+
+# Test Infrastructure (excluded from CI)
+coverage
+.nyc_output
+test-results
+junit.xml
+playwright-report
+test-output
+
+# Project Specific
 Project
 sample
+.claude
+.husky
