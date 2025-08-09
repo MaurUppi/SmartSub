@@ -171,17 +171,20 @@ export const useSubtitles = (
       ): Promise<PlayerSubtitleTrack | null> => {
         if (!srtPath) return null;
         try {
-          const result = await window.ipc.invoke('readRawFileContent', {
-            filePath: srtPath,
-          });
-          if (result.error || !result.content) {
-            console.error(`无法读取字幕文件 ${srtPath}:`, result.error);
+          const { error, content } = await window.ipc.invoke(
+            'readRawFileContent',
+            {
+              filePath: srtPath,
+            },
+          );
+          if (error || !content) {
+            console.error(`无法读取字幕文件 ${srtPath}:`, error);
             toast.error(
               t('errorReadSubtitle', { file: path.basename(srtPath) }),
             );
             return null;
           }
-          const srtContent = result.content;
+          const srtContent = content;
           const srtBlob = new Blob([srtContent], { type: 'text/plain' });
           const vttUrl = await toWebVTT(srtBlob);
           return {

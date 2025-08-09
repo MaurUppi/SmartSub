@@ -138,7 +138,7 @@ export class SettingsMigration {
   private static performMigration(
     legacySettings: LegacySettings,
   ): ModernSettings {
-    const migratedSettings: ModernSettings = {
+    return {
       ...legacySettings, // Preserve all existing settings
 
       // Add new Intel GPU settings with intelligent defaults
@@ -155,9 +155,7 @@ export class SettingsMigration {
         devicePreference: 'auto', // Let system choose best Intel GPU
         enableOptimizations: true,
       },
-    };
-
-    return migratedSettings;
+    } as ModernSettings;
   }
 
   /**
