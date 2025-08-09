@@ -126,15 +126,13 @@ export class TestUtils {
     name: string,
     config: Partial<TestScenario>,
   ): TestScenario {
-    const defaultScenario: TestScenario = {
+    return {
       name,
       description: `Test scenario: ${name}`,
       expectedDeviceCount: 1,
       expectedOpenVINOCompatibility: true,
       ...config,
-    };
-
-    return defaultScenario;
+    } as TestScenario;
   }
 
   /**

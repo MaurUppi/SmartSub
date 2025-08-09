@@ -87,7 +87,7 @@ export async function handleProcessingError(
         attempt: retryCount + 1,
       });
 
-      const result = await strategy.execute(context);
+      const recoveredResult = await strategy.execute(context);
 
       logMessage(`Recovery strategy '${strategy.name}' succeeded`, 'info');
 
@@ -98,7 +98,7 @@ export async function handleProcessingError(
         recoveryStrategy: strategy.name,
       });
 
-      return result;
+      return recoveredResult;
     } catch (recoveryError) {
       logMessage(
         `Recovery strategy '${strategy.name}' failed: ${recoveryError.message}`,
@@ -220,13 +220,11 @@ function getRecoveryStrategies(): RecoveryStrategy[] {
             gpuPreference: ['cpu'],
           });
 
-          const result = await processWithFallback(
+          return await processWithFallback(
             context.event,
             context.file,
             context.formData,
           );
-
-          return result;
         } finally {
           // Restore original settings
           store.set('settings', originalSettings);

@@ -57,9 +57,7 @@ export async function translateWithAzureOpenAI(
 
     const completion = await openai.chat.completions.create(requestParams);
 
-    const result = completion?.choices?.[0]?.message?.content?.trim();
-
-    return result;
+    return completion?.choices?.[0]?.message?.content?.trim();
   } catch (error) {
     console.error('Azure OpenAI translation error:', error);
     throw new Error(`Azure OpenAI translation failed: ${error.message}`);

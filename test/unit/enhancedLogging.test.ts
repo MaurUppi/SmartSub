@@ -291,9 +291,8 @@ describe('Enhanced Logging System', () => {
     test('should log basic message with default parameters', () => {
       logMessage('Test message');
 
-      const logs = mockLogs;
-      expect(logs).toHaveLength(1);
-      expect(logs[0]).toMatchObject({
+      expect(mockLogs).toHaveLength(1);
+      expect(mockLogs[0]).toMatchObject({
         message: 'Test message',
         type: 'info',
         category: LogCategory.GENERAL,
@@ -313,9 +312,8 @@ describe('Enhanced Logging System', () => {
         correlationId,
       );
 
-      const logs = mockLogs;
-      expect(logs).toHaveLength(1);
-      expect(logs[0]).toMatchObject({
+      expect(mockLogs).toHaveLength(1);
+      expect(mockLogs[0]).toMatchObject({
         message: 'Test message with context',
         type: 'warning',
         category: LogCategory.GPU_DETECTION,
@@ -329,9 +327,8 @@ describe('Enhanced Logging System', () => {
 
       logMessage(error, 'error');
 
-      const logs = mockLogs;
-      expect(logs).toHaveLength(1);
-      expect(logs[0]).toMatchObject({
+      expect(mockLogs).toHaveLength(1);
+      expect(mockLogs[0]).toMatchObject({
         message: 'Test error message',
         type: 'error',
         category: LogCategory.GENERAL,
@@ -353,9 +350,8 @@ describe('Enhanced Logging System', () => {
 
       logMessage('New log entry');
 
-      const logs = mockLogs;
-      expect(logs).toHaveLength(1000); // Should maintain MAX_LOGS limit
-      expect(logs[logs.length - 1].message).toBe('New log entry');
+      expect(mockLogs).toHaveLength(1000); // Should maintain MAX_LOGS limit
+      expect(mockLogs[mockLogs.length - 1].message).toBe('New log entry');
     });
   });
 
@@ -399,9 +395,8 @@ describe('Enhanced Logging System', () => {
 
       logOpenVINOAddonEvent('loading_initiated', context, correlationId);
 
-      const logs = mockLogs;
-      expect(logs).toHaveLength(1);
-      expect(logs[0]).toMatchObject({
+      expect(mockLogs).toHaveLength(1);
+      expect(mockLogs[0]).toMatchObject({
         message: 'OpenVINO addon loading initiated',
         type: 'info',
         category: LogCategory.OPENVINO_ADDON,
@@ -424,9 +419,8 @@ describe('Enhanced Logging System', () => {
 
       logOpenVINOAddonEvent('loading_success', context);
 
-      const logs = mockLogs;
-      expect(logs).toHaveLength(1);
-      expect(logs[0]).toMatchObject({
+      expect(mockLogs).toHaveLength(1);
+      expect(mockLogs[0]).toMatchObject({
         message: 'OpenVINO addon loaded successfully',
         type: 'success',
         category: LogCategory.OPENVINO_ADDON,
@@ -442,9 +436,8 @@ describe('Enhanced Logging System', () => {
 
       logOpenVINOAddonEvent('loading_failed', context);
 
-      const logs = mockLogs;
-      expect(logs).toHaveLength(1);
-      expect(logs[0]).toMatchObject({
+      expect(mockLogs).toHaveLength(1);
+      expect(mockLogs[0]).toMatchObject({
         message: 'OpenVINO addon loading failed',
         type: 'error',
         category: LogCategory.OPENVINO_ADDON,
@@ -472,10 +465,14 @@ describe('Enhanced Logging System', () => {
         correlationId,
       );
 
-      const logs = getLogsByCorrelationId(correlationId);
-      expect(logs).toHaveLength(2);
-      expect(logs[0].message).toBe('OpenVINO addon validation started');
-      expect(logs[1].message).toBe('OpenVINO addon validation passed');
+      const correlatedLogs = getLogsByCorrelationId(correlationId);
+      expect(correlatedLogs).toHaveLength(2);
+      expect(correlatedLogs[0].message).toBe(
+        'OpenVINO addon validation started',
+      );
+      expect(correlatedLogs[1].message).toBe(
+        'OpenVINO addon validation passed',
+      );
     });
   });
 
@@ -488,9 +485,8 @@ describe('Enhanced Logging System', () => {
 
       logGPUDetectionEvent('detection_started', context);
 
-      const logs = mockLogs;
-      expect(logs).toHaveLength(1);
-      expect(logs[0]).toMatchObject({
+      expect(mockLogs).toHaveLength(1);
+      expect(mockLogs[0]).toMatchObject({
         message: 'GPU detection started',
         type: 'info',
         category: LogCategory.GPU_DETECTION,
@@ -507,9 +503,8 @@ describe('Enhanced Logging System', () => {
 
       logGPUDetectionEvent('gpu_found', context);
 
-      const logs = mockLogs;
-      expect(logs).toHaveLength(1);
-      expect(logs[0]).toMatchObject({
+      expect(mockLogs).toHaveLength(1);
+      expect(mockLogs[0]).toMatchObject({
         message: 'GPU device detected',
         type: 'success',
         category: LogCategory.GPU_DETECTION,
@@ -526,9 +521,8 @@ describe('Enhanced Logging System', () => {
 
       logGPUDetectionEvent('detection_failed', context);
 
-      const logs = mockLogs;
-      expect(logs).toHaveLength(1);
-      expect(logs[0]).toMatchObject({
+      expect(mockLogs).toHaveLength(1);
+      expect(mockLogs[0]).toMatchObject({
         message: 'GPU detection failed',
         type: 'error',
         category: LogCategory.GPU_DETECTION,
@@ -577,9 +571,8 @@ describe('Enhanced Logging System', () => {
 
       logAddonLoadingEvent('load_attempt', 'cuda', context);
 
-      const logs = mockLogs;
-      expect(logs).toHaveLength(1);
-      expect(logs[0]).toMatchObject({
+      expect(mockLogs).toHaveLength(1);
+      expect(mockLogs[0]).toMatchObject({
         message: 'Attempting to load cuda addon',
         type: 'info',
         category: LogCategory.ADDON_LOADING,
@@ -595,9 +588,8 @@ describe('Enhanced Logging System', () => {
 
       logAddonLoadingEvent('fallback_used', 'cuda', context);
 
-      const logs = mockLogs;
-      expect(logs).toHaveLength(1);
-      expect(logs[0]).toMatchObject({
+      expect(mockLogs).toHaveLength(1);
+      expect(mockLogs[0]).toMatchObject({
         message: 'Using fallback for cuda addon',
         type: 'warning',
         category: LogCategory.ADDON_LOADING,
@@ -619,9 +611,8 @@ describe('Enhanced Logging System', () => {
 
       logPerformanceMetrics('subtitle_generation', metrics, correlationId);
 
-      const logs = mockLogs;
-      expect(logs).toHaveLength(1);
-      expect(logs[0]).toMatchObject({
+      expect(mockLogs).toHaveLength(1);
+      expect(mockLogs[0]).toMatchObject({
         message: 'Performance metrics for subtitle_generation',
         type: 'info',
         category: LogCategory.PERFORMANCE,
@@ -640,9 +631,8 @@ describe('Enhanced Logging System', () => {
 
       logPerformanceMetrics('addon_loading', metrics);
 
-      const logs = mockLogs;
-      expect(logs).toHaveLength(1);
-      expect(logs[0].context?.operation).toBe('addon_loading');
+      expect(mockLogs).toHaveLength(1);
+      expect(mockLogs[0].context?.operation).toBe('addon_loading');
       expect(logs[0].context?.duration).toBe(5000);
     });
   });
@@ -657,9 +647,8 @@ describe('Enhanced Logging System', () => {
 
       logSystemInfo(info);
 
-      const logs = mockLogs;
-      expect(logs).toHaveLength(1);
-      expect(logs[0]).toMatchObject({
+      expect(mockLogs).toHaveLength(1);
+      expect(mockLogs[0]).toMatchObject({
         message: 'System information captured',
         type: 'info',
         category: LogCategory.SYSTEM_INFO,
@@ -683,9 +672,8 @@ describe('Enhanced Logging System', () => {
 
       logUserAction('start_subtitle_generation', context);
 
-      const logs = mockLogs;
-      expect(logs).toHaveLength(1);
-      expect(logs[0]).toMatchObject({
+      expect(mockLogs).toHaveLength(1);
+      expect(mockLogs[0]).toMatchObject({
         message: 'User action: start_subtitle_generation',
         type: 'info',
         category: LogCategory.USER_ACTION,
@@ -696,9 +684,8 @@ describe('Enhanced Logging System', () => {
     test('should log user actions without context', () => {
       logUserAction('open_settings');
 
-      const logs = mockLogs;
-      expect(logs).toHaveLength(1);
-      expect(logs[0].context?.action).toBe('open_settings');
+      expect(mockLogs).toHaveLength(1);
+      expect(mockLogs[0].context?.action).toBe('open_settings');
     });
   });
 
@@ -763,17 +750,15 @@ describe('Enhanced Logging System', () => {
     test('should handle undefined context gracefully', () => {
       logMessage('Test message', 'info', LogCategory.GENERAL, undefined);
 
-      const logs = mockLogs;
-      expect(logs).toHaveLength(1);
-      expect(logs[0].context).toBeUndefined();
+      expect(mockLogs).toHaveLength(1);
+      expect(mockLogs[0].context).toBeUndefined();
     });
 
     test('should handle empty correlation ID', () => {
       logMessage('Test message', 'info', LogCategory.GENERAL, {}, '');
 
-      const logs = mockLogs;
-      expect(logs).toHaveLength(1);
-      expect(logs[0].correlationId).toBe('');
+      expect(mockLogs).toHaveLength(1);
+      expect(mockLogs[0].correlationId).toBe('');
     });
 
     test('should handle missing store data', () => {
@@ -783,8 +768,7 @@ describe('Enhanced Logging System', () => {
       logMessage('Test message');
 
       // Should still work and create the log
-      const logs = mockLogs;
-      expect(logs).toHaveLength(1);
+      expect(mockLogs).toHaveLength(1);
     });
 
     test('should handle circular references in context', () => {

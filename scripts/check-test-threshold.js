@@ -16,12 +16,11 @@ const TEST_COMMAND = 'npm run test:tsx';
 function runTests() {
   try {
     // Run tests and capture output
-    const output = execSync(`${TEST_COMMAND} 2>&1`, {
+    return execSync(`${TEST_COMMAND} 2>&1`, {
       encoding: 'utf8',
       stdio: 'pipe',
       shell: true,
     });
-    return output;
   } catch (error) {
     // Tests failed, but we need to parse the output
     if (error.stdout) {

@@ -12,12 +12,11 @@ export default function useIpcCommunication(setFiles) {
       key: string,
       status: string,
     ) => {
-      setFiles((prevFiles) => {
-        const updatedFiles = prevFiles.map((file) =>
+      setFiles((prevFiles) =>
+        prevFiles.map((file) =>
           file.uuid === res?.uuid ? { ...file, [key]: status } : file,
-        );
-        return updatedFiles;
-      });
+        ),
+      );
     };
 
     const handleTaskProgressChange = (
@@ -27,10 +26,9 @@ export default function useIpcCommunication(setFiles) {
     ) => {
       setFiles((prevFiles) => {
         const progressKey = `${key}Progress`;
-        const updatedFiles = prevFiles.map((file) =>
+        return prevFiles.map((file) =>
           file.uuid === res?.uuid ? { ...file, [progressKey]: progress } : file,
         );
-        return updatedFiles;
       });
     };
 
@@ -41,20 +39,18 @@ export default function useIpcCommunication(setFiles) {
     ) => {
       setFiles((prevFiles) => {
         const errorKey = `${key}Error`;
-        const updatedFiles = prevFiles.map((file) =>
+        return prevFiles.map((file) =>
           file.uuid === res?.uuid ? { ...file, [errorKey]: errorMsg } : file,
         );
-        return updatedFiles;
       });
     };
 
     const handleFileChange = (res: IFiles) => {
-      setFiles((prevFiles) => {
-        const updatedFiles = prevFiles.map((file) =>
+      setFiles((prevFiles) =>
+        prevFiles.map((file) =>
           file.uuid === res?.uuid ? { ...file, ...res } : file,
-        );
-        return updatedFiles;
-      });
+        ),
+      );
     };
 
     window?.ipc?.on('taskStatusChange', handleTaskStatusChange);

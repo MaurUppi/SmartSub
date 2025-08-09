@@ -602,8 +602,7 @@ const createWindowIpcHandler = () => ({
   invoke: (channel, ...args) => mockIpcRenderer.invoke(channel, ...args),
   on: (channel, callback) => {
     const subscription = (_event, ...args) => callback(...args);
-    const cleanup = mockIpcRenderer.on(channel, subscription);
-    return cleanup;
+    return mockIpcRenderer.on(channel, subscription);
   },
 });
 

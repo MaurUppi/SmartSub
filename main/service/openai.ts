@@ -133,7 +133,7 @@ function createBaseParams(text: string[], provider: OpenAIProvider) {
     provider.systemPrompt || 'You are a professional subtitle translation tool';
   const userPrompt = Array.isArray(text) ? text.join('\n') : text;
 
-  const baseParams = {
+  return {
     model: provider.modelName || 'gpt-3.5-turbo',
     messages: [
       { role: 'system', content: sysPrompt },
@@ -143,8 +143,6 @@ function createBaseParams(text: string[], provider: OpenAIProvider) {
     stream: false,
     ...getProviderSpecificParams(provider),
   };
-
-  return baseParams;
 }
 
 /**

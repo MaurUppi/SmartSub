@@ -85,8 +85,7 @@ export const useVideoPlayer = (
 
   // 播放速度控制
   const changePlaybackRate = (delta: number) => {
-    const newRate = Math.max(0.25, Math.min(2, playbackRate + delta));
-    setPlaybackRate(newRate);
+    setPlaybackRate(Math.max(0.25, Math.min(2, playbackRate + delta)));
   };
 
   return {

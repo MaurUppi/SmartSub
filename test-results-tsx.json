@@ -1,0 +1,10 @@
+{
+  "failed": 40,
+  "skipped": 21,
+  "passed": 302,
+  "total": 363,
+  "passRate": 88.30409356725146,
+  "threshold": 80,
+  "passed_threshold": true,
+  "timestamp": "2025-08-09T07:57:24.826Z"
+}

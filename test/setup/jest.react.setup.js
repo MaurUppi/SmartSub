@@ -502,8 +502,7 @@ global.componentTestUtils = {
   checkMemoryLeak: () => {
     if (typeof performance !== 'undefined' && performance.memory) {
       const currentMemory = performance.memory.usedJSHeapSize;
-      const memoryGrowth = currentMemory - componentTestMemoryBaseline;
-      return memoryGrowth;
+      return currentMemory - componentTestMemoryBaseline;
     }
     return 0;
   },

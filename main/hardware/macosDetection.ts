@@ -340,9 +340,8 @@ export class MacOSGPUDetector {
         if (gpu.vendor === 'intel') {
           // Intel GPUs on macOS (rare but possible in eGPU setups)
           // OpenVINO support depends on driver availability
-          const hasValidDriver =
+          gpu.capabilities.openvinoCompatible =
             gpu.driverVersion && gpu.driverVersion !== 'unknown';
-          gpu.capabilities.openvinoCompatible = hasValidDriver;
         }
 
         if (gpu.vendor === 'nvidia') {

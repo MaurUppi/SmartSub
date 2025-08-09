@@ -45,8 +45,7 @@ export function setupAutoUpdater(mainWindow: BrowserWindow) {
         `Checking for updates... Platform: ${buildInfo.platform}, Arch: ${buildInfo.arch}${buildInfo.cudaVersion ? `, CUDA: ${buildInfo.cudaVersion}` : ''} on channel '${autoUpdater.channel}'`,
         'info',
       );
-      const result = await autoUpdater.checkForUpdates();
-      return result;
+      return await autoUpdater.checkForUpdates();
     } catch (error) {
       logMessage(`Error checking for updates: ${error.message}`, 'error');
       if (!silent) {
