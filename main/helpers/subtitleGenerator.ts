@@ -15,7 +15,7 @@ import { isTaskCancelled, isTaskPaused } from './taskProcessor';
  * Get audio duration in milliseconds
  */
 async function getAudioDuration(audioFile: string): Promise<number> {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     // Use bundled ffprobe with proper asar unpacking for packaged apps
     const ffprobe =
       ffmpegStatic.ffprobePath?.replace('app.asar', 'app.asar.unpacked') ||
