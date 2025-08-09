@@ -219,24 +219,7 @@ function resolveAddonPathWithManifest(
   return findFallbackAddon(addonsDir, requestedType);
 }
 
-/**
- * Get OpenVINO addon name based on platform and architecture
- */
-function getOpenVINOAddonName(): string {
-  switch (process.platform) {
-    case 'win32':
-      return 'addon-windows-openvino.node';
-    case 'linux':
-      return 'addon-linux-openvino.node';
-    case 'darwin':
-      // macOS: distinguish between ARM64 and x64
-      return process.arch === 'arm64'
-        ? 'addon-macos-arm-openvino.node'
-        : 'addon-macos-x86-openvino.node';
-    default:
-      return 'addon-openvino.node'; // Fallback
-  }
-}
+// OpenVINO addon name function is now imported from gpuSelector.ts
 
 /**
  * Legacy addon path resolution (development/non-packaged)
