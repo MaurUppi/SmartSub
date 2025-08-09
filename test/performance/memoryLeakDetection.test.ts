@@ -64,8 +64,7 @@ describe('Memory Leak Detection and Prevention', () => {
 
       mockMonitor.endSession.mockImplementation(async (result, duration) => {
         // Verify memory returned to baseline
-        const finalMemory = sessionMemoryUsage;
-        const memoryGrowth = finalMemory - initialMemoryUsage;
+        const memoryGrowth = sessionMemoryUsage - initialMemoryUsage;
         const isLeakDetected = memoryGrowth > 50 * 1024 * 1024; // More than 50MB growth
 
         return {
@@ -304,7 +303,7 @@ describe('Memory Leak Detection and Prevention', () => {
       // Mock resource allocation and cleanup
       const { loadWhisperAddon } = require('main/helpers/whisper');
       loadWhisperAddon.mockImplementation(async () => {
-        const mockWhisperFn = jest.fn(async (params) => {
+        return jest.fn(async (params) => {
           // Simulate resource allocation
           resourceTracker.openFiles += 2; // Audio file + model file
           resourceTracker.activeConnections += 1;
@@ -336,8 +335,6 @@ describe('Memory Leak Detection and Prevention', () => {
 
           return result;
         });
-
-        return mockWhisperFn;
       });
 
       const result = await generateSubtitleWithBuiltinWhisper(
@@ -367,7 +364,7 @@ describe('Memory Leak Detection and Prevention', () => {
       // Mock resource allocation followed by error
       const { loadWhisperAddon } = require('main/helpers/whisper');
       loadWhisperAddon.mockImplementation(async () => {
-        const mockWhisperFn = jest.fn(async (params) => {
+        return jest.fn(async (params) => {
           // Allocate resources
           resourceTracker.allocatedMemory += 500 * 1024 * 1024; // 500MB
           resourceTracker.openHandles += 10;
@@ -382,8 +379,6 @@ describe('Memory Leak Detection and Prevention', () => {
           // Simulate error during processing
           throw new Error('Simulated processing error for cleanup testing');
         });
-
-        return mockWhisperFn;
       });
 
       // Mock error handler with cleanup verification
@@ -637,7 +632,7 @@ describe('Memory Leak Detection and Prevention', () => {
       // Mock object lifecycle with weak references
       const { loadWhisperAddon } = require('main/helpers/whisper');
       loadWhisperAddon.mockImplementation(async () => {
-        const mockWhisperFn = jest.fn(async (params) => {
+        return jest.fn(async (params) => {
           // Simulate object creation with potential circular references
           const processingContext = { id: Date.now() };
           const callback = params.progress_callback;
@@ -673,8 +668,6 @@ describe('Memory Leak Detection and Prevention', () => {
 
           return global.subtitleTestUtils.createMockTranscriptionResult();
         });
-
-        return mockWhisperFn;
       });
 
       // Process multiple files to test weak reference pattern

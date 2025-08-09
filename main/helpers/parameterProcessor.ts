@@ -174,11 +174,10 @@ export class ParameterProcessor {
 
       if (validationResult.isValid) {
         // Substitute template variables (e.g., ${API_KEY})
-        const processedValue = this.substituteTemplateVars(
+        result.headers[key] = this.substituteTemplateVars(
           validationResult.convertedValue,
           provider,
         );
-        result.headers[key] = processedValue;
         result.appliedParameters.push(`header:${key}`);
       } else {
         result.validationErrors.push(...validationResult.errors);

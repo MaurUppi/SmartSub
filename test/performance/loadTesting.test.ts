@@ -108,7 +108,7 @@ describe('Load Testing Under Stress Conditions', () => {
       loadWhisperAddon.mockImplementation(async () => {
         activeProcessing++;
 
-        const mockWhisperFn = jest.fn(async (params) => {
+        return jest.fn(async (params) => {
           if (activeProcessing > 2) {
             queuedRequests++;
             const logger = require('main/helpers/logger');
@@ -126,8 +126,6 @@ describe('Load Testing Under Stress Conditions', () => {
 
           return global.subtitleTestUtils.createMockTranscriptionResult();
         });
-
-        return mockWhisperFn;
       });
 
       // Create more requests than concurrent limit
@@ -580,7 +578,7 @@ describe('Load Testing Under Stress Conditions', () => {
       loadWhisperAddon.mockImplementation(async () => {
         activeConnections++;
 
-        const mockWhisperFn = jest.fn(async (params) => {
+        return jest.fn(async (params) => {
           if (activeConnections > maxConnections) {
             const logger = require('main/helpers/logger');
             logger.logMessage(
@@ -603,8 +601,6 @@ describe('Load Testing Under Stress Conditions', () => {
 
           return global.subtitleTestUtils.createMockTranscriptionResult();
         });
-
-        return mockWhisperFn;
       });
 
       // Mock error handler for load shedding
