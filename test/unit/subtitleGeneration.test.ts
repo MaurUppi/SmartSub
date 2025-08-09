@@ -163,6 +163,7 @@ describe('Subtitle Generation with Intel GPU', () => {
     );
 
     expect(result).toBe(file.srtFile);
+    const { loadWhisperAddon } = require('main/helpers/whisper');
     expect(loadWhisperAddon).toHaveBeenCalledWith('base');
   });
 
@@ -186,6 +187,7 @@ describe('Subtitle Generation with Intel GPU', () => {
     );
 
     expect(result).toBe(file.srtFile);
+    const { loadWhisperAddon } = require('main/helpers/whisper');
     expect(loadWhisperAddon).toHaveBeenCalledWith('small');
   });
 
@@ -209,6 +211,7 @@ describe('Subtitle Generation with Intel GPU', () => {
     );
 
     expect(result).toBe(file.srtFile);
+    const { loadWhisperAddon } = require('main/helpers/whisper');
     expect(loadWhisperAddon).toHaveBeenCalledWith('medium');
   });
 
@@ -232,6 +235,7 @@ describe('Subtitle Generation with Intel GPU', () => {
     );
 
     expect(result).toBe(file.srtFile);
+    const { loadWhisperAddon } = require('main/helpers/whisper');
     expect(loadWhisperAddon).toHaveBeenCalledWith('large');
   });
 
@@ -258,7 +262,8 @@ describe('Subtitle Generation with Intel GPU', () => {
     expect(result).toBe(file.srtFile);
 
     // Check that language parameter was passed correctly
-    const whisperFn = await require('main/helpers/whisper').loadWhisperAddon();
+    const { loadWhisperAddon } = require('main/helpers/whisper');
+    const whisperFn = loadWhisperAddon.mock.results[0]?.value;
     expect(whisperFn).toHaveBeenCalledWith(
       expect.objectContaining({
         language: 'zh',
