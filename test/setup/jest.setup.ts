@@ -21,6 +21,15 @@ jest.mock('electron-store', () => {
           useCuda: false,
           useOpenVINO: false,
           maxContext: -1,
+          // Include OpenVINO properties for compatibility
+          selectedGPUId: 'auto',
+          gpuPreference: ['nvidia', 'intel', 'apple', 'cpu'],
+          gpuAutoDetection: true,
+          openvinoPreferences: {
+            cacheDir: '/mock/user/data/openvino-cache',
+            devicePreference: 'auto',
+            enableOptimizations: true,
+          },
         };
       }
       if (key === 'logs') {

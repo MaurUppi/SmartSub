@@ -21,7 +21,8 @@ export function logMessage(
   context?: Record<string, any>,
   correlationId?: string,
 ): void {
-  const logs = store.get('logs') || [];
+  const logs = store.get('logs');
+  const logsArray = Array.isArray(logs) ? logs : [];
   const messageStr =
     message instanceof Error ? message.message : String(message);
 
@@ -35,7 +36,7 @@ export function logMessage(
   };
 
   // Maintain log size limit
-  const updatedLogs = [...logs, newLog].slice(-MAX_LOGS);
+  const updatedLogs = [...logsArray, newLog].slice(-MAX_LOGS);
   store.set('logs', updatedLogs);
 
   // Send to renderer processes
@@ -265,24 +266,27 @@ export function logUserAction(
  * Get logs by category for filtering
  */
 export function getLogsByCategory(category: LogCategory): LogEntry[] {
-  const logs = store.get('logs') || [];
-  return logs.filter((log) => log.category === category);
+  const logs = store.get('logs');
+  const logsArray = Array.isArray(logs) ? logs : [];
+  return logsArray.filter((log) => log.category === category);
 }
 
 /**
  * Get logs by correlation ID for tracking related operations
  */
 export function getLogsByCorrelationId(correlationId: string): LogEntry[] {
-  const logs = store.get('logs') || [];
-  return logs.filter((log) => log.correlationId === correlationId);
+  const logs = store.get('logs');
+  const logsArray = Array.isArray(logs) ? logs : [];
+  return logsArray.filter((log) => log.correlationId === correlationId);
 }
 
 /**
  * Clear logs by category
  */
 export function clearLogsByCategory(category: LogCategory): void {
-  const logs = store.get('logs') || [];
-  const filteredLogs = logs.filter((log) => log.category !== category);
+  const logs = store.get('logs');
+  const logsArray = Array.isArray(logs) ? logs : [];
+  const filteredLogs = logsArray.filter((log) => log.category !== category);
   store.set('logs', filteredLogs);
 }
 
@@ -290,13 +294,14 @@ export function clearLogsByCategory(category: LogCategory): void {
  * Export logs for debugging
  */
 export function exportLogs(categories?: LogCategory[]): LogEntry[] {
-  const logs = store.get('logs') || [];
+  const logs = store.get('logs');
+  const logsArray = Array.isArray(logs) ? logs : [];
 
   if (!categories || categories.length === 0) {
-    return logs;
+    return logsArray;
   }
 
-  return logs.filter((log) =>
+  return logsArray.filter((log) =>
     categories.includes(log.category || LogCategory.GENERAL),
   );
 }

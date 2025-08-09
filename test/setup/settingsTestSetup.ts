@@ -5,7 +5,7 @@
 
 import { jest } from '@jest/globals';
 
-// Mock electron-store before any imports
+// Create mockStore that can be used across the test setup
 const mockStore = {
   get: jest.fn(),
   set: jest.fn(),
@@ -17,9 +17,6 @@ const mockStore = {
 
 // Create mock constructor that returns our mock instance
 const MockStore = jest.fn().mockImplementation(() => mockStore);
-
-// Mock the electron-store module
-jest.mock('electron-store', () => MockStore);
 
 // Mock electron app paths
 jest.mock('electron', () => ({
@@ -56,6 +53,11 @@ jest.mock('main/helpers/utils', () => ({
     language: 'en',
   },
   isAppleSilicon: jest.fn(() => false),
+}));
+
+// Mock the store module directly to use our mockStore
+jest.mock('main/helpers/store', () => ({
+  store: mockStore,
 }));
 
 // Global test utilities

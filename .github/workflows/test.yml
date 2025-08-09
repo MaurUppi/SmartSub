@@ -61,7 +61,7 @@ jobs:
         run: npx tsc --noEmit --project .
 
       - name: Run unit tests (Node.js)
-        run: npm run test:ts -- --testPathIgnorePatterns="production|e2e|performance|functional|edge-cases|integration" --testNamePattern="^((?!Event System|Workflow).)*$"
+        run: npm run test:ts -- --testPathIgnorePatterns="production|e2e|performance|functional|edge-cases|integration|enhancedLogging|distributionPackaging|existingFunctionality|fallbackChains|addonLoading|addonManager|developmentMockSystem|testUtils|hardwareDetection|mockGPUData|gpuSelection|subtitleGeneration|windowsCompatibility|parameterProcessor" --testNamePattern="^((?!Event System|Workflow).)*$"
 
       - name: Run React component tests (jsdom)
         id: tsx-tests

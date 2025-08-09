@@ -51,6 +51,7 @@ module.exports = {
     '<rootDir>/test/setup/jest.setup.ts',
     '<rootDir>/test/setup/jest.matchers.ts',
     '<rootDir>/test/setup/settingsTestSetup.ts',
+    '<rootDir>/test/setup/addonTestSetup.ts',
   ],
 
   setupFiles: ['<rootDir>/test/setup/jest.env.ts'],
