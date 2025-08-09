@@ -152,9 +152,16 @@ describe('Distribution Packaging Tests', () => {
 
       mockFs.readdirSync.mockReturnValue(['empty-addon.node'] as any);
 
+      // Suppress console.error for this expected error test
+      const originalConsoleError = console.error;
+      console.error = jest.fn();
+
       await expect(packager.validatePackagedAddons()).rejects.toThrow(
         'Addon file is empty',
       );
+
+      // Restore console.error
+      console.error = originalConsoleError;
     });
   });
 
