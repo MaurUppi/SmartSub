@@ -16,9 +16,7 @@ import {
 } from './logger';
 import {
   AddonInfo,
-  getCUDAAddonName,
   getOpenVINOAddonName,
-  getCoreMLAddonName,
   getCPUAddonName,
 } from './gpuSelector';
 
@@ -163,92 +161,11 @@ function resolveAddonPath(addonFileName: string): string {
   return directPath;
 }
 
-/**
- * Resolve addon path using addon manifest (packaged distribution)
- */
-function resolveAddonPathWithManifest(
-  addonFileName: string,
-  addonsDir: string,
-  manifest: any,
-): string {
-  // Map generic addon names to addon types
-  const addonTypeMapping = {
-    'addon-cuda.node': 'cuda',
-    'addon-openvino.node': 'openvino',
-    'addon-coreml.node': 'coreml',
-    'addon-cpu.node': 'cpu',
-    'addon.node': 'cpu', // Standard fallback
-  };
-
-  const requestedType = addonTypeMapping[addonFileName];
-  if (!requestedType) {
-    logMessage(`Unknown addon type for: ${addonFileName}`, 'warning');
-    return path.join(addonsDir, addonFileName);
-  }
-
-  // Check if requested addon type is available in manifest
-  if (
-    manifest.addons &&
-    manifest.addons[requestedType] &&
-    manifest.addons[requestedType].available
-  ) {
-    const availableAddon = manifest.addons[requestedType];
-    const resolvedPath = path.join(addonsDir, availableAddon.filename);
-
-    logMessage(
-      `Resolved ${requestedType} addon from manifest: ${availableAddon.filename}`,
-      'debug',
-    );
-
-    // Verify file actually exists
-    if (fs.existsSync(resolvedPath)) {
-      return resolvedPath;
-    } else {
-      logMessage(
-        `Manifest references missing file: ${availableAddon.filename}`,
-        'warning',
-      );
-    }
-  }
-
-  // Fallback to direct file check
-  logMessage(
-    `Requested addon type ${requestedType} not found in manifest, falling back`,
-    'warning',
-  );
-  return findFallbackAddon(addonsDir, requestedType);
-}
+// Unused function removed - resolveAddonPathWithManifest
 
 // OpenVINO addon name function is now imported from gpuSelector.ts
 
-/**
- * Legacy addon path resolution (development/non-packaged)
- */
-function resolveAddonPathLegacy(
-  addonFileName: string,
-  addonsDir: string,
-): string {
-  // Map addon types to actual file names based on platform
-  const addonMapping = {
-    'addon-cuda.node':
-      process.platform === 'win32'
-        ? 'addon-windows-cuda.node'
-        : 'addon-linux-cuda.node',
-    'addon-openvino.node': getOpenVINOAddonName(),
-    'addon-coreml.node': 'addon-macos-coreml.node',
-    'addon-cpu.node':
-      process.platform === 'win32'
-        ? 'addon-windows-cpu.node'
-        : 'addon-linux-cpu.node',
-  };
-
-  const mappedFileName = addonMapping[addonFileName] || addonFileName;
-  const fullPath = path.join(addonsDir, mappedFileName);
-
-  logMessage(`Resolved addon path (legacy): ${fullPath}`, 'debug');
-
-  return fullPath;
-}
+// Unused function removed - resolveAddonPathLegacy
 
 /**
  * Find fallback addon when requested type is not available
@@ -611,14 +528,12 @@ export function logAddonLoadAttempt(addonInfo: AddonInfo | null): void {
  * Get addon performance info for monitoring
  */
 export function getAddonPerformanceInfo(addonInfo: AddonInfo) {
-  const performanceInfo = {
+  return {
     type: addonInfo.type,
     expectedPerformance: getExpectedPerformance(addonInfo),
     powerEfficiency: getPowerEfficiency(addonInfo),
     memoryUsage: getExpectedMemoryUsage(addonInfo),
   };
-
-  return performanceInfo;
 }
 
 /**

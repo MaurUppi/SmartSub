@@ -477,13 +477,7 @@ export async function generateSubtitleWithBuiltinWhisper(
 
       // Handle processing error with recovery
       try {
-        const recoveryResult = await handleProcessingError(
-          innerError,
-          event,
-          file,
-          formData,
-        );
-        return recoveryResult;
+        return await handleProcessingError(innerError, event, file, formData);
       } catch (recoveryError) {
         logMessage(`Error recovery failed: ${recoveryError.message}`, 'error');
 

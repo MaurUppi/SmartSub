@@ -7,10 +7,6 @@ import { logMessage } from './logger';
 import { store } from './storeManager';
 import { AddonInfo } from './gpuSelector';
 import { detectAvailableGPUs } from './hardware/hardwareDetection';
-import { checkOpenVINOSupport } from './hardware/openvinoDetection';
-import { checkCudaSupport } from './cudaUtils';
-import { isAppleSilicon } from './utils';
-import { hasEncoderModel } from './whisper';
 
 export interface GPUConfig {
   addonInfo: AddonInfo;
@@ -64,7 +60,6 @@ export async function determineGPUConfiguration(
 ): Promise<GPUConfig> {
   logMessage('Starting GPU configuration determination', 'info');
 
-  const settings = store.get('settings') || {};
   const {
     selectOptimalGPU,
     resolveSpecificGPU,

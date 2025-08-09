@@ -120,8 +120,7 @@ export function setupTaskProcessor(mainWindow: BrowserWindow) {
       modelsPath,
       `ggml-${modelName}-encoder.mlmodelc`,
     );
-    const exists = await fse.pathExists(modelPath);
-    return exists;
+    return await fse.pathExists(modelPath);
   });
 }
 
