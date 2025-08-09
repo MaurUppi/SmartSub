@@ -1,6 +1,6 @@
 import ffmpegStatic from 'ffmpeg-ffprobe-static';
 import { spawn } from 'child_process';
-import { logMessage } from './logger';
+import { logMessage } from './storeManager';
 
 // Use ffmpeg from ffmpeg-ffprobe-static (eliminates redundancy with ffmpeg-static)
 const ffmpegPath = ffmpegStatic.ffmpegPath.replace(
