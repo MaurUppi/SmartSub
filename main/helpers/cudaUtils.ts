@@ -1,5 +1,5 @@
 import { execSync } from 'child_process';
-import { logMessage } from './storeManager';
+import { logMessage } from './logger';
 
 /**
  * CUDA version information interface
@@ -127,16 +127,6 @@ function getCUDAVersionSpecificAddon(cudaVersion: number): string {
   // Generic fallback
   return 'addon-cuda.node';
 }
-
-/**
- * Check if CUDA is supported (backward compatibility)
- * Returns simple boolean for legacy compatibility
- */
-export function isCudaSupported(): boolean {
-  const cudaInfo = checkCudaSupport();
-  return cudaInfo !== false && cudaInfo.supported;
-}
-
 /**
  * Get recommended CUDA addon name for current system
  * Returns the version-specific addon name or fallback

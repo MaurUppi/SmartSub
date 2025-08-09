@@ -2,7 +2,7 @@ import ffmpegStatic from 'ffmpeg-ffprobe-static';
 import ffmpeg from 'fluent-ffmpeg';
 import path from 'path';
 import fs from 'fs';
-import { logMessage } from './storeManager';
+import { logMessage } from './logger';
 import { getMd5, ensureTempDir } from './fileUtils';
 
 // 设置ffmpeg路径 (使用ffmpeg-ffprobe-static消除冗余)

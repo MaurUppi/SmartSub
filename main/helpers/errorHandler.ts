@@ -401,7 +401,6 @@ async function processWithFallback(
     const { loadWhisperAddon, getPath } = require('./whisper');
     const { formatSrtContent } = require('./fileUtils');
     const { promisify } = require('util');
-    const path = require('path');
     const fs = require('fs');
 
     const { tempAudioFile, srtFile } = file;
@@ -431,7 +430,7 @@ async function processWithFallback(
       print_progress: true,
       prompt,
       max_context: +(maxContext ?? -1),
-      progress_callback: (progress) => {
+      progress_callback: (progress: number) => {
         event.sender.send(
           'taskProgressChange',
           file,
@@ -522,25 +521,4 @@ export function createUserFriendlyErrorMessage(error: ProcessingError): string {
   }
 
   return `Processing failed: ${error.message}. Please try again or contact support.`;
-}
-
-/**
- * Log error context for debugging
- */
-export function logErrorContext(error: ProcessingError, context?: any): void {
-  logMessage('=== ERROR CONTEXT ===', 'error');
-  logMessage(`Error: ${error.message}`, 'error');
-  logMessage(`Stack: ${error.stack}`, 'error');
-
-  if (error.code) logMessage(`Code: ${error.code}`, 'error');
-  if (error.errno) logMessage(`Errno: ${error.errno}`, 'error');
-  if (error.path) logMessage(`Path: ${error.path}`, 'error');
-  if (error.syscall) logMessage(`Syscall: ${error.syscall}`, 'error');
-  if (error.addonType) logMessage(`Addon Type: ${error.addonType}`, 'error');
-
-  if (context) {
-    logMessage(`Context: ${JSON.stringify(context, null, 2)}`, 'error');
-  }
-
-  logMessage('==================', 'error');
 }
