@@ -21,7 +21,7 @@ import { hasEncoderModel } from './whisper';
  * Get platform-specific addon filename for CUDA acceleration
  * Enhanced with version-specific detection (Requirement #2)
  */
-function getCUDAAddonName(): string {
+export function getCUDAAddonName(): string {
   // Use enhanced CUDA detection for version-specific addon selection
   try {
     return getCUDAAddonNameFromUtils();
@@ -38,7 +38,7 @@ function getCUDAAddonName(): string {
   }
 }
 
-function getOpenVINOAddonName(): string {
+export function getOpenVINOAddonName(): string {
   switch (process.platform) {
     case 'win32':
       return 'addon-windows-openvino.node';
@@ -53,7 +53,7 @@ function getOpenVINOAddonName(): string {
   }
 }
 
-function getCoreMLAddonName(): string {
+export function getCoreMLAddonName(): string {
   switch (process.platform) {
     case 'darwin':
       return process.arch === 'arm64'
@@ -64,7 +64,7 @@ function getCoreMLAddonName(): string {
   }
 }
 
-function getCPUAddonName(): string {
+export function getCPUAddonName(): string {
   switch (process.platform) {
     case 'win32':
       return 'addon-windows-cpu.node';
