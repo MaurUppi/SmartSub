@@ -172,9 +172,13 @@ describe('Distribution Packaging Tests', () => {
       expect(ADDON_MAPPINGS.standard.linux.cpu).toBe('addon.node');
       expect(ADDON_MAPPINGS.standard.linux.cuda).toBe('addon.node');
 
-      // macOS should have CPU and CoreML
+      // macOS should have CPU and CoreML (platform-specific)
       expect(ADDON_MAPPINGS.standard.darwin.cpu).toBe('addon.node');
-      expect(ADDON_MAPPINGS.standard.darwin.coreml).toBe('addon.coreml.node');
+      expect(ADDON_MAPPINGS.standard.darwin.coreml).toBe(
+        process.arch === 'arm64'
+          ? 'addon-macos-arm64-coreml.node'
+          : 'addon.coreml.node',
+      );
     });
 
     test('should have OpenVINO addons for supported platforms', () => {

@@ -27,7 +27,10 @@ const ADDON_MAPPINGS = {
     },
     darwin: {
       cpu: 'addon.node',
-      coreml: 'addon.coreml.node',
+      coreml:
+        process.arch === 'arm64'
+          ? 'addon-macos-arm64-coreml.node'
+          : 'addon.coreml.node',
     },
   },
 
@@ -307,11 +310,13 @@ function cleanOldAddons() {
   const outputDir = path.join(process.cwd(), 'extraResources', 'addons');
 
   if (fs.existsSync(outputDir)) {
-    console.log('🧹 Cleaning old addon files...');
+    console.log('🧹 Cleaning old addon manifest...');
 
     const files = fs.readdirSync(outputDir);
     for (const file of files) {
-      if (file.endsWith('.node') || file === 'addon-manifest.json') {
+      // Only clean manifest files, preserve existing addon files
+      // They will be overwritten if needed during the copy process
+      if (file === 'addon-manifest.json') {
         fs.unlinkSync(path.join(outputDir, file));
         console.log(`  🗑️  Removed: ${file}`);
       }
