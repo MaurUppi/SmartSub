@@ -24,13 +24,6 @@ export interface WhisperFunction {
   (params: any, callback: (error: Error | null, result?: any) => void): void;
 }
 
-export interface LoadedAddon {
-  whisper: WhisperFunction;
-  type: string;
-  displayName: string;
-  deviceConfig: any;
-}
-
 /**
  * Load and validate addon based on addon info
  */
@@ -86,6 +79,8 @@ export async function loadAndValidateAddon(
     validateAddonStructure(module);
 
     if (!module.exports || !module.exports.whisper) {
+      // @intentional-throw: Error will be caught by outer catch block for logging and re-throwing
+      // This pattern allows proper error transformation with context at each level
       throw new Error(
         `Addon loaded but whisper function not found in ${addonPath}`,
       );
@@ -166,44 +161,6 @@ function resolveAddonPath(addonFileName: string): string {
 // OpenVINO addon name function is now imported from gpuSelector.ts
 
 // Unused function removed - resolveAddonPathLegacy
-
-/**
- * Find fallback addon when requested type is not available
- */
-function findFallbackAddon(addonsDir: string, requestedType: string): string {
-  // Define fallback priority based on requested type
-  const fallbackPriority = {
-    openvino: [
-      'addon-windows-openvino.node',
-      'addon-linux-openvino.node',
-      'addon-macos-arm-openvino.node',
-      'addon-macos-x86-openvino.node',
-      'addon.coreml.node',
-      'addon.node',
-    ],
-    cuda: ['addon-windows-cuda.node', 'addon-linux-cuda.node', 'addon.node'],
-    coreml: ['addon.coreml.node', 'addon.node'],
-    cpu: ['addon.node'],
-  };
-
-  const fallbacks = fallbackPriority[requestedType] || ['addon.node'];
-
-  for (const fallbackFile of fallbacks) {
-    const fallbackPath = path.join(addonsDir, fallbackFile);
-
-    if (fs.existsSync(fallbackPath)) {
-      logMessage(
-        `Using fallback addon: ${fallbackFile} for ${requestedType}`,
-        'info',
-      );
-      return fallbackPath;
-    }
-  }
-
-  // Ultimate fallback - return requested path anyway (will fail later)
-  logMessage(`No suitable fallback found for ${requestedType}`, 'error');
-  return path.join(addonsDir, 'addon.node');
-}
 
 /**
  * Setup OpenVINO environment variables
@@ -297,11 +254,11 @@ async function validateAddonFunctionality(
     };
 
     const timeout = setTimeout(() => {
-      reject(new Error('Addon validation timeout'));
+      reject(new Error(`Addon validation timeout for ${addonInfo.type}`));
     }, 5000);
 
     try {
-      whisperFunc(testParams, (error: Error | null, result?: any) => {
+      whisperFunc(testParams, (error: Error | null, _result?: any) => {
         clearTimeout(timeout);
 
         if (
@@ -636,6 +593,8 @@ async function loadOpenVINOAddon(
         },
         openvinoCorrelationId,
       );
+      // @intentional-throw: Error will be caught by outer catch block at line 655
+      // This allows centralized error logging with full context before re-throwing
       throw new Error(`OpenVINO addon file not found or invalid: ${addonPath}`);
     }
 
@@ -658,6 +617,8 @@ async function loadOpenVINOAddon(
         },
         openvinoCorrelationId,
       );
+      // @intentional-throw: Transform and re-throw to outer catch block at line 655
+      // This pattern logs specific error details then bubbles up with generic message
       throw new Error(`Failed to load OpenVINO addon: ${loadError.message}`);
     }
 
@@ -825,7 +786,7 @@ async function validateOpenVINOFunctionality(
     }, 10000); // Longer timeout for OpenVINO initialization
 
     try {
-      whisperFunc(testParams, (error: Error | null, result?: any) => {
+      whisperFunc(testParams, (error: Error | null, _result?: any) => {
         clearTimeout(timeout);
 
         if (
