@@ -954,7 +954,7 @@ async function validateOpenVINOFunctionality(
             {
               deviceConfig: addonInfo.deviceConfig,
               testParameters: testParams,
-              expectedModelErrors: error ? true : false,
+              expectedModelErrors: !!error,
             },
             validationCorrelationId,
           );

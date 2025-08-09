@@ -12,11 +12,13 @@
  */
 
 import { describe, test, expect, beforeEach, jest } from '@jest/globals';
-import { generateSubtitleWithBuiltinWhisper } from 'main/helpers/subtitleGenerator';
 
-// Test setup
+// Test setup - must come before imports to ensure proper mocking
 import 'test/setup/settingsTestSetup';
 import 'test/setup/subtitleTestSetup';
+
+// Import after setup to ensure mocks are in place
+import { generateSubtitleWithBuiltinWhisper } from 'main/helpers/subtitleGenerator';
 
 describe('Subtitle Generation with Intel GPU', () => {
   beforeEach(() => {

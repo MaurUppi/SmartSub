@@ -21,7 +21,25 @@ jest.mock('main/helpers/logger', () => ({
 
 jest.mock('main/helpers/store', () => ({
   store: {
-    get: jest.fn(),
+    get: jest.fn(() => ({
+      settings: {
+        whisperCommand: 'whisper',
+        model: 'base',
+      },
+    })),
+    set: jest.fn(),
+  },
+}));
+
+jest.mock('main/helpers/storeManager', () => ({
+  logMessage: jest.fn(),
+  store: {
+    get: jest.fn(() => ({
+      settings: {
+        whisperCommand: 'whisper',
+        model: 'base',
+      },
+    })),
     set: jest.fn(),
   },
 }));
@@ -76,7 +94,22 @@ jest.mock('main/helpers/gpuConfig', () => ({
 
 jest.mock('main/helpers/performanceMonitor', () => ({
   GPUPerformanceMonitor: {
-    getInstance: jest.fn(),
+    getInstance: jest.fn(() => ({
+      startSession: jest.fn().mockReturnValue('session-123'),
+      updateMemoryUsage: jest.fn(),
+      trackError: jest.fn(),
+      endSession: jest.fn().mockResolvedValue({
+        sessionId: 'session-123',
+        speedupFactor: 3.5,
+        processingTime: 5000,
+        addonType: 'openvino',
+        realTimeRatio: 2.0,
+        memoryUsage: {
+          heapUsed: 100 * 1024 * 1024,
+          peak: 120 * 1024 * 1024,
+        },
+      }),
+    })),
   },
 }));
 
@@ -84,6 +117,19 @@ jest.mock('main/helpers/utils', () => ({
   getExtraResourcesPath: jest.fn(() => '/mock/resources'),
   isAppleSilicon: jest.fn(() => false),
   isWin32: jest.fn(() => process.platform === 'win32'),
+}));
+
+jest.mock('main/helpers/taskProcessor', () => ({
+  isTaskCancelled: jest.fn(() => false),
+  isTaskPaused: jest.fn(() => false),
+}));
+
+jest.mock('main/helpers/cudaUtils', () => ({
+  checkCudaSupport: jest.fn(() => ({ hasCuda: false })),
+}));
+
+jest.mock('ffmpeg-ffprobe-static', () => ({
+  ffprobePath: '/mock/ffprobe',
 }));
 
 jest.mock('main/helpers/fileUtils', () => ({
@@ -97,7 +143,7 @@ jest.mock('main/helpers/fileUtils', () => ({
 
 // Mock error handler module
 jest.mock('main/helpers/errorHandler', () => ({
-  handleProcessingError: jest.fn(),
+  handleProcessingError: jest.fn().mockResolvedValue('/test/path/output.srt'),
   createUserFriendlyErrorMessage: jest.fn((error) => error.message),
   logErrorContext: jest.fn(),
 }));
@@ -125,7 +171,7 @@ try {
 
 jest.mock('fs', () => ({
   promises: {
-    writeFile: jest.fn(),
+    writeFile: jest.fn().mockResolvedValue(undefined),
   },
   existsSync: jest.fn(() => true),
   statSync: jest.fn(() => ({ size: 1024 })),
@@ -362,38 +408,16 @@ global.subtitleTestUtils = {
   },
 
   setupMockGPUConfig: (config: any) => {
-    // Clear any existing mocks first
-    jest.resetModules();
+    const { loadAndValidateAddon } = require('main/helpers/addonManager');
+    const { determineGPUConfiguration } = require('main/helpers/gpuConfig');
 
-    // Create the mock functions
-    const mockDetermineGPUConfiguration = jest.fn().mockResolvedValue(config);
-    const mockGetVADSettings = jest.fn().mockReturnValue({
-      useVAD: true,
-      vadThreshold: 0.5,
-      vadMinSpeechDuration: 250,
-      vadMinSilenceDuration: 100,
-      vadMaxSpeechDuration: Number.MAX_VALUE,
-      vadSpeechPad: 30,
-      vadSamplesOverlap: 0.1,
-    });
-    const mockValidateGPUMemory = jest.fn().mockReturnValue(true);
-    const mockApplyEnvironmentConfig = jest.fn();
+    // Mock the GPU config determination to return the provided config
+    determineGPUConfiguration.mockResolvedValue(config);
 
-    // Mock the GPU configuration module
-    jest.doMock('main/helpers/gpuConfig', () => ({
-      determineGPUConfiguration: mockDetermineGPUConfiguration,
-      getVADSettings: mockGetVADSettings,
-      validateGPUMemory: mockValidateGPUMemory,
-      applyEnvironmentConfig: mockApplyEnvironmentConfig,
-    }));
-
-    // Store mocks for verification in tests
-    global.gpuConfigMocks = {
-      determineGPUConfiguration: mockDetermineGPUConfiguration,
-      getVADSettings: mockGetVADSettings,
-      validateGPUMemory: mockValidateGPUMemory,
-      applyEnvironmentConfig: mockApplyEnvironmentConfig,
-    };
+    // Mock addon loading to return a working whisper function
+    loadAndValidateAddon.mockResolvedValue(
+      global.subtitleTestUtils.createMockWhisperFunction(),
+    );
   },
 
   setupMockPerformanceMonitor: () => {

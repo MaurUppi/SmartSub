@@ -11,6 +11,17 @@ jest.mock('main/helpers/hardware/hardwareDetection', () => ({
   detectAvailableGPUs: jest.fn(),
 }));
 
+// Mock logger functions
+jest.mock('main/helpers/logger', () => ({
+  logMessage: jest.fn(),
+  generateCorrelationId: jest.fn(() => 'test-correlation-id'),
+  logGPUDetectionEvent: jest.fn(),
+  LogCategory: {
+    GPU_DETECTION: 'gpu_detection',
+    ADDON_LOADING: 'addon_loading',
+  },
+}));
+
 jest.mock('main/helpers/hardware/openvinoDetection', () => ({
   checkOpenVINOSupport: jest.fn(),
 }));
@@ -58,9 +69,8 @@ declare global {
 }
 
 global.addonTestUtils = {
-  createMockGPUCapabilities: () => ({
-    nvidia: true,
-    intel: [
+  createMockGPUCapabilities: () => {
+    const intelGPUs = [
       {
         id: 'intel_arc_a770',
         name: 'Intel Arc A770',
@@ -95,16 +105,22 @@ global.addonTestUtils = {
         powerEfficiency: 'excellent',
         performance: 'medium',
       },
-    ],
-    intelAll: [], // Will be populated by the above array
-    apple: false,
-    cpu: true,
-    openvinoVersion: '2024.6.0',
-    capabilities: {
-      multiGPU: true,
-      hybridSystem: true,
-    },
-  }),
+    ];
+
+    return {
+      nvidia: true,
+      intel: intelGPUs,
+      amd: [], // AMD GPUs array for compatibility
+      intelAll: intelGPUs, // Populate with the same array
+      apple: false,
+      cpu: true,
+      openvinoVersion: '2024.6.0',
+      capabilities: {
+        multiGPU: true,
+        hybridSystem: true,
+      },
+    };
+  },
 
   createMockAddonInfo: (type: string) => {
     const addonConfigs = {

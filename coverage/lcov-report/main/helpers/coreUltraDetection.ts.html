@@ -226,7 +226,13 @@
 <a name='L161'></a><a href='#L161'>161</a>
 <a name='L162'></a><a href='#L162'>162</a>
 <a name='L163'></a><a href='#L163'>163</a>
-<a name='L164'></a><a href='#L164'>164</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L164'></a><a href='#L164'>164</a>
+<a name='L165'></a><a href='#L165'>165</a>
+<a name='L166'></a><a href='#L166'>166</a>
+<a name='L167'></a><a href='#L167'>167</a>
+<a name='L168'></a><a href='#L168'>168</a>
+<a name='L169'></a><a href='#L169'>169</a>
+<a name='L170'></a><a href='#L170'>170</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -308,6 +314,8 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -359,6 +367,9 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -389,13 +400,14 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span></td><td class="text"><pre class="prettyprint lang-js">/**
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">/**
  * Intel Core Ultra Processors Detection Module
- * 
+ *
  * This module provides reliable hardware identification for Intel Core Ultra
  * processors with integrated Intel Arc Graphics (iGPU). Based on the reference
  * implementation using systeminformation for Node.js/Electron environments.
- * 
+ *
  * Intel Core Ultra processors typically include:
  * - Intel Arc Graphics (integrated GPU)
  * - Only very few Core Ultra models lack iGPU (fallback to CPU processing)
@@ -416,7 +428,7 @@ export interface CoreUltraInfo {
 /**
  * Returns true when CPU brand string contains "Core Ultra"
  * Performance: First call ~5ms, subsequent calls cached
- * 
+ *
  * Based on the TypeScript reference implementation using systeminformation
  */
 export async function <span class="fstat-no" title="function not covered" >isIntelCoreUltra(</span>): Promise&lt;boolean&gt; {
@@ -438,22 +450,22 @@ export async function detectCoreUltraWithGraphics(): Promise&lt;CoreUltraInfo&gt
   try {
     const cpuInfo = await si.cpu();
     const { manufacturer, brand } = cpuInfo;
-    
+&nbsp;
     const isIntel = /^GenuineIntel$/i.test(manufacturer);
     const isUltra = /Core\s+Ultra\s+\d+/i.test(brand);
     const isCoreUltra = isIntel &amp;&amp; <span class="branch-1 cbranch-no" title="branch not covered" >isUltra;</span>
-    
+&nbsp;
     // Most Intel Core Ultra processors have integrated Arc Graphics
     // Only very few models lack iGPU (rare edge cases)
     const hasIntegratedGraphics = isCoreUltra; // Assumption: Core Ultra = has iGPU
-    
+&nbsp;
     return {
       isIntelCoreUltra: isCoreUltra,
       hasIntegratedGraphics,
       cpuBrand: brand,
       cpuManufacturer: manufacturer,
       detectionMethod: 'systeminformation',
-      confidence: 'high'
+      confidence: 'high',
     };
   } catch (error) {
 <span class="cstat-no" title="statement not covered" >    logMessage(`CoreUltra comprehensive detection failed: ${error}`, 'error');</span>
@@ -461,7 +473,7 @@ export async function detectCoreUltraWithGraphics(): Promise&lt;CoreUltraInfo&gt
       isIntelCoreUltra: false,
       hasIntegratedGraphics: false,
       detectionMethod: 'fallback',
-      confidence: 'low'
+      confidence: 'low',
     };
   }
 }
@@ -470,7 +482,9 @@ export async function detectCoreUltraWithGraphics(): Promise&lt;CoreUltraInfo&gt
  * Mock implementation for development environments
  * Simulates Intel Core Ultra processors with integrated graphics
  */
-export function <span class="fstat-no" title="function not covered" >mockCoreUltraDetection(</span>simulate: boolean = <span class="branch-0 cbranch-no" title="branch not covered" >true)</span>: CoreUltraInfo {
+export function <span class="fstat-no" title="function not covered" >mockCoreUltraDetection(</span>
+  simulate: boolean = <span class="branch-0 cbranch-no" title="branch not covered" >true,</span>
+): CoreUltraInfo {
 <span class="cstat-no" title="statement not covered" >  if (simulate) {</span>
 <span class="cstat-no" title="statement not covered" >    return {</span>
       isIntelCoreUltra: true,
@@ -478,17 +492,17 @@ export function <span class="fstat-no" title="function not covered" >mockCoreUlt
       cpuBrand: 'Intel(R) Core(TM) Ultra 7 155H @ 3.80GHz',
       cpuManufacturer: 'GenuineIntel',
       detectionMethod: 'mock',
-      confidence: 'high'
+      confidence: 'high',
     };
   }
-  
+&nbsp;
 <span class="cstat-no" title="statement not covered" >  return {</span>
     isIntelCoreUltra: false,
     hasIntegratedGraphics: false,
     cpuBrand: 'Mock Non-Ultra CPU',
     cpuManufacturer: 'GenuineIntel',
     detectionMethod: 'mock',
-    confidence: 'high'
+    confidence: 'high',
   };
 }
 &nbsp;
@@ -499,25 +513,28 @@ export class CoreUltraDetector {
   private static instance: CoreUltraDetector;
   private cachedResult?: CoreUltraInfo;
   private mockMode: boolean = false;
-  
+&nbsp;
   private constructor() {}
-  
+&nbsp;
   public static getInstance(): CoreUltraDetector {
     <span class="missing-if-branch" title="else path not taken" >E</span>if (!CoreUltraDetector.instance) {
       CoreUltraDetector.instance = new CoreUltraDetector();
     }
     return CoreUltraDetector.instance;
   }
-  
+&nbsp;
   /**
    * Enable mock mode for development/testing
    */
   public <span class="fstat-no" title="function not covered" >enableMockMode(</span>simulate: boolean = <span class="branch-0 cbranch-no" title="branch not covered" >true)</span>: void {
 <span class="cstat-no" title="statement not covered" >    this.mockMode = true;</span>
 <span class="cstat-no" title="statement not covered" >    this.cachedResult = mockCoreUltraDetection(simulate);</span>
-<span class="cstat-no" title="statement not covered" >    logMessage(`CoreUltra detector: Mock mode enabled (simulate=${simulate})`, 'info');</span>
+<span class="cstat-no" title="statement not covered" >    logMessage(</span>
+      `CoreUltra detector: Mock mode enabled (simulate=${simulate})`,
+      'info',
+    );
   }
-  
+&nbsp;
   /**
    * Disable mock mode and clear cache
    */
@@ -526,7 +543,7 @@ export class CoreUltraDetector {
 <span class="cstat-no" title="statement not covered" >    this.cachedResult = undefined;</span>
 <span class="cstat-no" title="statement not covered" >    logMessage('CoreUltra detector: Mock mode disabled', 'info');</span>
   }
-  
+&nbsp;
   /**
    * Get Core Ultra detection result (cached after first call)
    */
@@ -534,15 +551,15 @@ export class CoreUltraDetector {
     <span class="missing-if-branch" title="if path not taken" >I</span>if (this.cachedResult) {
 <span class="cstat-no" title="statement not covered" >      return this.cachedResult;</span>
     }
-    
+&nbsp;
     <span class="missing-if-branch" title="if path not taken" >I</span>if (this.mockMode) {
 <span class="cstat-no" title="statement not covered" >      return mockCoreUltraDetection(true);</span>
     }
-    
+&nbsp;
     this.cachedResult = await detectCoreUltraWithGraphics();
     return this.cachedResult;
   }
-  
+&nbsp;
   /**
    * Clear cache and force re-detection
    */
@@ -552,14 +569,15 @@ export class CoreUltraDetector {
 }
 &nbsp;
 // Export singleton instance
-export const coreUltraDetector = CoreUltraDetector.getInstance();</pre></td></tr></table></pre>
+export const coreUltraDetector = CoreUltraDetector.getInstance();
+&nbsp;</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
             </div><!-- /wrapper -->
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-08-05T06:12:09.412Z
+                at 2025-08-08T17:35:16.436Z
             </div>
         <script src="../../prettify.js"></script>
         <script>
