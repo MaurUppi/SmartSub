@@ -4,7 +4,7 @@
  */
 
 import { logMessage } from './logger';
-import { store } from './storeManager';
+import { store } from './store';
 import { AddonInfo } from './gpuSelector';
 import { detectAvailableGPUs } from './hardware/hardwareDetection';
 
@@ -160,7 +160,7 @@ export async function determineGPUConfiguration(
  */
 function generateWhisperGPUParams(
   addonInfo: AddonInfo,
-  model: string,
+  _model: string,
 ): WhisperGPUParams {
   const baseParams: WhisperGPUParams = {
     use_gpu: false,
