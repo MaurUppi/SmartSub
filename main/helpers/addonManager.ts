@@ -14,7 +14,13 @@ import {
   logPerformanceMetrics,
   LogCategory,
 } from './logger';
-import { AddonInfo } from './gpuSelector';
+import {
+  AddonInfo,
+  getCUDAAddonName,
+  getOpenVINOAddonName,
+  getCoreMLAddonName,
+  getCPUAddonName,
+} from './gpuSelector';
 
 export interface WhisperFunction {
   (params: any, callback: (error: Error | null, result?: any) => void): void;
@@ -512,13 +518,7 @@ export function createFallbackChain(failedAddonInfo: AddonInfo): AddonInfo[] {
   const platform = process.platform;
   const arch = process.arch;
 
-  // Import platform-specific addon name functions
-  const {
-    getCUDAAddonName,
-    getOpenVINOAddonName,
-    getCoreMLAddonName,
-    getCPUAddonName,
-  } = require('./gpuSelector');
+  // Platform-specific addon name functions are imported at module level
 
   // Platform-specific fallback logic
   if (platform === 'darwin' && arch === 'arm64') {
