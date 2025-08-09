@@ -165,7 +165,7 @@ jest.mock('@/components/ui/button', () => ({
   }: any) => (
     <button
       onClick={onClick}
-      disabled={disabled}
+      disabled={Boolean(disabled)}
       data-variant={variant}
       data-size={size}
       className={className}
@@ -224,32 +224,66 @@ jest.mock('@/components/ui/alert', () => ({
 }));
 
 jest.mock('@/components/ui/select', () => ({
-  Select: ({ children, onValueChange, value, ...props }: any) => (
-    <div data-testid="select" data-value={value} {...props}>
+  Select: ({ children, onValueChange, value, disabled, ...props }: any) => (
+    <div
+      data-testid="select"
+      data-value={value}
+      data-disabled={disabled}
+      {...props}
+    >
       {React.Children.map(children, (child) =>
-        React.cloneElement(child, { onValueChange, value }),
+        React.cloneElement(child, { onValueChange, disabled }),
       )}
     </div>
   ),
-  SelectContent: ({ children, ...props }: any) => (
-    <div data-testid="select-content" {...props}>
-      {children}
-    </div>
-  ),
-  SelectItem: ({ children, value, onValueChange, ...props }: any) => (
-    <button
-      data-testid={`select-item-${value}`}
-      onClick={() => onValueChange?.(value)}
-      {...props}
-    >
-      {children}
-    </button>
-  ),
-  SelectTrigger: ({ children, ...props }: any) => (
-    <div data-testid="select-trigger" {...props}>
-      {children}
-    </div>
-  ),
+  SelectContent: ({ children, onValueChange, disabled, ...props }: any) => {
+    // Pass down the props to children, filtering invalid DOM props
+    const { value, ...validProps } = props;
+    return (
+      <div data-testid="select-content" {...validProps}>
+        {React.Children.map(children, (child) => {
+          // Preserve child's own disabled prop if it exists, otherwise use parent disabled
+          const childDisabled =
+            child.props.disabled !== undefined
+              ? child.props.disabled
+              : disabled;
+          return React.cloneElement(child, {
+            onValueChange,
+            disabled: childDisabled,
+          });
+        })}
+      </div>
+    );
+  },
+  SelectItem: ({
+    children,
+    value,
+    onValueChange,
+    disabled,
+    className,
+    ...props
+  }: any) => {
+    return (
+      <button
+        data-testid={`select-item-${value}`}
+        onClick={() => onValueChange?.(value)}
+        disabled={disabled}
+        className={className}
+        {...props}
+      >
+        {children}
+      </button>
+    );
+  },
+  SelectTrigger: ({ children, ...props }: any) => {
+    // Remove invalid props that React doesn't recognize
+    const { onValueChange, value, disabled, ...validProps } = props;
+    return (
+      <div data-testid="select-trigger" {...validProps}>
+        {children}
+      </div>
+    );
+  },
   SelectValue: ({ placeholder, ...props }: any) => (
     <span data-testid="select-value" {...props}>
       {placeholder}
@@ -432,9 +466,22 @@ testComponentVariants(componentConfig, [
 ]);
 
 describe('GPUAdvancedSettings', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     jest.clearAllMocks();
-    (window.ipc.invoke as jest.Mock).mockResolvedValue({});
+
+    // Set up default IPC mock responses
+    (window.ipc.invoke as jest.Mock).mockImplementation((channel) => {
+      if (channel === 'getOpenVINOSettings') {
+        return Promise.resolve({}); // Return empty settings by default
+      }
+      if (channel === 'setOpenVINOSettings') {
+        return Promise.resolve(true);
+      }
+      if (channel === 'selectDirectory') {
+        return Promise.resolve({ canceled: true, filePaths: [] });
+      }
+      return Promise.resolve({});
+    });
 
     // Mock localStorage
     Object.defineProperty(window, 'localStorage', {
@@ -449,52 +496,74 @@ describe('GPUAdvancedSettings', () => {
   });
 
   describe('Visibility Control', () => {
-    it('shows settings for compatible discrete GPU', () => {
+    it('shows settings for compatible discrete GPU', async () => {
       render(<GPUAdvancedSettings selectedGPU={mockCompatibleGPU} />);
 
-      expect(screen.getByText('Advanced Settings')).toBeInTheDocument();
-      expect(screen.getByTestId('settings-icon')).toBeInTheDocument();
+      await waitFor(
+        () => {
+          expect(screen.getByText('Advanced Settings')).toBeInTheDocument();
+          const settingsIcons = screen.getAllByTestId('settings-icon');
+          expect(settingsIcons.length).toBeGreaterThan(0);
+        },
+        { timeout: 3000 },
+      );
     });
 
-    it('shows settings for compatible integrated GPU', () => {
+    it('shows settings for compatible integrated GPU', async () => {
       render(<GPUAdvancedSettings selectedGPU={mockIntegratedGPU} />);
 
-      expect(screen.getByText('Advanced Settings')).toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.getByText('Advanced Settings')).toBeInTheDocument();
+      });
     });
 
-    it('hides settings for incompatible GPU', () => {
+    it('hides settings for incompatible GPU', async () => {
       render(<GPUAdvancedSettings selectedGPU={mockIncompatibleGPU} />);
 
-      expect(screen.getByTestId('alert')).toBeInTheDocument();
-      expect(
-        screen.getByText('Advanced settings are not available for this GPU'),
-      ).toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.getByTestId('alert')).toBeInTheDocument();
+        expect(
+          screen.getByText('Advanced settings are not available for this GPU'),
+        ).toBeInTheDocument();
+      });
     });
 
-    it('hides settings when no GPU is selected', () => {
+    it('hides settings when no GPU is selected', async () => {
       render(<GPUAdvancedSettings selectedGPU={null} />);
 
-      expect(screen.getByTestId('alert')).toBeInTheDocument();
-      expect(
-        screen.getByText('Advanced settings are not available for this GPU'),
-      ).toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.getByTestId('alert')).toBeInTheDocument();
+        expect(
+          screen.getByText('Advanced settings are not available for this GPU'),
+        ).toBeInTheDocument();
+      });
     });
   });
 
   describe('Cache Configuration', () => {
-    it('displays cache configuration section', () => {
+    it('displays cache configuration section', async () => {
       render(<GPUAdvancedSettings selectedGPU={mockCompatibleGPU} />);
 
-      expect(screen.getByText('Cache Configuration')).toBeInTheDocument();
-      expect(screen.getByTestId('hard-drive-icon')).toBeInTheDocument();
+      await waitFor(
+        () => {
+          expect(screen.getByText('Cache Configuration')).toBeInTheDocument();
+          expect(screen.getByTestId('hard-drive-icon')).toBeInTheDocument();
+        },
+        { timeout: 3000 },
+      );
     });
 
-    it('shows cache directory input with browse button', () => {
+    it('shows cache directory input with browse button', async () => {
       render(<GPUAdvancedSettings selectedGPU={mockCompatibleGPU} />);
 
-      expect(screen.getByLabelText('Cache Directory')).toBeInTheDocument();
-      expect(screen.getByText('Browse')).toBeInTheDocument();
-      expect(screen.getByTestId('folder-icon')).toBeInTheDocument();
+      await waitFor(
+        () => {
+          expect(screen.getByLabelText('Cache Directory')).toBeInTheDocument();
+          expect(screen.getByText('Browse')).toBeInTheDocument();
+          expect(screen.getByTestId('folder-icon')).toBeInTheDocument();
+        },
+        { timeout: 3000 },
+      );
     });
 
     it('handles cache directory selection', async () => {
@@ -532,222 +601,349 @@ describe('GPUAdvancedSettings', () => {
       expect(toast.error).not.toHaveBeenCalled();
     });
 
-    it('shows caching toggle switches', () => {
+    it('shows caching toggle switches', async () => {
       render(<GPUAdvancedSettings selectedGPU={mockCompatibleGPU} />);
 
-      expect(screen.getByLabelText('Enable Caching')).toBeInTheDocument();
-      expect(screen.getByLabelText('Enable Model Caching')).toBeInTheDocument();
+      await waitFor(
+        () => {
+          expect(screen.getByLabelText('Enable Caching')).toBeInTheDocument();
+          expect(
+            screen.getByLabelText('Enable Model Caching'),
+          ).toBeInTheDocument();
+        },
+        { timeout: 3000 },
+      );
     });
 
-    it('toggles caching settings', () => {
+    it('toggles caching settings', async () => {
       render(<GPUAdvancedSettings selectedGPU={mockCompatibleGPU} />);
 
-      const enableCachingSwitch = screen.getByLabelText('Enable Caching');
-      fireEvent.click(enableCachingSwitch);
-
-      expect(enableCachingSwitch).toBeChecked();
+      await waitFor(
+        () => {
+          const enableCachingSwitch = screen.getByLabelText('Enable Caching');
+          fireEvent.click(enableCachingSwitch);
+          expect(enableCachingSwitch).toBeChecked();
+        },
+        { timeout: 3000 },
+      );
     });
   });
 
   describe('Device Preferences', () => {
-    it('displays device preferences section', () => {
+    it('displays device preferences section', async () => {
       render(<GPUAdvancedSettings selectedGPU={mockCompatibleGPU} />);
 
-      expect(screen.getByText('Device Preferences')).toBeInTheDocument();
-      expect(screen.getByTestId('monitor-icon')).toBeInTheDocument();
+      await waitFor(
+        () => {
+          expect(screen.getByText('Device Preferences')).toBeInTheDocument();
+          expect(screen.getByTestId('monitor-icon')).toBeInTheDocument();
+        },
+        { timeout: 3000 },
+      );
     });
 
-    it('shows device preference dropdown', () => {
+    it('shows device preference dropdown', async () => {
       render(<GPUAdvancedSettings selectedGPU={mockCompatibleGPU} />);
 
-      expect(screen.getByLabelText('Device Preference')).toBeInTheDocument();
-      expect(screen.getByTestId('select')).toBeInTheDocument();
+      await waitFor(
+        () => {
+          expect(screen.getByText('Device Preference')).toBeInTheDocument();
+          expect(screen.getByTestId('select')).toBeInTheDocument();
+        },
+        { timeout: 3000 },
+      );
     });
 
-    it('displays device preference options', () => {
+    it('displays device preference options', async () => {
       render(<GPUAdvancedSettings selectedGPU={mockCompatibleGPU} />);
 
-      expect(screen.getByTestId('select-item-auto')).toBeInTheDocument();
-      expect(screen.getByTestId('select-item-discrete')).toBeInTheDocument();
-      expect(screen.getByTestId('select-item-integrated')).toBeInTheDocument();
+      await waitFor(
+        () => {
+          expect(screen.getByTestId('select-item-auto')).toBeInTheDocument();
+          expect(
+            screen.getByTestId('select-item-discrete'),
+          ).toBeInTheDocument();
+          expect(
+            screen.getByTestId('select-item-integrated'),
+          ).toBeInTheDocument();
+        },
+        { timeout: 3000 },
+      );
     });
 
-    it('handles device preference selection', () => {
+    it('handles device preference selection', async () => {
       render(<GPUAdvancedSettings selectedGPU={mockCompatibleGPU} />);
 
-      const discreteOption = screen.getByTestId('select-item-discrete');
-      fireEvent.click(discreteOption);
+      await waitFor(
+        () => {
+          const discreteOption = screen.getByTestId('select-item-discrete');
+          fireEvent.click(discreteOption);
 
-      expect(screen.getByTestId('select')).toHaveAttribute(
-        'data-value',
-        'discrete',
+          expect(screen.getByTestId('select')).toHaveAttribute(
+            'data-value',
+            'discrete',
+          );
+        },
+        { timeout: 3000 },
       );
     });
   });
 
   describe('Performance Optimization', () => {
-    it('displays performance optimization section', () => {
+    it('displays performance optimization section', async () => {
       render(<GPUAdvancedSettings selectedGPU={mockCompatibleGPU} />);
 
-      expect(screen.getByText('Performance Optimization')).toBeInTheDocument();
-      expect(screen.getByTestId('zap-icon')).toBeInTheDocument();
+      await waitFor(
+        () => {
+          expect(
+            screen.getByText('Performance Optimization'),
+          ).toBeInTheDocument();
+          expect(screen.getByTestId('zap-icon')).toBeInTheDocument();
+        },
+        { timeout: 3000 },
+      );
     });
 
-    it('shows optimization toggles', () => {
+    it('shows optimization toggles', async () => {
       render(<GPUAdvancedSettings selectedGPU={mockCompatibleGPU} />);
 
-      expect(screen.getByLabelText('Enable Optimizations')).toBeInTheDocument();
-      expect(
-        screen.getByLabelText('Enable Dynamic Shapes'),
-      ).toBeInTheDocument();
+      await waitFor(
+        () => {
+          expect(
+            screen.getByLabelText('Enable Optimizations'),
+          ).toBeInTheDocument();
+          expect(
+            screen.getByLabelText('Enable Dynamic Shapes'),
+          ).toBeInTheDocument();
+        },
+        { timeout: 3000 },
+      );
     });
 
-    it('shows number of threads input', () => {
+    it('shows number of threads input', async () => {
       render(<GPUAdvancedSettings selectedGPU={mockCompatibleGPU} />);
 
-      expect(screen.getByLabelText('Number of Threads')).toBeInTheDocument();
+      await waitFor(
+        () => {
+          expect(
+            screen.getByLabelText('Number of Threads'),
+          ).toBeInTheDocument();
+        },
+        { timeout: 3000 },
+      );
     });
 
-    it('handles thread count changes', () => {
+    it('handles thread count changes', async () => {
       render(<GPUAdvancedSettings selectedGPU={mockCompatibleGPU} />);
 
-      const threadsInput = screen.getByLabelText('Number of Threads');
-      fireEvent.change(threadsInput, { target: { value: '8' } });
-
-      expect(threadsInput).toHaveValue(8);
+      await waitFor(
+        () => {
+          const threadsInput = screen.getByLabelText('Number of Threads');
+          fireEvent.change(threadsInput, { target: { value: '8' } });
+          expect(threadsInput).toHaveValue(8);
+        },
+        { timeout: 3000 },
+      );
     });
 
-    it('toggles optimization settings', () => {
+    it('toggles optimization settings', async () => {
       render(<GPUAdvancedSettings selectedGPU={mockCompatibleGPU} />);
 
-      const optimizationsSwitch = screen.getByLabelText('Enable Optimizations');
-      fireEvent.click(optimizationsSwitch);
-
-      expect(optimizationsSwitch).toBeChecked();
+      await waitFor(
+        () => {
+          const optimizationsSwitch = screen.getByLabelText(
+            'Enable Optimizations',
+          );
+          fireEvent.click(optimizationsSwitch);
+          expect(optimizationsSwitch).toBeChecked();
+        },
+        { timeout: 3000 },
+      );
     });
   });
 
   describe('Debug and Logging', () => {
-    it('displays debug and logging section', () => {
+    it('displays debug and logging section', async () => {
       render(<GPUAdvancedSettings selectedGPU={mockCompatibleGPU} />);
 
-      expect(screen.getByText('Debug and Logging')).toBeInTheDocument();
+      await waitFor(
+        () => {
+          expect(screen.getByText('Debug and Logging')).toBeInTheDocument();
+        },
+        { timeout: 3000 },
+      );
     });
 
-    it('shows log level dropdown', () => {
+    it('shows log level dropdown', async () => {
       render(<GPUAdvancedSettings selectedGPU={mockCompatibleGPU} />);
 
-      expect(screen.getByLabelText('Log Level')).toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.getByText('Log Level')).toBeInTheDocument();
+      });
     });
 
-    it('displays log level options', () => {
+    it('displays log level options', async () => {
       render(<GPUAdvancedSettings selectedGPU={mockCompatibleGPU} />);
 
-      expect(screen.getByTestId('select-item-error')).toBeInTheDocument();
-      expect(screen.getByTestId('select-item-warning')).toBeInTheDocument();
-      expect(screen.getByTestId('select-item-info')).toBeInTheDocument();
-      expect(screen.getByTestId('select-item-debug')).toBeInTheDocument();
+      await waitFor(
+        () => {
+          expect(screen.getByTestId('select-item-error')).toBeInTheDocument();
+          expect(screen.getByTestId('select-item-warning')).toBeInTheDocument();
+          expect(screen.getByTestId('select-item-info')).toBeInTheDocument();
+          expect(screen.getByTestId('select-item-debug')).toBeInTheDocument();
+        },
+        { timeout: 3000 },
+      );
     });
 
-    it('shows telemetry toggle', () => {
+    it('shows telemetry toggle', async () => {
       render(<GPUAdvancedSettings selectedGPU={mockCompatibleGPU} />);
 
-      expect(screen.getByLabelText('Enable Telemetry')).toBeInTheDocument();
+      await waitFor(
+        () => {
+          expect(screen.getByLabelText('Enable Telemetry')).toBeInTheDocument();
+        },
+        { timeout: 3000 },
+      );
     });
 
-    it('handles log level selection', () => {
+    it('handles log level selection', async () => {
       render(<GPUAdvancedSettings selectedGPU={mockCompatibleGPU} />);
 
-      const debugOption = screen.getByTestId('select-item-debug');
-      fireEvent.click(debugOption);
-
-      // Should update the select value
-      expect(screen.getByTestId('select')).toBeTruthy();
+      await waitFor(() => {
+        const debugOption = screen.getByTestId('select-item-debug');
+        fireEvent.click(debugOption);
+        // Should update the select value
+        expect(screen.getByTestId('select')).toBeTruthy();
+      });
     });
   });
 
   describe('Validation', () => {
-    it('validates cache directory input', () => {
+    it('validates cache directory input', async () => {
       render(<GPUAdvancedSettings selectedGPU={mockCompatibleGPU} />);
 
-      const cacheDirInput = screen.getByLabelText('Cache Directory');
+      await waitFor(
+        () => {
+          expect(screen.getByText('Cache Directory')).toBeInTheDocument();
+        },
+        { timeout: 3000 },
+      );
+
+      const cacheDirInput = screen.getByPlaceholderText(
+        'E.g., C:\\openvino\\cache',
+      );
 
       // Test empty directory
       fireEvent.change(cacheDirInput, { target: { value: '' } });
       fireEvent.blur(cacheDirInput);
 
-      expect(
-        screen.getByText('Cache directory is required'),
-      ).toBeInTheDocument();
+      await waitFor(
+        () => {
+          expect(
+            screen.getByText('Cache directory is required'),
+          ).toBeInTheDocument();
+        },
+        { timeout: 3000 },
+      );
     });
 
-    it('validates thread count range', () => {
+    it('validates thread count range', async () => {
       render(<GPUAdvancedSettings selectedGPU={mockCompatibleGPU} />);
 
-      const threadsInput = screen.getByLabelText('Number of Threads');
+      await waitFor(() => {
+        const threadsInput = screen.getByLabelText('Number of Threads');
 
-      // Test invalid range
-      fireEvent.change(threadsInput, { target: { value: '50' } });
-      fireEvent.blur(threadsInput);
+        // Test invalid range
+        fireEvent.change(threadsInput, { target: { value: '50' } });
+        fireEvent.blur(threadsInput);
+      });
 
-      expect(
-        screen.getByText('Number of threads must be between 1 and 32'),
-      ).toBeInTheDocument();
+      await waitFor(() => {
+        expect(
+          screen.getByText('Number of threads must be between 1 and 32'),
+        ).toBeInTheDocument();
+      });
     });
 
-    it('validates cache directory path length', () => {
+    it('validates cache directory path length', async () => {
       render(<GPUAdvancedSettings selectedGPU={mockCompatibleGPU} />);
 
-      const cacheDirInput = screen.getByLabelText('Cache Directory');
-      const longPath = 'a'.repeat(300);
+      await waitFor(() => {
+        const cacheDirInput = screen.getByLabelText('Cache Directory');
+        const longPath = 'a'.repeat(300);
 
-      fireEvent.change(cacheDirInput, { target: { value: longPath } });
-      fireEvent.blur(cacheDirInput);
+        fireEvent.change(cacheDirInput, { target: { value: longPath } });
+        fireEvent.blur(cacheDirInput);
+      });
 
-      expect(
-        screen.getByText('Cache directory path is too long'),
-      ).toBeInTheDocument();
+      await waitFor(() => {
+        expect(
+          screen.getByText('Cache directory path is too long'),
+        ).toBeInTheDocument();
+      });
     });
 
-    it('validates cache directory invalid characters', () => {
+    it('validates cache directory invalid characters', async () => {
       render(<GPUAdvancedSettings selectedGPU={mockCompatibleGPU} />);
 
-      const cacheDirInput = screen.getByLabelText('Cache Directory');
+      await waitFor(() => {
+        const cacheDirInput = screen.getByLabelText('Cache Directory');
 
-      fireEvent.change(cacheDirInput, { target: { value: '/path<>:"|?*' } });
-      fireEvent.blur(cacheDirInput);
+        fireEvent.change(cacheDirInput, { target: { value: '/path<>:"|?*' } });
+        fireEvent.blur(cacheDirInput);
+      });
 
-      expect(
-        screen.getByText('Cache directory contains invalid characters'),
-      ).toBeInTheDocument();
+      await waitFor(() => {
+        expect(
+          screen.getByText('Cache directory contains invalid characters'),
+        ).toBeInTheDocument();
+      });
     });
   });
 
   describe('Save and Reset Functionality', () => {
-    it('shows save and reset buttons', () => {
+    it('shows save and reset buttons', async () => {
       render(<GPUAdvancedSettings selectedGPU={mockCompatibleGPU} />);
 
-      expect(screen.getByText('Save')).toBeInTheDocument();
-      expect(screen.getByText('Reset')).toBeInTheDocument();
-      expect(screen.getByTestId('save-icon')).toBeInTheDocument();
-      expect(screen.getByTestId('rotate-ccw-icon')).toBeInTheDocument();
+      await waitFor(
+        () => {
+          expect(screen.getByText('Save')).toBeInTheDocument();
+          expect(screen.getByText('Reset')).toBeInTheDocument();
+        },
+        { timeout: 3000 },
+      );
+
+      const saveIcons = screen.getAllByTestId('save-icon');
+      expect(saveIcons.length).toBeGreaterThan(0);
+      const rotateIcons = screen.getAllByTestId('rotate-ccw-icon');
+      expect(rotateIcons.length).toBeGreaterThan(0);
     });
 
-    it('disables save button when no changes made', () => {
+    it('disables save button when no changes made', async () => {
       render(<GPUAdvancedSettings selectedGPU={mockCompatibleGPU} />);
 
-      const saveButton = screen.getByText('Save');
-      expect(saveButton).toBeDisabled();
+      await waitFor(
+        () => {
+          const saveButton = screen.getByText('Save');
+          expect(saveButton).toBeDisabled();
+        },
+        { timeout: 3000 },
+      );
     });
 
-    it('enables save button when changes are made', () => {
+    it('enables save button when changes are made', async () => {
       render(<GPUAdvancedSettings selectedGPU={mockCompatibleGPU} />);
 
-      const cacheDirInput = screen.getByLabelText('Cache Directory');
-      fireEvent.change(cacheDirInput, { target: { value: '/new/path' } });
+      await waitFor(() => {
+        const cacheDirInput = screen.getByLabelText('Cache Directory');
+        fireEvent.change(cacheDirInput, { target: { value: '/new/path' } });
+      });
 
-      const saveButton = screen.getByText('Save');
-      expect(saveButton).not.toBeDisabled();
+      await waitFor(() => {
+        const saveButton = screen.getByText('Save');
+        expect(saveButton).not.toBeDisabled();
+      });
     });
 
     it('handles save operation successfully', async () => {
@@ -755,21 +951,28 @@ describe('GPUAdvancedSettings', () => {
 
       render(<GPUAdvancedSettings selectedGPU={mockCompatibleGPU} />);
 
-      const cacheDirInput = screen.getByLabelText('Cache Directory');
-      fireEvent.change(cacheDirInput, { target: { value: '/valid/path' } });
-
-      const saveButton = screen.getByText('Save');
-      fireEvent.click(saveButton);
+      await waitFor(() => {
+        const cacheDirInput = screen.getByLabelText('Cache Directory');
+        fireEvent.change(cacheDirInput, { target: { value: '/valid/path' } });
+      });
 
       await waitFor(() => {
-        expect(window.ipc.invoke).toHaveBeenCalledWith(
-          'setOpenVINOSettings',
-          expect.any(Object),
-        );
-        expect(toast.success).toHaveBeenCalledWith(
-          'Advanced settings saved successfully',
-        );
+        const saveButton = screen.getByText('Save');
+        fireEvent.click(saveButton);
       });
+
+      await waitFor(
+        () => {
+          expect(window.ipc.invoke).toHaveBeenCalledWith(
+            'setOpenVINOSettings',
+            expect.any(Object),
+          );
+          expect(toast.success).toHaveBeenCalledWith(
+            'Advanced settings saved successfully',
+          );
+        },
+        { timeout: 3000 },
+      );
     });
 
     it('handles save operation failure', async () => {
@@ -779,40 +982,54 @@ describe('GPUAdvancedSettings', () => {
 
       render(<GPUAdvancedSettings selectedGPU={mockCompatibleGPU} />);
 
-      const cacheDirInput = screen.getByLabelText('Cache Directory');
-      fireEvent.change(cacheDirInput, { target: { value: '/valid/path' } });
-
-      const saveButton = screen.getByText('Save');
-      fireEvent.click(saveButton);
+      await waitFor(() => {
+        const cacheDirInput = screen.getByLabelText('Cache Directory');
+        fireEvent.change(cacheDirInput, { target: { value: '/valid/path' } });
+      });
 
       await waitFor(() => {
+        const saveButton = screen.getByText('Save');
+        fireEvent.click(saveButton);
+      });
+
+      await waitFor(
+        () => {
+          expect(toast.error).toHaveBeenCalledWith(
+            'Failed to save advanced settings',
+          );
+        },
+        { timeout: 3000 },
+      );
+    });
+
+    it('resets settings to defaults', async () => {
+      render(<GPUAdvancedSettings selectedGPU={mockCompatibleGPU} />);
+
+      await waitFor(
+        () => {
+          const resetButton = screen.getByText('Reset');
+          fireEvent.click(resetButton);
+          expect(toast.info).toHaveBeenCalledWith('Settings reset to defaults');
+        },
+        { timeout: 3000 },
+      );
+    });
+
+    it('prevents save with validation errors', async () => {
+      render(<GPUAdvancedSettings selectedGPU={mockCompatibleGPU} />);
+
+      await waitFor(() => {
+        const cacheDirInput = screen.getByLabelText('Cache Directory');
+        fireEvent.change(cacheDirInput, { target: { value: '' } });
+      });
+
+      await waitFor(() => {
+        const saveButton = screen.getByText('Save');
+        fireEvent.click(saveButton);
         expect(toast.error).toHaveBeenCalledWith(
-          'Failed to save advanced settings',
+          'Please fix validation errors before saving',
         );
       });
-    });
-
-    it('resets settings to defaults', () => {
-      render(<GPUAdvancedSettings selectedGPU={mockCompatibleGPU} />);
-
-      const resetButton = screen.getByText('Reset');
-      fireEvent.click(resetButton);
-
-      expect(toast.info).toHaveBeenCalledWith('Settings reset to defaults');
-    });
-
-    it('prevents save with validation errors', () => {
-      render(<GPUAdvancedSettings selectedGPU={mockCompatibleGPU} />);
-
-      const cacheDirInput = screen.getByLabelText('Cache Directory');
-      fireEvent.change(cacheDirInput, { target: { value: '' } });
-
-      const saveButton = screen.getByText('Save');
-      fireEvent.click(saveButton);
-
-      expect(toast.error).toHaveBeenCalledWith(
-        'Please fix validation errors before saving',
-      );
     });
   });
 
@@ -828,9 +1045,12 @@ describe('GPUAdvancedSettings', () => {
 
       render(<GPUAdvancedSettings selectedGPU={mockCompatibleGPU} />);
 
-      await waitFor(() => {
-        expect(window.ipc.invoke).toHaveBeenCalledWith('getOpenVINOSettings');
-      });
+      await waitFor(
+        () => {
+          expect(window.ipc.invoke).toHaveBeenCalledWith('getOpenVINOSettings');
+        },
+        { timeout: 3000 },
+      );
     });
 
     it('calls onSettingsChange callback when settings are saved', async () => {
@@ -844,58 +1064,85 @@ describe('GPUAdvancedSettings', () => {
         />,
       );
 
-      const cacheDirInput = screen.getByLabelText('Cache Directory');
-      fireEvent.change(cacheDirInput, { target: { value: '/valid/path' } });
-
-      const saveButton = screen.getByText('Save');
-      fireEvent.click(saveButton);
+      await waitFor(() => {
+        const cacheDirInput = screen.getByLabelText('Cache Directory');
+        fireEvent.change(cacheDirInput, { target: { value: '/valid/path' } });
+      });
 
       await waitFor(() => {
-        expect(mockOnSettingsChange).toHaveBeenCalledWith(expect.any(Object));
+        const saveButton = screen.getByText('Save');
+        fireEvent.click(saveButton);
       });
+
+      await waitFor(
+        () => {
+          expect(mockOnSettingsChange).toHaveBeenCalledWith(expect.any(Object));
+        },
+        { timeout: 3000 },
+      );
     });
   });
 
   describe('Status Indicators', () => {
-    it('shows unsaved changes alert', () => {
+    it('shows unsaved changes alert', async () => {
       render(<GPUAdvancedSettings selectedGPU={mockCompatibleGPU} />);
 
-      const cacheDirInput = screen.getByLabelText('Cache Directory');
-      fireEvent.change(cacheDirInput, { target: { value: '/new/path' } });
+      await waitFor(() => {
+        const cacheDirInput = screen.getByLabelText('Cache Directory');
+        fireEvent.change(cacheDirInput, { target: { value: '/new/path' } });
+      });
 
-      expect(screen.getByText('You have unsaved changes')).toBeInTheDocument();
-      expect(screen.getByTestId('check-circle-icon')).toBeInTheDocument();
+      await waitFor(() => {
+        expect(
+          screen.getByText('You have unsaved changes'),
+        ).toBeInTheDocument();
+        expect(screen.getByTestId('check-circle-icon')).toBeInTheDocument();
+      });
     });
 
-    it('shows validation errors alert', () => {
+    it('shows validation errors alert', async () => {
       render(<GPUAdvancedSettings selectedGPU={mockCompatibleGPU} />);
 
-      const cacheDirInput = screen.getByLabelText('Cache Directory');
-      fireEvent.change(cacheDirInput, { target: { value: '' } });
+      await waitFor(() => {
+        const cacheDirInput = screen.getByLabelText('Cache Directory');
+        fireEvent.change(cacheDirInput, { target: { value: '' } });
+      });
 
-      expect(
-        screen.getByText('Please fix the validation errors below'),
-      ).toBeInTheDocument();
-      expect(screen.getByTestId('alert-triangle-icon')).toBeInTheDocument();
+      await waitFor(() => {
+        expect(
+          screen.getByText('Please fix the validation errors below'),
+        ).toBeInTheDocument();
+        expect(screen.getByTestId('alert-triangle-icon')).toBeInTheDocument();
+      });
     });
   });
 
   describe('Accessibility and UX', () => {
-    it('provides help tooltips for settings', () => {
+    it('provides help tooltips for settings', async () => {
       render(<GPUAdvancedSettings selectedGPU={mockCompatibleGPU} />);
 
-      const helpIcons = screen.getAllByTestId('help-circle-icon');
-      expect(helpIcons.length).toBeGreaterThan(5); // Multiple help tooltips
+      await waitFor(
+        () => {
+          const helpIcons = screen.getAllByTestId('help-circle-icon');
+          expect(helpIcons.length).toBeGreaterThan(5); // Multiple help tooltips
+        },
+        { timeout: 3000 },
+      );
     });
 
-    it('includes semantic sections with separators', () => {
+    it('includes semantic sections with separators', async () => {
       render(<GPUAdvancedSettings selectedGPU={mockCompatibleGPU} />);
 
-      const separators = screen.getAllByTestId('separator');
-      expect(separators.length).toBeGreaterThan(3);
+      await waitFor(
+        () => {
+          const separators = screen.getAllByTestId('separator');
+          expect(separators.length).toBeGreaterThan(3);
+        },
+        { timeout: 3000 },
+      );
     });
 
-    it('applies custom className when provided', () => {
+    it('applies custom className when provided', async () => {
       render(
         <GPUAdvancedSettings
           selectedGPU={mockCompatibleGPU}
@@ -903,15 +1150,27 @@ describe('GPUAdvancedSettings', () => {
         />,
       );
 
-      expect(screen.getByTestId('card')).toHaveClass('custom-class');
+      await waitFor(
+        () => {
+          expect(screen.getByTestId('card')).toHaveClass('custom-class');
+        },
+        { timeout: 3000 },
+      );
     });
 
-    it('provides proper labels for form controls', () => {
+    it('provides proper labels for form controls', async () => {
       render(<GPUAdvancedSettings selectedGPU={mockCompatibleGPU} />);
 
-      expect(screen.getByLabelText('Cache Directory')).toBeInTheDocument();
-      expect(screen.getByLabelText('Enable Caching')).toBeInTheDocument();
-      expect(screen.getByLabelText('Number of Threads')).toBeInTheDocument();
+      await waitFor(
+        () => {
+          expect(screen.getByLabelText('Cache Directory')).toBeInTheDocument();
+          expect(screen.getByLabelText('Enable Caching')).toBeInTheDocument();
+          expect(
+            screen.getByLabelText('Number of Threads'),
+          ).toBeInTheDocument();
+        },
+        { timeout: 3000 },
+      );
     });
   });
 });

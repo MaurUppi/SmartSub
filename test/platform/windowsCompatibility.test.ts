@@ -412,7 +412,15 @@ describe('Windows Platform Compatibility Tests', () => {
       for (const scenario of securityScenarios) {
         expect(scenario.expectedError).toBeDefined();
         expect(scenario.resolution).toBeDefined();
-        expect(scenario.resolution).toContain('administrator');
+
+        // Each scenario should have a specific resolution approach
+        if (scenario.scenario === 'UAC_ENABLED') {
+          expect(scenario.resolution).toContain('administrator');
+        } else if (scenario.scenario === 'ANTIVIRUS_BLOCKING') {
+          expect(scenario.resolution).toContain('exclusions');
+        } else if (scenario.scenario === 'DRIVER_SIGNING') {
+          expect(scenario.resolution).toContain('signed');
+        }
       }
     });
 

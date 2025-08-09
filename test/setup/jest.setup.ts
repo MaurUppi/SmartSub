@@ -38,6 +38,7 @@ jest.mock('electron-store', () => {
 });
 
 import { mockEnvironmentSetup } from './mockEnvironment';
+import { setupCompleteTestEnvironment } from './testEnvironmentFix';
 
 // Task 1.2.3: File System Access Simulation Enhancement
 // Mock fs-extra with comprehensive functionality
@@ -255,9 +256,14 @@ import './jest.matchers';
 beforeAll(async () => {
   // Individual test file setup can be added here
   console.log('Setting up test file environment...');
+  // Ensure complete test environment is properly initialized
+  await setupCompleteTestEnvironment();
 });
 
 afterAll(async () => {
   // Individual test file cleanup can be added here
   console.log('Cleaning up test file environment...');
+  // Clean up test environment
+  const { cleanupCompleteTestEnvironment } = require('./testEnvironmentFix');
+  await cleanupCompleteTestEnvironment();
 });

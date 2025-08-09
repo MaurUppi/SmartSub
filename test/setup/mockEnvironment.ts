@@ -331,7 +331,7 @@ export class TestAssertions {
 
     // Validate enums
     expect(['discrete', 'integrated']).toContain(device.type);
-    expect(['nvidia', 'intel', 'apple']).toContain(device.vendor);
+    expect(['nvidia', 'intel', 'apple', 'amd']).toContain(device.vendor);
     expect(['excellent', 'good', 'moderate']).toContain(device.powerEfficiency);
     expect(['high', 'medium', 'low']).toContain(device.performance);
   }

@@ -24,10 +24,16 @@ jest.mock('../../renderer/hooks/usePlatform');
 jest.mock('next-i18next', () => ({
   useTranslation: () => ({
     t: (key: string, options?: any) => {
-      if (options && key === 'gpuSelectionChanged') {
-        return `GPU selection changed to ${options.gpu}`;
-      }
-      return key;
+      const translations: Record<string, string> = {
+        'Apple Silicon Notice': 'Apple Silicon Notice',
+        appleSiliconNotice: 'Apple Silicon Notice',
+        gpuSelectionNotAvailable:
+          'GPU selection is not available on Apple Silicon',
+        gpuSelectionChanged: options
+          ? `GPU selection changed to ${options.gpu}`
+          : 'GPU selection changed',
+      };
+      return translations[key] || key;
     },
     i18n: { language: 'en' },
   }),

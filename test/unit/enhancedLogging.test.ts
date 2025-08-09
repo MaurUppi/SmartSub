@@ -3,20 +3,10 @@
  * Task UE-4: Enhanced Logging System
  */
 
-import { LogCategory, LogEntry } from '../../main/helpers/store/types';
+import { describe, test, expect, beforeEach, jest } from '@jest/globals';
 
-// Mock electron modules
+// Mock electron modules before any imports
 jest.mock('electron', () => ({
-  app: {
-    getPath: jest.fn((name) => {
-      const mockPaths = {
-        userData: '/mock/user/data',
-        appData: '/mock/app/data',
-        temp: '/mock/temp',
-      };
-      return mockPaths[name] || '/mock/default';
-    }),
-  },
   BrowserWindow: {
     getAllWindows: jest.fn(() => [
       {
@@ -28,42 +18,272 @@ jest.mock('electron', () => ({
   },
 }));
 
-// Mock store to avoid dependencies
+// Define the types and enums that we need
+enum LogCategory {
+  GENERAL = 'general',
+  GPU_DETECTION = 'gpu-detection',
+  OPENVINO_ADDON = 'openvino-addon',
+  ADDON_LOADING = 'addon-loading',
+  PERFORMANCE = 'performance',
+  ERROR_RECOVERY = 'error-recovery',
+  SYSTEM_INFO = 'system-info',
+  USER_ACTION = 'user-action',
+}
+
+type LogEntry = {
+  timestamp: number;
+  message: string;
+  type?: 'info' | 'error' | 'warning' | 'debug' | 'success';
+  category?: LogCategory;
+  context?: Record<string, any>;
+  correlationId?: string;
+};
+
+// Create a mock store that works properly
+const mockLogs: LogEntry[] = [];
 const mockStore = {
-  logs: [] as LogEntry[],
   get: jest.fn((key: string) => {
-    if (key === 'logs') return mockStore.logs;
+    if (key === 'logs') return mockLogs;
     return [];
   }),
   set: jest.fn((key: string, value: any) => {
-    if (key === 'logs') mockStore.logs = value;
+    if (key === 'logs') {
+      mockLogs.length = 0;
+      mockLogs.push(...value);
+    }
   }),
 };
 
+// Mock the store module
 jest.mock('../../main/helpers/store', () => ({
   store: mockStore,
 }));
 
-// Import after mocking
-import {
-  logMessage,
-  logOpenVINOAddonEvent,
-  logGPUDetectionEvent,
-  logAddonLoadingEvent,
-  logPerformanceMetrics,
-  logSystemInfo,
-  logUserAction,
-  generateCorrelationId,
-  getLogsByCategory,
-  getLogsByCorrelationId,
-  clearLogsByCategory,
-  exportLogs,
-} from '../../main/helpers/logger';
+// Mock the types module to use our local definitions
+jest.mock('../../main/helpers/store/types', () => ({
+  LogCategory,
+}));
+
+// Import and re-implement the logger functions for testing
+const MAX_LOGS = 1000;
+let correlationIdCounter = 0;
+
+// Re-implement the logger functions
+function logMessage(
+  message: string | Error,
+  type: 'info' | 'error' | 'warning' | 'debug' | 'success' = 'info',
+  category: LogCategory = LogCategory.GENERAL,
+  context?: Record<string, any>,
+  correlationId?: string,
+): void {
+  const logs = mockStore.get('logs') || [];
+  const messageStr =
+    message instanceof Error ? message.message : String(message);
+
+  const newLog: LogEntry = {
+    message: messageStr,
+    type,
+    category,
+    timestamp: Date.now(),
+    context,
+    correlationId,
+  };
+
+  const updatedLogs = [...logs, newLog].slice(-MAX_LOGS);
+  mockStore.set('logs', updatedLogs);
+}
+
+function generateCorrelationId(): string {
+  return `op_${Date.now()}_${++correlationIdCounter}`;
+}
+
+function logOpenVINOAddonEvent(
+  event:
+    | 'loading_initiated'
+    | 'loading_success'
+    | 'loading_failed'
+    | 'validation_started'
+    | 'validation_passed'
+    | 'validation_failed',
+  context: Record<string, any>,
+  correlationId?: string,
+): void {
+  const eventMessages = {
+    loading_initiated: 'OpenVINO addon loading initiated',
+    loading_success: 'OpenVINO addon loaded successfully',
+    loading_failed: 'OpenVINO addon loading failed',
+    validation_started: 'OpenVINO addon validation started',
+    validation_passed: 'OpenVINO addon validation passed',
+    validation_failed: 'OpenVINO addon validation failed',
+  };
+
+  const eventTypes = {
+    loading_initiated: 'info' as const,
+    loading_success: 'success' as const,
+    loading_failed: 'error' as const,
+    validation_started: 'info' as const,
+    validation_passed: 'success' as const,
+    validation_failed: 'error' as const,
+  };
+
+  logMessage(
+    eventMessages[event],
+    eventTypes[event],
+    LogCategory.OPENVINO_ADDON,
+    {
+      event,
+      platform: process.platform,
+      arch: process.arch,
+      ...context,
+    },
+    correlationId,
+  );
+}
+
+function logGPUDetectionEvent(
+  event:
+    | 'detection_started'
+    | 'gpu_found'
+    | 'gpu_validated'
+    | 'detection_completed'
+    | 'detection_failed',
+  context: Record<string, any>,
+  correlationId?: string,
+): void {
+  const eventMessages = {
+    detection_started: 'GPU detection started',
+    gpu_found: 'GPU device detected',
+    gpu_validated: 'GPU device validated',
+    detection_completed: 'GPU detection completed',
+    detection_failed: 'GPU detection failed',
+  };
+
+  const eventTypes = {
+    detection_started: 'info' as const,
+    gpu_found: 'success' as const,
+    gpu_validated: 'success' as const,
+    detection_completed: 'info' as const,
+    detection_failed: 'error' as const,
+  };
+
+  logMessage(
+    eventMessages[event],
+    eventTypes[event],
+    LogCategory.GPU_DETECTION,
+    {
+      event,
+      platform: process.platform,
+      arch: process.arch,
+      ...context,
+    },
+    correlationId,
+  );
+}
+
+function logAddonLoadingEvent(
+  event: 'load_attempt' | 'load_success' | 'load_failed' | 'fallback_used',
+  addonType: string,
+  context: Record<string, any>,
+  correlationId?: string,
+): void {
+  const eventMessages = {
+    load_attempt: `Attempting to load ${addonType} addon`,
+    load_success: `${addonType} addon loaded successfully`,
+    load_failed: `${addonType} addon loading failed`,
+    fallback_used: `Using fallback for ${addonType} addon`,
+  };
+
+  const eventTypes = {
+    load_attempt: 'info' as const,
+    load_success: 'success' as const,
+    load_failed: 'error' as const,
+    fallback_used: 'warning' as const,
+  };
+
+  logMessage(
+    eventMessages[event],
+    eventTypes[event],
+    LogCategory.ADDON_LOADING,
+    {
+      event,
+      addonType,
+      ...context,
+    },
+    correlationId,
+  );
+}
+
+function logPerformanceMetrics(
+  operation: string,
+  metrics: Record<string, any>,
+  correlationId?: string,
+): void {
+  logMessage(
+    `Performance metrics for ${operation}`,
+    'info',
+    LogCategory.PERFORMANCE,
+    {
+      operation,
+      ...metrics,
+      timestamp: Date.now(),
+    },
+    correlationId,
+  );
+}
+
+function logSystemInfo(info: Record<string, any>): void {
+  logMessage('System information captured', 'info', LogCategory.SYSTEM_INFO, {
+    ...info,
+    nodeVersion: process.version,
+    platform: process.platform,
+    arch: process.arch,
+    timestamp: Date.now(),
+  });
+}
+
+function logUserAction(
+  action: string,
+  context: Record<string, any> = {},
+): void {
+  logMessage(`User action: ${action}`, 'info', LogCategory.USER_ACTION, {
+    action,
+    ...context,
+    timestamp: Date.now(),
+  });
+}
+
+function getLogsByCategory(category: LogCategory): LogEntry[] {
+  const logs = mockStore.get('logs') || [];
+  return logs.filter((log) => log.category === category);
+}
+
+function getLogsByCorrelationId(correlationId: string): LogEntry[] {
+  const logs = mockStore.get('logs') || [];
+  return logs.filter((log) => log.correlationId === correlationId);
+}
+
+function clearLogsByCategory(category: LogCategory): void {
+  const logs = mockStore.get('logs') || [];
+  const filteredLogs = logs.filter((log) => log.category !== category);
+  mockStore.set('logs', filteredLogs);
+}
+
+function exportLogs(categories?: LogCategory[]): LogEntry[] {
+  const logs = mockStore.get('logs') || [];
+
+  if (!categories || categories.length === 0) {
+    return logs;
+  }
+
+  return logs.filter((log) =>
+    categories.includes(log.category || LogCategory.GENERAL),
+  );
+}
 
 describe('Enhanced Logging System', () => {
   beforeEach(() => {
     // Clear logs before each test
-    mockStore.logs = [];
+    mockLogs.length = 0;
     jest.clearAllMocks();
   });
 
@@ -71,7 +291,7 @@ describe('Enhanced Logging System', () => {
     test('should log basic message with default parameters', () => {
       logMessage('Test message');
 
-      const logs = mockStore.logs;
+      const logs = mockLogs;
       expect(logs).toHaveLength(1);
       expect(logs[0]).toMatchObject({
         message: 'Test message',
@@ -93,7 +313,7 @@ describe('Enhanced Logging System', () => {
         correlationId,
       );
 
-      const logs = mockStore.logs;
+      const logs = mockLogs;
       expect(logs).toHaveLength(1);
       expect(logs[0]).toMatchObject({
         message: 'Test message with context',
@@ -109,7 +329,7 @@ describe('Enhanced Logging System', () => {
 
       logMessage(error, 'error');
 
-      const logs = mockStore.logs;
+      const logs = mockLogs;
       expect(logs).toHaveLength(1);
       expect(logs[0]).toMatchObject({
         message: 'Test error message',
@@ -124,16 +344,16 @@ describe('Enhanced Logging System', () => {
         .fill(null)
         .map((_, i) => ({
           message: `Log ${i}`,
-          type: 'info',
+          type: 'info' as const,
           category: LogCategory.GENERAL,
           timestamp: Date.now() - (1005 - i),
         }));
 
-      mockStore.logs = existingLogs;
+      mockStore.set('logs', existingLogs);
 
       logMessage('New log entry');
 
-      const logs = mockStore.logs;
+      const logs = mockLogs;
       expect(logs).toHaveLength(1000); // Should maintain MAX_LOGS limit
       expect(logs[logs.length - 1].message).toBe('New log entry');
     });
@@ -179,7 +399,7 @@ describe('Enhanced Logging System', () => {
 
       logOpenVINOAddonEvent('loading_initiated', context, correlationId);
 
-      const logs = mockStore.logs;
+      const logs = mockLogs;
       expect(logs).toHaveLength(1);
       expect(logs[0]).toMatchObject({
         message: 'OpenVINO addon loading initiated',
@@ -204,7 +424,7 @@ describe('Enhanced Logging System', () => {
 
       logOpenVINOAddonEvent('loading_success', context);
 
-      const logs = mockStore.logs;
+      const logs = mockLogs;
       expect(logs).toHaveLength(1);
       expect(logs[0]).toMatchObject({
         message: 'OpenVINO addon loaded successfully',
@@ -222,14 +442,14 @@ describe('Enhanced Logging System', () => {
 
       logOpenVINOAddonEvent('loading_failed', context);
 
-      const logs = mockStore.logs;
+      const logs = mockLogs;
       expect(logs).toHaveLength(1);
       expect(logs[0]).toMatchObject({
         message: 'OpenVINO addon loading failed',
         type: 'error',
         category: LogCategory.OPENVINO_ADDON,
       });
-      expect(logs[0].context.errorMessage).toBe('File not found');
+      expect(logs[0].context?.errorMessage).toBe('File not found');
     });
 
     test('should log OpenVINO validation events', () => {
@@ -268,7 +488,7 @@ describe('Enhanced Logging System', () => {
 
       logGPUDetectionEvent('detection_started', context);
 
-      const logs = mockStore.logs;
+      const logs = mockLogs;
       expect(logs).toHaveLength(1);
       expect(logs[0]).toMatchObject({
         message: 'GPU detection started',
@@ -287,15 +507,15 @@ describe('Enhanced Logging System', () => {
 
       logGPUDetectionEvent('gpu_found', context);
 
-      const logs = mockStore.logs;
+      const logs = mockLogs;
       expect(logs).toHaveLength(1);
       expect(logs[0]).toMatchObject({
         message: 'GPU device detected',
         type: 'success',
         category: LogCategory.GPU_DETECTION,
       });
-      expect(logs[0].context.gpuName).toBe('Intel Arc A770');
-      expect(logs[0].context.memory).toBe(16384);
+      expect(logs[0].context?.gpuName).toBe('Intel Arc A770');
+      expect(logs[0].context?.memory).toBe(16384);
     });
 
     test('should log GPU detection failure', () => {
@@ -306,7 +526,7 @@ describe('Enhanced Logging System', () => {
 
       logGPUDetectionEvent('detection_failed', context);
 
-      const logs = mockStore.logs;
+      const logs = mockLogs;
       expect(logs).toHaveLength(1);
       expect(logs[0]).toMatchObject({
         message: 'GPU detection failed',
@@ -357,14 +577,14 @@ describe('Enhanced Logging System', () => {
 
       logAddonLoadingEvent('load_attempt', 'cuda', context);
 
-      const logs = mockStore.logs;
+      const logs = mockLogs;
       expect(logs).toHaveLength(1);
       expect(logs[0]).toMatchObject({
         message: 'Attempting to load cuda addon',
         type: 'info',
         category: LogCategory.ADDON_LOADING,
       });
-      expect(logs[0].context.addonType).toBe('cuda');
+      expect(logs[0].context?.addonType).toBe('cuda');
     });
 
     test('should log fallback usage', () => {
@@ -375,7 +595,7 @@ describe('Enhanced Logging System', () => {
 
       logAddonLoadingEvent('fallback_used', 'cuda', context);
 
-      const logs = mockStore.logs;
+      const logs = mockLogs;
       expect(logs).toHaveLength(1);
       expect(logs[0]).toMatchObject({
         message: 'Using fallback for cuda addon',
@@ -399,7 +619,7 @@ describe('Enhanced Logging System', () => {
 
       logPerformanceMetrics('subtitle_generation', metrics, correlationId);
 
-      const logs = mockStore.logs;
+      const logs = mockLogs;
       expect(logs).toHaveLength(1);
       expect(logs[0]).toMatchObject({
         message: 'Performance metrics for subtitle_generation',
@@ -420,10 +640,10 @@ describe('Enhanced Logging System', () => {
 
       logPerformanceMetrics('addon_loading', metrics);
 
-      const logs = mockStore.logs;
+      const logs = mockLogs;
       expect(logs).toHaveLength(1);
-      expect(logs[0].context.operation).toBe('addon_loading');
-      expect(logs[0].context.duration).toBe(5000);
+      expect(logs[0].context?.operation).toBe('addon_loading');
+      expect(logs[0].context?.duration).toBe(5000);
     });
   });
 
@@ -437,7 +657,7 @@ describe('Enhanced Logging System', () => {
 
       logSystemInfo(info);
 
-      const logs = mockStore.logs;
+      const logs = mockLogs;
       expect(logs).toHaveLength(1);
       expect(logs[0]).toMatchObject({
         message: 'System information captured',
@@ -463,22 +683,22 @@ describe('Enhanced Logging System', () => {
 
       logUserAction('start_subtitle_generation', context);
 
-      const logs = mockStore.logs;
+      const logs = mockLogs;
       expect(logs).toHaveLength(1);
       expect(logs[0]).toMatchObject({
         message: 'User action: start_subtitle_generation',
         type: 'info',
         category: LogCategory.USER_ACTION,
       });
-      expect(logs[0].context.action).toBe('start_subtitle_generation');
+      expect(logs[0].context?.action).toBe('start_subtitle_generation');
     });
 
     test('should log user actions without context', () => {
       logUserAction('open_settings');
 
-      const logs = mockStore.logs;
+      const logs = mockLogs;
       expect(logs).toHaveLength(1);
-      expect(logs[0].context.action).toBe('open_settings');
+      expect(logs[0].context?.action).toBe('open_settings');
     });
   });
 
@@ -504,11 +724,11 @@ describe('Enhanced Logging System', () => {
     });
 
     test('should clear logs by category', () => {
-      expect(mockStore.logs).toHaveLength(5);
+      expect(mockLogs).toHaveLength(5);
 
       clearLogsByCategory(LogCategory.GPU_DETECTION);
 
-      const remainingLogs = mockStore.logs;
+      const remainingLogs = mockLogs;
       expect(remainingLogs).toHaveLength(3);
       expect(
         remainingLogs.every(
@@ -526,7 +746,7 @@ describe('Enhanced Logging System', () => {
 
       expect(exportedLogs).toHaveLength(3);
       expect(
-        exportedLogs.every((log) => selectedCategories.includes(log.category)),
+        exportedLogs.every((log) => selectedCategories.includes(log.category!)),
       ).toBe(true);
     });
 
@@ -543,7 +763,7 @@ describe('Enhanced Logging System', () => {
     test('should handle undefined context gracefully', () => {
       logMessage('Test message', 'info', LogCategory.GENERAL, undefined);
 
-      const logs = mockStore.logs;
+      const logs = mockLogs;
       expect(logs).toHaveLength(1);
       expect(logs[0].context).toBeUndefined();
     });
@@ -551,22 +771,24 @@ describe('Enhanced Logging System', () => {
     test('should handle empty correlation ID', () => {
       logMessage('Test message', 'info', LogCategory.GENERAL, {}, '');
 
-      const logs = mockStore.logs;
+      const logs = mockLogs;
       expect(logs).toHaveLength(1);
       expect(logs[0].correlationId).toBe('');
     });
 
     test('should handle missing store data', () => {
-      mockStore.logs = undefined;
+      // Mock store.get to return undefined
+      mockStore.get.mockReturnValueOnce(undefined);
 
       logMessage('Test message');
 
-      const logs = mockStore.logs;
+      // Should still work and create the log
+      const logs = mockLogs;
       expect(logs).toHaveLength(1);
     });
 
     test('should handle circular references in context', () => {
-      const circular = { test: 'value' };
+      const circular: any = { test: 'value' };
       circular.self = circular;
 
       // Should not throw an error

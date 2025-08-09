@@ -1090,7 +1090,9 @@ export const fixtureUtils = {
     return {
       ...this.cloneFixture(baseDevice),
       ...overrides,
-      id: overrides.id || `custom-${Date.now()}`,
+      id:
+        overrides.id ||
+        `custom-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
     };
   },
 };
@@ -1101,6 +1103,7 @@ export const fixtureUtils = {
 export const fixtures = {
   gpuDevices: intelGPUFixtures,
   openvinoCapabilities: openVinoCapabilityFixtures,
+  openVinoCapabilityFixtures: openVinoCapabilityFixtures, // Add alias for backward compatibility
   performanceBenchmarks: performanceBenchmarkFixtures,
   errorSimulations: errorSimulationFixtures,
   testScenarios: testScenarioFixtures,

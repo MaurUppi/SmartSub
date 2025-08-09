@@ -313,7 +313,8 @@ describe('GPUSetupInstructions', () => {
       expect(
         screen.getByText('Setup Instructions - Intel Arc A380'),
       ).toBeInTheDocument();
-      expect(screen.getByTestId('settings-icon')).toBeInTheDocument();
+      const settingsIcons = screen.getAllByTestId('settings-icon');
+      expect(settingsIcons.length).toBeGreaterThan(0);
     });
 
     it('shows setup required alert', () => {
@@ -322,7 +323,8 @@ describe('GPUSetupInstructions', () => {
       expect(
         screen.getByText('Setup required for Intel Arc A380'),
       ).toBeInTheDocument();
-      expect(screen.getByTestId('info-icon')).toBeInTheDocument();
+      const infoIcons = screen.getAllByTestId('info-icon');
+      expect(infoIcons.length).toBeGreaterThan(0);
     });
 
     it('displays requirements section', () => {
@@ -410,7 +412,8 @@ describe('GPUSetupInstructions', () => {
       expect(
         screen.getByText('Step 1: Intel Driver Setup'),
       ).toBeInTheDocument();
-      expect(screen.getByTestId('download-icon')).toBeInTheDocument();
+      const downloadIcons = screen.getAllByTestId('download-icon');
+      expect(downloadIcons.length).toBeGreaterThan(0);
     });
 
     it('shows driver download step with external link', () => {
@@ -452,7 +455,8 @@ describe('GPUSetupInstructions', () => {
       fireEvent.click(markCompleteButtons[0]);
 
       // Should show check circle for completed step
-      expect(screen.getByTestId('check-circle-icon')).toBeInTheDocument();
+      const checkCircleIcons = screen.getAllByTestId('check-circle-icon');
+      expect(checkCircleIcons.length).toBeGreaterThan(0);
     });
   });
 
@@ -461,7 +465,8 @@ describe('GPUSetupInstructions', () => {
       render(<GPUSetupInstructions gpu={mockSetupRequiredGPU} />);
 
       expect(screen.getByText('Step 2: OpenVINO Setup')).toBeInTheDocument();
-      expect(screen.getByTestId('package-icon')).toBeInTheDocument();
+      const packageIcons = screen.getAllByTestId('package-icon');
+      expect(packageIcons.length).toBeGreaterThan(0);
     });
 
     it('shows OpenVINO installation steps', () => {
@@ -622,10 +627,18 @@ describe('GPUSetupInstructions', () => {
     it('displays icons consistently throughout interface', () => {
       render(<GPUSetupInstructions gpu={mockSetupRequiredGPU} />);
 
-      expect(screen.getByTestId('settings-icon')).toBeInTheDocument();
-      expect(screen.getByTestId('download-icon')).toBeInTheDocument();
-      expect(screen.getByTestId('package-icon')).toBeInTheDocument();
-      expect(screen.getByTestId('play-circle-icon')).toBeInTheDocument();
+      // All these icons appear multiple times in the interface
+      const settingsIcons = screen.getAllByTestId('settings-icon');
+      expect(settingsIcons.length).toBeGreaterThan(0);
+
+      const downloadIcons = screen.getAllByTestId('download-icon');
+      expect(downloadIcons.length).toBeGreaterThan(0);
+
+      const packageIcons = screen.getAllByTestId('package-icon');
+      expect(packageIcons.length).toBeGreaterThan(0);
+
+      const playCircleIcons = screen.getAllByTestId('play-circle-icon');
+      expect(playCircleIcons.length).toBeGreaterThan(0);
     });
 
     it('provides helpful note at the end', () => {

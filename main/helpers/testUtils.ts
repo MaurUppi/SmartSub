@@ -340,13 +340,22 @@ export class TestUtils {
   ): Promise<void> {
     try {
       await fn();
+      // Function didn't throw - this is the failure case
       throw new Error('Expected function to throw, but it did not');
     } catch (error) {
+      // Check if this is our "didn't throw" error
+      if (error.message === 'Expected function to throw, but it did not') {
+        throw error;
+      }
+
+      // Function did throw - check if message matches if expectedError specified
       if (expectedError && !error.message.includes(expectedError)) {
         throw new Error(
           `Expected error containing "${expectedError}", but got "${error.message}"`,
         );
       }
+
+      // Function threw and message matches (or no expected message) - success!
     }
   }
 

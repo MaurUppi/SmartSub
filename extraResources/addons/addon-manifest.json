@@ -3,7 +3,7 @@
   "arch": "arm64",
   "openvinoVersion": "2024.6.0",
   "buildType": "coreml-strict",
-  "generatedAt": "2025-08-08T16:10:00.474Z",
+  "generatedAt": "2025-08-09T03:54:11.600Z",
   "addons": {
     "coreml": {
       "available": true,

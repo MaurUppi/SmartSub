@@ -5,6 +5,7 @@
  * Task 2.3: React Testing Library and component test configuration
  */
 
+const React = require('react');
 require('@testing-library/jest-dom');
 
 // Mock Next.js router
@@ -56,14 +57,76 @@ jest.mock('next/dynamic', () => () => {
 Object.defineProperty(window, 'electron', {
   value: {
     ipcRenderer: {
-      invoke: jest.fn(),
+      invoke: jest.fn().mockImplementation((channel, ...args) => {
+        // Mock GPU-related IPC calls
+        switch (channel) {
+          case 'getGPUInfo':
+            return Promise.resolve({
+              nvidia: false,
+              intel: [
+                {
+                  id: 'intel-arc-a770',
+                  displayName: 'Intel Arc A770',
+                  type: 'intel-discrete',
+                  status: 'available',
+                  performance: 'high',
+                  description: 'Intel Arc A770 GPU',
+                  driverVersion: '31.0.101.4887',
+                  memory: 16384,
+                  powerEfficiency: 'good',
+                  estimatedSpeed: '3.5x faster',
+                  openvinoCompatible: true,
+                },
+              ],
+              apple: false,
+              cpu: true,
+              openvinoVersion: '2024.6.0',
+            });
+          case 'selectOptimalGPU':
+            return Promise.resolve({
+              type: 'intel',
+              displayName: 'Intel Arc A770',
+              fallbackReason: null,
+            });
+          case 'refreshGPUs':
+            return Promise.resolve({
+              nvidia: false,
+              intel: [
+                {
+                  id: 'intel-arc-a770',
+                  displayName: 'Intel Arc A770',
+                  type: 'intel-discrete',
+                  status: 'available',
+                },
+              ],
+              apple: false,
+              cpu: true,
+            });
+          default:
+            return Promise.resolve({});
+        }
+      }),
       send: jest.fn(),
       on: jest.fn(),
+      once: jest.fn(),
+      off: jest.fn(),
       removeListener: jest.fn(),
       removeAllListeners: jest.fn(),
     },
     store: {
-      get: jest.fn(),
+      get: jest.fn().mockImplementation((key) => {
+        const defaults = {
+          settings: {
+            selectedGPU: 'auto',
+            whisperCommand: 'whisper',
+            modelsPath: '/mock/models',
+            useCuda: false,
+            useOpenVINO: true,
+            maxContext: -1,
+          },
+        };
+        return defaults[key] || null;
+      }),
       set: jest.fn(),
       delete: jest.fn(),
       clear: jest.fn(),

@@ -243,7 +243,7 @@ export const GPUSelectionComponent: React.FC<GPUSelectionProps> = ({
     const defaultOptions = getDefaultGPUOptions(t);
     const mockOptions = getMockGPUOptions(t);
     setAvailableGPUs([...defaultOptions, ...mockOptions]);
-  }, [t]);
+  }, []); // t is stable, no need to include it as dependency
 
   // GPU detection and refresh functionality
   const handleRefreshGPUs = useCallback(async () => {

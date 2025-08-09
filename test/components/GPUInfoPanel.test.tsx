@@ -71,6 +71,9 @@ jest.mock('next-i18next', () => ({
         available: 'Available',
         unavailable: 'Unavailable',
         'requires-setup': 'Requires Setup',
+        Available: 'Available',
+        Unavailable: 'Unavailable',
+        'Requires Setup': 'Requires Setup',
       };
 
       if (params) {
@@ -273,20 +276,20 @@ describe('GPUInfoPanel', () => {
     it('displays appropriate status badges', () => {
       render(<GPUInfoPanel selectedGPU={mockDiscreteGPU} />);
 
-      expect(screen.getByText('available')).toBeInTheDocument();
+      expect(screen.getByText('Available')).toBeInTheDocument();
     });
 
     it('shows different status badge colors for different statuses', () => {
       const { rerender } = render(
         <GPUInfoPanel selectedGPU={mockDiscreteGPU} />,
       );
-      expect(screen.getByText('available')).toBeInTheDocument();
+      expect(screen.getByText('Available')).toBeInTheDocument();
 
       rerender(<GPUInfoPanel selectedGPU={mockUnavailableGPU} />);
-      expect(screen.getByText('unavailable')).toBeInTheDocument();
+      expect(screen.getByText('Unavailable')).toBeInTheDocument();
 
       rerender(<GPUInfoPanel selectedGPU={mockSetupRequiredGPU} />);
-      expect(screen.getByText('requires-setup')).toBeInTheDocument();
+      expect(screen.getByText('Requires Setup')).toBeInTheDocument();
     });
   });
 
@@ -354,7 +357,9 @@ describe('GPUInfoPanel', () => {
     it('shows estimated speed when available', () => {
       render(<GPUInfoPanel selectedGPU={mockDiscreteGPU} />);
 
-      expect(screen.getByText('3-4x faster')).toBeInTheDocument();
+      // Speed is shown both as a badge in performance section and in processing speed section
+      const speedElements = screen.getAllByText('3-4x faster');
+      expect(speedElements.length).toBeGreaterThan(0);
     });
   });
 
@@ -450,7 +455,9 @@ describe('GPUInfoPanel', () => {
       expect(
         screen.getByText('Estimated Processing Speed'),
       ).toBeInTheDocument();
-      expect(screen.getByText('3-4x faster')).toBeInTheDocument();
+      // Speed is displayed as a styled element, check that it exists with text content
+      const speedElements = screen.getAllByText('3-4x faster');
+      expect(speedElements.length).toBeGreaterThan(0);
       expect(
         screen.getByText('Relative to CPU baseline performance'),
       ).toBeInTheDocument();

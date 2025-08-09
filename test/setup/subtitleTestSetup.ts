@@ -3,9 +3,11 @@
  * Provides subtitle generation specific test utilities and mocks
  */
 
-import { jest } from '@jest/globals';
 import path from 'path';
 import { IFiles } from '../../types';
+
+// Ensure Jest is available
+declare const jest: any;
 
 // Mock IPC event
 const mockEvent = {

@@ -424,6 +424,46 @@ function testHookUtilities() {
 // Export test runner for external use
 export { runHookTests, testHookUtilities };
 
+// Jest tests for the hook functionality
+describe('useParameterConfig Hook', () => {
+  beforeEach(() => {
+    mockIpc.invoke.mockClear();
+    mockIpc.send.mockClear();
+    mockIpc.on.mockClear();
+  });
+
+  test('should initialize with correct default state', () => {
+    const hook = createMockHook();
+    const initialState = hook.getState();
+
+    expect(initialState.config).toBeNull();
+    expect(initialState.isLoading).toBe(false);
+    expect(initialState.hasUnsavedChanges).toBe(false);
+    expect(initialState.validationErrors).toHaveLength(0);
+    expect(initialState.lastSaved).toBeNull();
+  });
+
+  test('should add header parameter correctly', () => {
+    const hook = createMockHook();
+    hook.addHeaderParameter('X-Custom-Header', 'custom-value');
+
+    const state = hook.getState();
+    expect(state.config?.headerParameters['X-Custom-Header']).toBe(
+      'custom-value',
+    );
+    expect(state.hasUnsavedChanges).toBe(true);
+  });
+
+  test('should add body parameter correctly', () => {
+    const hook = createMockHook();
+    hook.addBodyParameter('temperature', 0.8);
+
+    const state = hook.getState();
+    expect(state.config?.bodyParameters['temperature']).toBe(0.8);
+    expect(state.hasUnsavedChanges).toBe(true);
+  });
+});
+
 // Run tests if this file is executed directly
 if (typeof window !== 'undefined' && (window as any).runParameterHookTests) {
   runHookTests();
