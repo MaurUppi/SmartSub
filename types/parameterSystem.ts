@@ -5,28 +5,103 @@
  * users to configure custom AI model parameters without code modification.
  */
 
-import type {
-  ParameterDefinition,
-  ValidationError,
-  ParameterValue,
-  CustomParameterConfig,
-  ExtendedProvider,
-  ValidationRule,
-  ParameterCategory,
-  ProcessedParameters,
-} from './provider';
+/**
+ * NOTE: We maintain our own parameter types to avoid dependency on UPSTREAM provider.ts
+ * These types are compatible with provider types but are independently defined.
+ * Use type guards when interfacing with provider code if needed.
+ *
+ * @since 2025.1
+ */
 
-// Re-export parameter-specific types for easy importing
-export type {
-  ParameterValue,
-  CustomParameterConfig,
-  ExtendedProvider,
-  ParameterDefinition,
-  ValidationRule,
-  ParameterCategory,
-  ProcessedParameters,
-  ValidationError,
-} from './provider';
+// ============= CORE PARAMETER TYPES =============
+
+/**
+ * Value type for any parameter - can be primitive or complex
+ */
+export type ParameterValue = string | number | boolean | object | any[];
+
+/**
+ * Validation rule for parameter values
+ */
+export interface ValidationRule {
+  min?: number;
+  max?: number;
+  enum?: any[];
+  pattern?: string;
+  dependencies?: Record<string, any>;
+}
+
+/**
+ * Category classification for parameters
+ */
+export type ParameterCategory =
+  | 'provider'
+  | 'performance'
+  | 'quality'
+  | 'experimental';
+
+/**
+ * Complete definition of a parameter including validation and metadata
+ */
+export interface ParameterDefinition {
+  key: string;
+  type: 'string' | 'integer' | 'float' | 'boolean' | 'object' | 'array';
+  category: 'core' | 'behavior' | 'response' | 'provider' | 'performance';
+  required: boolean;
+  defaultValue?: ParameterValue;
+  validation?: ValidationRule;
+  description: string;
+  providerSupport: string[];
+}
+
+/**
+ * Validation error structure for parameter validation failures
+ */
+export interface ValidationError {
+  key: string;
+  type: 'type' | 'range' | 'format' | 'dependency' | 'system';
+  message: string;
+  suggestion?: string;
+}
+
+/**
+ * Configuration for custom parameters with versioning
+ */
+export interface CustomParameterConfig {
+  headerParameters: Record<string, ParameterValue>;
+  bodyParameters: Record<string, ParameterValue>;
+  configVersion: string;
+  lastModified: number;
+}
+
+/**
+ * Base provider interface for type compatibility
+ */
+export interface Provider {
+  id: string;
+  name: string;
+  type: string;
+  isAi: boolean;
+  [key: string]: any;
+}
+
+/**
+ * Extended provider with custom parameter support
+ */
+export interface ExtendedProvider extends Provider {
+  customParameters?: CustomParameterConfig;
+}
+
+/**
+ * Result of parameter processing with validation results
+ */
+export interface ProcessedParameters {
+  headers: Record<string, string | number>;
+  body: Record<string, any>;
+  appliedParameters: string[];
+  skippedParameters: string[];
+  validationErrors: ValidationError[];
+}
 
 // Additional parameter system specific types
 
