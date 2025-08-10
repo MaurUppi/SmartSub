@@ -266,36 +266,3 @@ describe('OpenAI Service Integration with Parameter Processor', () => {
     });
   });
 });
-
-// Simple test assertion functions (since we're not using a full test framework)
-function expect(actual: any) {
-  return {
-    toBe: (expected: any) => {
-      if (actual !== expected) {
-        throw new Error(`Expected ${expected}, but got ${actual}`);
-      }
-    },
-    toContain: (expected: any) => {
-      if (!actual.includes(expected)) {
-        throw new Error(
-          `Expected array to contain ${expected}, but got ${JSON.stringify(actual)}`,
-        );
-      }
-    },
-    toHaveLength: (expected: number) => {
-      if (actual.length !== expected) {
-        throw new Error(
-          `Expected length ${expected}, but got ${actual.length}`,
-        );
-      }
-    },
-    toBeGreaterThan: (expected: number) => {
-      if (actual <= expected) {
-        throw new Error(`Expected ${actual} to be greater than ${expected}`);
-      }
-    },
-  };
-}
-
-// Export for potential use
-export { expect };
