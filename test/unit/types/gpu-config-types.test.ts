@@ -1,4 +1,4 @@
-import * as GPUConfigTypes from '../../../types/gpu-config';
+import * as GPUConfigTypes from 'types/gpu-config';
 
 describe('GPU Configuration Type Definitions', () => {
   it('should export AddonInfo interface', () => {
