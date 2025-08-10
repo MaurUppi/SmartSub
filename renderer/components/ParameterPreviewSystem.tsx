@@ -8,7 +8,7 @@
 
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { CustomParameterConfig, ParameterValue } from '../../types/provider';
-import { PreviewValidationResult, PreviewMetrics } from 'types/parameterSystem';
+import { PreviewValidationResult, PreviewMetrics } from '../../types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';

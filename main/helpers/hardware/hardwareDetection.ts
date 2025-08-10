@@ -3,18 +3,7 @@
  * Detects available GPUs and their capabilities
  */
 
-export interface GPUCapabilities {
-  nvidia: boolean;
-  intel: any[];
-  amd: any[];
-  apple: boolean;
-  cpu: boolean;
-  openvinoVersion: string | false;
-  capabilities: {
-    multiGPU: boolean;
-    hybridSystem: boolean;
-  };
-}
+import { LegacyGPUCapabilities as GPUCapabilities } from '../../../types/gpu.d';
 
 /**
  * AMD GPU information interface

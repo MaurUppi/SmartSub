@@ -195,3 +195,23 @@ export type GPUVendor = GPUDevice['vendor'];
 export type GPUType = GPUDevice['type'];
 export type DetectionPlatform = GPUCapabilities['detectionPlatform'];
 export type OpenVINOStatus = OpenVINOInfo['validationStatus'];
+
+// Compatibility layer for helper file interfaces
+// TODO: Migrate helper files to use canonical GPUCapabilities
+
+export interface LegacyGPUCapabilities {
+  nvidia: boolean;
+  intel: any[];
+  amd: any[];
+  apple: boolean;
+  cpu: boolean;
+  openvinoVersion: string | false;
+  capabilities: {
+    multiGPU: boolean;
+    hybridSystem: boolean;
+  };
+}
+
+export interface SelectorGPUCapabilities extends LegacyGPUCapabilities {
+  intelAll: any[];
+}

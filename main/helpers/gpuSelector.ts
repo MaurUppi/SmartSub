@@ -17,6 +17,7 @@ import { store } from './store';
 import { isAppleSilicon } from './utils';
 import { hasEncoderModel } from './whisper';
 import { AddonInfo } from '../../types/gpu-config';
+import { SelectorGPUCapabilities as GPUCapabilities } from '../../types/gpu.d';
 
 /**
  * Get platform-specific addon filename for CUDA acceleration
@@ -90,20 +91,6 @@ function getNoCudaAddonName(): string {
     default:
       return getCPUAddonName(); // Use CPU addon for other platforms
   }
-}
-
-export interface GPUCapabilities {
-  nvidia: boolean;
-  intel: any[];
-  amd: any[]; // ✅ NEW: AMD GPU support for requirements #4, #7, #8
-  intelAll: any[];
-  apple: boolean;
-  cpu: boolean;
-  openvinoVersion: string | false;
-  capabilities: {
-    multiGPU: boolean;
-    hybridSystem: boolean;
-  };
 }
 
 /**

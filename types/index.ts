@@ -4,13 +4,13 @@
  */
 
 // Core GPU types
-export * from './gpu';
-export * from './gpu-config';
-export * from './gpu-performance';
-export * from './gpu-error';
+export * from './gpu.d';
+export * from './gpu-config.d';
+export * from './gpu-performance.d';
+export * from './gpu-error.d';
 
 // Application types
-export * from './settings';
+export * from './settings.d';
 export * from './types';
 
 // Parameter types (core types from provider.ts, UI types from parameterSystem.ts)
@@ -51,7 +51,7 @@ export {
 } from './provider';
 
 // Window types
-export * from './window';
+export * from './window.d';
 
 // Convenience re-exports for common application types
 export type {

@@ -16,7 +16,7 @@ import {
   ParameterApplyResult,
   IpcParameterMessage,
   IpcParameterResponse,
-} from '../../types/parameterSystem';
+} from '../../types';
 
 export interface ParameterConfigState {
   config: CustomParameterConfig | null;
