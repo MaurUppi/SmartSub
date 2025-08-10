@@ -14,32 +14,14 @@ import type {
   ValidationError,
 } from '../../types/provider';
 import type { ParameterValidationResult } from '../../types/parameterSystem';
+import {
+  ConfigurationMetadata,
+  StoredConfiguration,
+  ConfigurationExport,
+  ConfigurationValidationOptions,
+} from '../../types/settings';
 import { parameterValidator, ValidationContext } from './parameterValidator';
 import { migrationManager } from './migrationManager';
-
-export interface ConfigurationMetadata {
-  version: string;
-  createdAt: string;
-  lastModified: string;
-  checksum?: string;
-}
-
-export interface StoredConfiguration {
-  config: CustomParameterConfig;
-  metadata: ConfigurationMetadata;
-}
-
-export interface ConfigurationExport {
-  configurations: Record<string, StoredConfiguration>;
-  exportedAt: string;
-  version: string;
-}
-
-export interface ConfigurationValidationOptions {
-  strictValidation?: boolean;
-  allowUnknownKeys?: boolean;
-  validateValues?: boolean;
-}
 
 export class ConfigurationManager {
   private readonly configDir: string;

@@ -12,7 +12,7 @@ import type { CustomParameterConfig } from '../../types/provider';
 import type {
   StoredConfiguration,
   ConfigurationMetadata,
-} from './configurationManager';
+} from '../../types/settings';
 
 export interface MigrationInfo {
   id: string;

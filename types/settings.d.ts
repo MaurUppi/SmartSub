@@ -4,6 +4,7 @@
  */
 
 import { GPUDevice } from './gpu';
+import { CustomParameterConfig } from './provider';
 
 export interface OpenVINOPreferences {
   cacheDir: string;
@@ -66,6 +67,34 @@ export interface VADSettings {
   vadMaxSpeechDuration: number;
   vadSpeechPad: number;
   vadSamplesOverlap: number;
+}
+
+/**
+ * Configuration Management Types
+ * @since 2025.1
+ */
+export interface ConfigurationMetadata {
+  version: string;
+  createdAt: string;
+  lastModified: string;
+  checksum?: string;
+}
+
+export interface StoredConfiguration {
+  config: CustomParameterConfig;
+  metadata: ConfigurationMetadata;
+}
+
+export interface ConfigurationExport {
+  configurations: Record<string, StoredConfiguration>;
+  exportedAt: string;
+  version: string;
+}
+
+export interface ConfigurationValidationOptions {
+  strictValidation?: boolean;
+  allowUnknownKeys?: boolean;
+  validateValues?: boolean;
 }
 
 export interface GPUSelectionOption {
