@@ -3,20 +3,10 @@
  * Detects available GPUs and their capabilities
  */
 
-import { LegacyGPUCapabilities as GPUCapabilities } from '../../../types/gpu.d';
-
-/**
- * AMD GPU information interface
- */
-export interface AMDGPUInfo {
-  name: string;
-  deviceId: string;
-  memory: number | 'shared';
-  type: 'discrete' | 'integrated';
-  driver: string;
-  openclSupport: boolean;
-  vulkanSupport: boolean;
-}
+import {
+  LegacyGPUCapabilities as GPUCapabilities,
+  AMDGPUInfo,
+} from '../../../types/gpu.d';
 
 /**
  * Detect AMD GPUs on the system

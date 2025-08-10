@@ -4,34 +4,15 @@ import { isSubtitleFile } from 'lib/utils';
 import { toast } from 'sonner';
 import { useTranslation } from 'next-i18next';
 import toWebVTT from 'srt-webvtt';
-import { IFiles } from '../../types';
+import {
+  IFiles,
+  Subtitle,
+  SubtitleStats,
+  PlayerSubtitleTrack,
+} from '../../types';
 
-// 字幕格式接口
-export interface Subtitle {
-  id: string;
-  startEndTime: string;
-  content: string[];
-  sourceContent?: string;
-  targetContent?: string;
-  startTimeInSeconds?: number;
-  endTimeInSeconds?: number;
-  isEditing?: boolean;
-}
-
-export interface SubtitleStats {
-  total: number;
-  withTranslation: number;
-  percent: number;
-}
-
-// 新增：播放器字幕轨道接口
-export interface PlayerSubtitleTrack {
-  kind: string;
-  src: string;
-  srcLang: string;
-  label: string;
-  default?: boolean;
-}
+// Re-export types for backward compatibility with existing imports
+export type { Subtitle, SubtitleStats, PlayerSubtitleTrack };
 
 // 将时间字符串转换为秒
 const timeToSeconds = (timeStr: string): number => {
