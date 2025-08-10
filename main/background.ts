@@ -1,6 +1,5 @@
 import path from 'path';
-import { app, protocol } from 'electron';
-import fs from 'fs';
+import { app, protocol, net } from 'electron';
 import serve from 'electron-serve';
 import { createWindow } from './helpers/create-window';
 import { setupIpcHandlers } from './helpers/ipcHandlers';
@@ -26,14 +25,14 @@ if (isProd) {
   await app.whenReady();
 
   // 注册自定义协议处理本地媒体文件
-  protocol.registerFileProtocol('media', (request, callback) => {
-    const url = request.url.substr(8); // 移除 "media://" 部分
+  protocol.handle('media', (request) => {
+    const url = request.url.substring(8); // 移除 "media://" 部分
     try {
       const decodedUrl = decodeURIComponent(url);
-      return callback({ path: decodedUrl });
+      return net.fetch(`file://${decodedUrl}`);
     } catch (error) {
       console.error('Protocol handler error:', error);
-      return callback({ error: -2 });
+      return new Response('', { status: 404 });
     }
   });
 
@@ -87,7 +86,7 @@ app.on('window-all-closed', () => {
 // More aggressive crash prevention and graceful shutdown
 let isQuitting = false;
 
-app.on('before-quit', (event) => {
+app.on('before-quit', (_event) => {
   console.log('App is about to quit - performing cleanup');
 
   if (!isQuitting) {
@@ -166,12 +165,15 @@ process.on('warning', (warning) => {
 });
 
 // Prevent the default crash behavior
-app.on('child-process-gone' as any, (event, details) => {
+app.on('child-process-gone' as any, (_event, details: any) => {
   console.log('Child process gone:', details);
   // Don't quit, just log
 });
 
-app.on('render-process-gone' as any, (event, webContents, details) => {
-  console.log('Render process gone:', details);
-  // Don't quit, just log
-});
+app.on(
+  'render-process-gone' as any,
+  (_event: any, _webContents: any, details: any) => {
+    console.log('Render process gone:', details);
+    // Don't quit, just log
+  },
+);
