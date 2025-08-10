@@ -5,7 +5,7 @@ import { isAppleSilicon, isWin32, getExtraResourcesPath } from './utils';
 import { BrowserWindow, DownloadItem } from 'electron';
 import decompress from 'decompress';
 import fs from 'fs-extra';
-import { store } from './storeManager';
+import { store } from './store';
 import { checkCudaSupport } from './cudaUtils';
 import { logMessage } from './logger';
 
@@ -42,7 +42,7 @@ export const getModelsInstalled = () => {
   }
 };
 
-export const deleteModel = async (model) => {
+export const deleteModel = async (model: string) => {
   const modelsPath = getPath('modelsPath');
   const modelPath = path.join(modelsPath, `ggml-${model}.bin`);
   const coreMLModelPath = path.join(
@@ -105,7 +105,7 @@ export const downloadModelSync = async (
     let totalBytes = { normal: 0, coreML: 0 };
     let receivedBytes = { normal: 0, coreML: 0 };
 
-    const willDownloadHandler = (event, item: DownloadItem) => {
+    const willDownloadHandler = (_event: unknown, item: DownloadItem) => {
       const isCoreML = item.getFilename().includes('-encoder.mlmodelc');
 
       // 检查是否为当前模型的下载项
@@ -127,7 +127,7 @@ export const downloadModelSync = async (
       const type = isCoreML ? 'coreML' : 'normal';
       totalBytes[type] = item.getTotalBytes();
 
-      item.on('updated', (event, state) => {
+      item.on('updated', (_event: unknown, state: string) => {
         if (state === 'progressing' && !item.isPaused()) {
           receivedBytes[type] = item.getReceivedBytes();
           const totalProgress =
@@ -138,7 +138,7 @@ export const downloadModelSync = async (
         }
       });
 
-      item.once('done', async (event, state) => {
+      item.once('done', async (_event: unknown, state: string) => {
         if (state === 'completed') {
           downloadCount++;
 
@@ -212,24 +212,6 @@ export async function checkOpenAiWhisper(): Promise<boolean> {
   });
 }
 
-export const reinstallWhisper = async () => {
-  const whisperPath = getPath('whisperPath');
-
-  // 删除现有的 whisper.cpp 目录
-  try {
-    await fs.remove(whisperPath);
-    return true;
-  } catch (error) {
-    console.error('删除 whisper.cpp 目录失败:', error);
-    throw new Error('删除 whisper.cpp 目录失败');
-  }
-};
-
-// 判断模型是否是量化模型
-export const isQuantizedModel = (model) => {
-  return model.includes('-q5_') || model.includes('-q8_');
-};
-
 // 判断 encoder 模型是否存在
 export const hasEncoderModel = (model) => {
   const encoderModelPath = path.join(
@@ -248,7 +230,7 @@ export async function loadWhisperAddon(
   existingGpuCapabilities?: any,
 ) {
   const settings = (store.get('settings') as any) || {};
-  const { useCuda, useOpenVINO, selectedGPUId, gpuPreference } = settings;
+  const { selectedGPUId, gpuPreference } = settings;
 
   // GPU selection and addon loading logic
 
@@ -273,7 +255,6 @@ export async function loadWhisperAddon(
   try {
     // Use existing GPU capabilities or detect if not provided
     const gpuCapabilities = existingGpuCapabilities || detectAvailableGPUs();
-    const gpuConfig = getGPUSelectionConfig();
 
     // Only log capabilities if we had to detect them (avoid duplicate logging)
     if (!existingGpuCapabilities) {
@@ -380,7 +361,7 @@ async function loadWhisperAddonLegacy(model: string) {
   const settings = store.get('settings') || { useCuda: false };
   const useCuda = settings.useCuda || false;
 
-  let addonPath;
+  let addonPath: string;
 
   if (platform === 'win32' && useCuda) {
     // 检查 CUDA 支持
