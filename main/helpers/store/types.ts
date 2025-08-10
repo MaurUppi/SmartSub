@@ -1,5 +1,5 @@
 import { Provider, CustomParameterConfig } from '../../../types/provider';
-import { OpenVINOPreferences } from '../../../types/settings';
+import { EnhancedSettings, OpenVINOPreferences } from '../../../types/settings';
 
 export enum LogCategory {
   GENERAL = 'general',
@@ -24,32 +24,7 @@ export type LogEntry = {
 export type StoreType = {
   translationProviders: Provider[];
   userConfig: Record<string, any>;
-  settings: {
-    whisperCommand: string;
-    language: string;
-    useLocalWhisper: boolean;
-    builtinWhisperCommand: string;
-    useCuda: boolean;
-    modelsPath: string;
-    maxContext?: number;
-    useCustomTempDir?: boolean;
-    customTempDir?: string;
-    useVAD: boolean;
-    checkUpdateOnStartup: boolean;
-    vadThreshold: number;
-    vadMinSpeechDuration: number;
-    vadMinSilenceDuration: number;
-    vadMaxSpeechDuration: number;
-    vadSpeechPad: number;
-    vadSamplesOverlap: number;
-
-    // New Intel GPU settings
-    useOpenVINO?: boolean;
-    selectedGPUId?: string; // 'auto' | specific GPU ID
-    gpuPreference?: string[]; // ['nvidia', 'intel', 'apple', 'cpu']
-    gpuAutoDetection?: boolean;
-    openvinoPreferences?: OpenVINOPreferences;
-  };
+  settings: EnhancedSettings;
   providerVersion?: number;
   logs: LogEntry[];
   customParameters?: Record<string, CustomParameterConfig>;
