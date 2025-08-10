@@ -12,15 +12,7 @@
 
 import si from 'systeminformation';
 import { logMessage } from './logger';
-
-export interface CoreUltraInfo {
-  isIntelCoreUltra: boolean;
-  hasIntegratedGraphics: boolean;
-  cpuBrand?: string;
-  cpuManufacturer?: string;
-  detectionMethod: 'systeminformation' | 'fallback' | 'mock';
-  confidence: 'high' | 'medium' | 'low';
-}
+import { CoreUltraInfo } from '../../types/gpu';
 
 /**
  * Returns true when CPU brand string contains "Core Ultra"

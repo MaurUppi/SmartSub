@@ -177,6 +177,19 @@ export interface MockHardwareScenario {
   };
 }
 
+/**
+ * Intel Core Ultra processor information
+ * @since 2025.1
+ */
+export interface CoreUltraInfo {
+  isIntelCoreUltra: boolean;
+  hasIntegratedGraphics: boolean;
+  cpuBrand?: string;
+  cpuManufacturer?: string;
+  detectionMethod: 'systeminformation' | 'fallback' | 'mock';
+  confidence: 'high' | 'medium' | 'low';
+}
+
 // Export utility types
 export type GPUVendor = GPUDevice['vendor'];
 export type GPUType = GPUDevice['type'];
