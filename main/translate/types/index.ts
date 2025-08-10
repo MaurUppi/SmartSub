@@ -1,15 +1,5 @@
-export interface Subtitle {
-  id: string;
-  startEndTime: string;
-  content: string[];
-}
-
-export interface TranslationResult {
-  id: string;
-  startEndTime: string;
-  sourceContent: string;
-  targetContent: string;
-}
+// Re-export consolidated types from central location
+export type { Subtitle, TranslationResult } from '../../../types';
 
 export interface TranslationConfig {
   sourceLanguage: string;
