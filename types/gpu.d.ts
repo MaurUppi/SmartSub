@@ -162,20 +162,7 @@ export interface HardwareDetectionEvent {
   message: string;
 }
 
-// Mock system integration
-export interface MockHardwareScenario {
-  name: string;
-  description: string;
-  gpuDevices: GPUDevice[];
-  openvinoInfo: OpenVINOInfo;
-  platform: 'windows' | 'linux' | 'darwin';
-  expectedBehavior: {
-    totalGPUsDetected: number;
-    recommendedGPU: string | null;
-    openvinoCompatible: boolean;
-    detectionSuccess: boolean;
-  };
-}
+// Mock system integration (removed - unused)
 
 /**
  * Intel Core Ultra processor information
@@ -190,11 +177,7 @@ export interface CoreUltraInfo {
   confidence: 'high' | 'medium' | 'low';
 }
 
-// Export utility types
-export type GPUVendor = GPUDevice['vendor'];
-export type GPUType = GPUDevice['type'];
-export type DetectionPlatform = GPUCapabilities['detectionPlatform'];
-export type OpenVINOStatus = OpenVINOInfo['validationStatus'];
+// Export utility types (removed - unused)
 
 // Compatibility layer for helper file interfaces
 // TODO: Migrate helper files to use canonical GPUCapabilities
