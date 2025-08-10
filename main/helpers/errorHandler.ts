@@ -7,32 +7,11 @@ import { logMessage } from './logger';
 import { IFiles } from '../../types';
 // Note: Avoiding direct import to prevent circular dependency
 import { IpcMainEvent } from 'electron';
-
-export interface ProcessingError extends Error {
-  code?: string;
-  errno?: number;
-  path?: string;
-  syscall?: string;
-  addonType?: string;
-  recoveryAttempts?: number;
-}
-
-export interface ErrorRecoveryContext {
-  originalError: ProcessingError;
-  event: IpcMainEvent;
-  file: IFiles;
-  formData: any;
-  retryCount: number;
-  maxRetries: number;
-  recoveryStrategies: RecoveryStrategy[];
-}
-
-export interface RecoveryStrategy {
-  name: string;
-  canHandle: (error: ProcessingError) => boolean;
-  execute: (context: ErrorRecoveryContext) => Promise<string>;
-  priority: number;
-}
+import {
+  ProcessingError,
+  ErrorRecoveryContext,
+  RecoveryStrategy,
+} from '../../types/gpu-error';
 
 /**
  * Handle processing errors with intelligent recovery
