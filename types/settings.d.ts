@@ -4,7 +4,7 @@
  */
 
 // ============= IMPORTS =============
-import { CustomParameterConfig } from './parameterSystem';
+import { CustomParameterConfig } from 'types/provider';
 
 // ============= CORE SETTINGS =============
 /**

@@ -1,6 +1,6 @@
 /**
  * Standalone Development Mock System for Intel OpenVINO GPU Acceleration
- * 
+ *
  * This is a standalone version that doesn't require Electron dependencies
  * for testing purposes. It provides the same functionality as the main
  * developmentMockSystem.ts but with simplified logging.
@@ -22,7 +22,7 @@ const logger = {
   },
   error: (message: string, ...args: any[]) => {
     console.error(`[ERROR] ${message}`, ...args);
-  }
+  },
 };
 
 // Core interfaces from design.md
@@ -76,7 +76,8 @@ export class StandaloneDevelopmentMockSystem {
 
   public static getInstance(): StandaloneDevelopmentMockSystem {
     if (!StandaloneDevelopmentMockSystem.instance) {
-      StandaloneDevelopmentMockSystem.instance = new StandaloneDevelopmentMockSystem();
+      StandaloneDevelopmentMockSystem.instance =
+        new StandaloneDevelopmentMockSystem();
     }
     return StandaloneDevelopmentMockSystem.instance;
   }
@@ -84,22 +85,28 @@ export class StandaloneDevelopmentMockSystem {
   /**
    * Initialize the mock system with optional configuration
    */
-  public async initialize(config?: Partial<MockEnvironmentConfig>): Promise<void> {
+  public async initialize(
+    config?: Partial<MockEnvironmentConfig>,
+  ): Promise<void> {
     if (this.isInitialized) {
       logger.warn('StandaloneDevelopmentMockSystem already initialized');
       return;
     }
 
     this.config = { ...this.config, ...config };
-    
+
     // Only enable mocking in development environment on macOS
     const shouldMock = this.shouldEnableMocking();
-    
+
     if (shouldMock) {
       await this.initializeMockDevices();
-      logger.info('StandaloneDevelopmentMockSystem initialized with mock Intel GPU devices');
+      logger.info(
+        'StandaloneDevelopmentMockSystem initialized with mock Intel GPU devices',
+      );
     } else {
-      logger.info('StandaloneDevelopmentMockSystem initialized - production environment detected');
+      logger.info(
+        'StandaloneDevelopmentMockSystem initialized - production environment detected',
+      );
     }
 
     this.isInitialized = true;
@@ -109,10 +116,11 @@ export class StandaloneDevelopmentMockSystem {
    * Check if mocking should be enabled based on environment
    */
   private shouldEnableMocking(): boolean {
-    const isDevelopment = process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test';
+    const isDevelopment =
+      process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test';
     const isMacOS = platform() === 'darwin';
     const mockForced = process.env.FORCE_MOCK_INTEL_GPU === 'true';
-    
+
     return (isDevelopment && isMacOS) || mockForced;
   }
 
@@ -141,7 +149,9 @@ export class StandaloneDevelopmentMockSystem {
 
     // Simulate device detection delay
     if (this.config.mockNetworkDelay > 0) {
-      await new Promise(resolve => setTimeout(resolve, this.config.mockNetworkDelay));
+      await new Promise((resolve) =>
+        setTimeout(resolve, this.config.mockNetworkDelay),
+      );
     }
   }
 
@@ -217,7 +227,7 @@ export class StandaloneDevelopmentMockSystem {
         },
         powerEfficiency: 'excellent',
         performance: 'medium',
-      }
+      },
     ];
   }
 
@@ -240,10 +250,14 @@ export class StandaloneDevelopmentMockSystem {
 
     // Simulate detection delay
     if (this.config.mockNetworkDelay > 0) {
-      await new Promise(resolve => setTimeout(resolve, this.config.mockNetworkDelay / 2));
+      await new Promise((resolve) =>
+        setTimeout(resolve, this.config.mockNetworkDelay / 2),
+      );
     }
 
-    logger.info(`Mock GPU enumeration found ${this.mockDevices.length} Intel GPU devices`);
+    logger.info(
+      `Mock GPU enumeration found ${this.mockDevices.length} Intel GPU devices`,
+    );
     return [...this.mockDevices];
   }
 
@@ -271,15 +285,17 @@ export class StandaloneDevelopmentMockSystem {
 
     // Simulate detection delay
     if (this.config.mockNetworkDelay > 0) {
-      await new Promise(resolve => setTimeout(resolve, this.config.mockNetworkDelay));
+      await new Promise((resolve) =>
+        setTimeout(resolve, this.config.mockNetworkDelay),
+      );
     }
 
     const capabilities: OpenVINOCapabilities = {
       isInstalled: true,
       version: '2024.6.0',
       supportedDevices: this.mockDevices
-        .filter(device => device.capabilities.openvinoCompatible)
-        .map(device => device.id),
+        .filter((device) => device.capabilities.openvinoCompatible)
+        .map((device) => device.id),
       runtimePath: '/opt/intel/openvino_2024/runtime',
       modelFormats: ['ONNX', 'TensorFlow', 'PyTorch', 'OpenVINO IR'],
     };
@@ -301,25 +317,29 @@ export class StandaloneDevelopmentMockSystem {
       await this.initialize();
     }
 
-    const device = this.mockDevices.find(d => d.id === deviceId);
+    const device = this.mockDevices.find((d) => d.id === deviceId);
     if (!device) {
       throw new Error(`Mock device not found: ${deviceId}`);
     }
 
     // Simulate benchmark delay
     if (this.config.enablePerformanceSimulation) {
-      await new Promise(resolve => setTimeout(resolve, 1000)); // 1s benchmark
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // 1s benchmark
     }
 
     // Generate realistic performance metrics based on device characteristics
     const baseMetrics = this.getBasePerformanceMetrics(device);
     const variance = 0.1; // 10% variance
-    
+
     return {
-      processingTime: baseMetrics.processingTime * (1 + (Math.random() - 0.5) * variance),
-      memoryUsage: baseMetrics.memoryUsage * (1 + (Math.random() - 0.5) * variance),
-      powerConsumption: baseMetrics.powerConsumption * (1 + (Math.random() - 0.5) * variance),
-      throughput: baseMetrics.throughput * (1 + (Math.random() - 0.5) * variance),
+      processingTime:
+        baseMetrics.processingTime * (1 + (Math.random() - 0.5) * variance),
+      memoryUsage:
+        baseMetrics.memoryUsage * (1 + (Math.random() - 0.5) * variance),
+      powerConsumption:
+        baseMetrics.powerConsumption * (1 + (Math.random() - 0.5) * variance),
+      throughput:
+        baseMetrics.throughput * (1 + (Math.random() - 0.5) * variance),
     };
   }
 
@@ -328,18 +348,18 @@ export class StandaloneDevelopmentMockSystem {
    */
   private getBasePerformanceMetrics(device: GPUDevice) {
     const metrics = {
-      'discrete': {
+      discrete: {
         processingTime: 150, // ms per audio second
         memoryUsage: 2048, // MB
         powerConsumption: 120, // watts
         throughput: 85, // audio seconds per minute
       },
-      'integrated': {
+      integrated: {
         processingTime: 300, // ms per audio second
         memoryUsage: 1024, // MB
         powerConsumption: 25, // watts
         throughput: 45, // audio seconds per minute
-      }
+      },
     };
 
     return metrics[device.type];
@@ -350,7 +370,10 @@ export class StandaloneDevelopmentMockSystem {
    */
   public configure(config: Partial<MockEnvironmentConfig>): void {
     this.config = { ...this.config, ...config };
-    logger.info('StandaloneDevelopmentMockSystem configuration updated:', config);
+    logger.info(
+      'StandaloneDevelopmentMockSystem configuration updated:',
+      config,
+    );
   }
 
   /**
@@ -389,7 +412,9 @@ export class StandaloneDevelopmentMockSystem {
    * Remove mock device
    */
   public removeMockDevice(deviceId: string): boolean {
-    const index = this.mockDevices.findIndex(device => device.id === deviceId);
+    const index = this.mockDevices.findIndex(
+      (device) => device.id === deviceId,
+    );
     if (index >= 0) {
       const removed = this.mockDevices.splice(index, 1)[0];
       logger.info(`Removed mock device: ${removed.name}`);
@@ -402,7 +427,7 @@ export class StandaloneDevelopmentMockSystem {
    * Get mock device by ID
    */
   public getMockDevice(deviceId: string): GPUDevice | undefined {
-    return this.mockDevices.find(device => device.id === deviceId);
+    return this.mockDevices.find((device) => device.id === deviceId);
   }
 
   /**
@@ -414,7 +439,8 @@ export class StandaloneDevelopmentMockSystem {
 }
 
 // Export singleton instance for convenience
-export const standaloneMockSystem = StandaloneDevelopmentMockSystem.getInstance();
+export const standaloneMockSystem =
+  StandaloneDevelopmentMockSystem.getInstance();
 
 // Export utility functions for testing
 export const mockSystemUtils = {
@@ -445,7 +471,9 @@ export const mockSystemUtils = {
   /**
    * Create test OpenVINO capabilities
    */
-  createTestOpenVINOCapabilities(overrides?: Partial<OpenVINOCapabilities>): OpenVINOCapabilities {
+  createTestOpenVINOCapabilities(
+    overrides?: Partial<OpenVINOCapabilities>,
+  ): OpenVINOCapabilities {
     return {
       isInstalled: true,
       version: '2024.6.0',
@@ -454,5 +482,5 @@ export const mockSystemUtils = {
       modelFormats: ['ONNX'],
       ...overrides,
     };
-  }
+  },
 };

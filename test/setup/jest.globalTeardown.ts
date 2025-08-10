@@ -7,7 +7,7 @@ import { globalTeardown } from './mockEnvironment';
 
 export default async (): Promise<void> => {
   console.log('🧹 Cleaning up global test environment...');
-  
+
   try {
     await globalTeardown();
     console.log('✅ Global test environment cleanup complete');

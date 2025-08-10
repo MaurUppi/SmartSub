@@ -18,17 +18,23 @@ export default async function translate(
   query: string | string[],
   proof: { apiKey: string; apiSecret: string; endpoint?: string },
   sourceLanguage: string,
-  targetLanguage: string
+  targetLanguage: string,
 ) {
-  const { apiKey: accessKeyId, apiSecret: accessKeySecret, endpoint = 'mt.aliyuncs.com' } = proof || {};
+  const {
+    apiKey: accessKeyId,
+    apiSecret: accessKeySecret,
+    endpoint = 'mt.aliyuncs.com',
+  } = proof || {};
   if (!accessKeyId || !accessKeySecret) {
     console.log('请先配置阿里云 AccessKey ID 和 AccessKey Secret');
     throw new Error('missingKeyOrSecret');
   }
 
   // 语言代码转换
-  const formatSourceLanguage = convertLanguageCode(sourceLanguage, 'aliyun') || sourceLanguage;
-  const formatTargetLanguage = convertLanguageCode(targetLanguage, 'aliyun') || targetLanguage;
+  const formatSourceLanguage =
+    convertLanguageCode(sourceLanguage, 'aliyun') || sourceLanguage;
+  const formatTargetLanguage =
+    convertLanguageCode(targetLanguage, 'aliyun') || targetLanguage;
 
   if (!formatSourceLanguage || !formatTargetLanguage) {
     console.log('不支持的语言');
@@ -46,12 +52,22 @@ export default async function translate(
       if (query.length === 0) {
         return [];
       }
-      
+
       // 批量翻译处理
-      return await batchTranslate(client, query, formatSourceLanguage, formatTargetLanguage);
+      return await batchTranslate(
+        client,
+        query,
+        formatSourceLanguage,
+        formatTargetLanguage,
+      );
     } else {
       // 单文本翻译，包装成批量处理
-      const results = await batchTranslate(client, [query], formatSourceLanguage, formatTargetLanguage);
+      const results = await batchTranslate(
+        client,
+        [query],
+        formatSourceLanguage,
+        formatTargetLanguage,
+      );
       return results[0];
     }
   } catch (error) {
@@ -63,7 +79,11 @@ export default async function translate(
 /**
  * 创建阿里云翻译客户端
  */
-function createClient(accessKeyId: string, accessKeySecret: string, endpoint: string): any {
+function createClient(
+  accessKeyId: string,
+  accessKeySecret: string,
+  endpoint: string,
+): any {
   const config = new $OpenApi.Config({
     accessKeyId,
     accessKeySecret,
@@ -81,7 +101,7 @@ async function batchTranslate(
   client: any,
   texts: string[],
   sourceLanguage: string,
-  targetLanguage: string
+  targetLanguage: string,
 ): Promise<string[]> {
   // 准备批量翻译的输入格式
   // 格式: { "1": "text1", "2": "text2", ... }
@@ -100,16 +120,19 @@ async function batchTranslate(
     targetLanguage: targetLanguage,
     scene: 'general',
     apiType: 'translate_standard', // 使用通用版翻译服务
-    sourceText: sourceTextJson
+    sourceText: sourceTextJson,
   };
 
   // 运行时选项
   const runtime = new $Util.RuntimeOptions({});
-  
+
   try {
     // 发起批量翻译请求
-    const response = await client.getBatchTranslateWithOptions(request, runtime);
-    
+    const response = await client.getBatchTranslateWithOptions(
+      request,
+      runtime,
+    );
+
     // 处理返回结果
     if (response?.body?.code === 200 && response?.body?.translatedList) {
       // 构建结果数组，保持原始顺序
@@ -119,14 +142,14 @@ async function batchTranslate(
           resultMap[item.index] = item.translated;
         }
       }
-      
+
       // 按原始顺序返回结果
       return texts.map((_, index) => resultMap[`${index}`] || '');
     }
-    
+
     throw new Error(response?.body?.message || '批量翻译请求返回错误');
   } catch (error) {
     console.error('阿里云批量翻译错误:', error);
     throw error;
   }
-} 
+}

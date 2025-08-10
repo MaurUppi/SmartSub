@@ -1,6 +1,6 @@
 /**
  * Unit Tests for Intel Core Ultra Detection Module
- * 
+ *
  * Tests for hardware identification, processor detection,
  * and integrated graphics assessment capabilities.
  */
@@ -11,7 +11,7 @@ import {
   mockCoreUltraDetection,
   CoreUltraDetector,
   coreUltraDetector,
-  CoreUltraInfo
+  CoreUltraInfo,
 } from '../../main/helpers/coreUltraDetection';
 
 import { TestAssertions } from '../setup/mockEnvironment';
@@ -33,11 +33,13 @@ describe('Intel Core Ultra Detection', () => {
 
     test('should provide comprehensive detection info', async () => {
       const info = await detectCoreUltraWithGraphics();
-      
+
       expect(info).toBeDefined();
       expect(typeof info.isIntelCoreUltra).toBe('boolean');
       expect(typeof info.hasIntegratedGraphics).toBe('boolean');
-      expect(['systeminformation', 'fallback', 'mock']).toContain(info.detectionMethod);
+      expect(['systeminformation', 'fallback', 'mock']).toContain(
+        info.detectionMethod,
+      );
       expect(['high', 'medium', 'low']).toContain(info.confidence);
     });
   });
@@ -45,7 +47,7 @@ describe('Intel Core Ultra Detection', () => {
   describe('Mock Implementation', () => {
     test('should simulate Core Ultra processor', () => {
       const info = mockCoreUltraDetection(true);
-      
+
       expect(info.isIntelCoreUltra).toBe(true);
       expect(info.hasIntegratedGraphics).toBe(true);
       expect(info.cpuBrand).toContain('Core');
@@ -57,7 +59,7 @@ describe('Intel Core Ultra Detection', () => {
 
     test('should simulate non-Ultra processor', () => {
       const info = mockCoreUltraDetection(false);
-      
+
       expect(info.isIntelCoreUltra).toBe(false);
       expect(info.hasIntegratedGraphics).toBe(false);
       expect(info.cpuBrand).toContain('Mock');
@@ -71,14 +73,14 @@ describe('Intel Core Ultra Detection', () => {
     test('should create singleton instance', () => {
       const instance1 = CoreUltraDetector.getInstance();
       const instance2 = CoreUltraDetector.getInstance();
-      
+
       expect(instance1).toBe(instance2);
       expect(instance1).toBeInstanceOf(CoreUltraDetector);
     });
 
     test('should enable mock mode', async () => {
       coreUltraDetector.enableMockMode(true);
-      
+
       const info = await coreUltraDetector.detect();
       expect(info.isIntelCoreUltra).toBe(true);
       expect(info.detectionMethod).toBe('mock');
@@ -88,7 +90,7 @@ describe('Intel Core Ultra Detection', () => {
       coreUltraDetector.enableMockMode(true);
       let info = await coreUltraDetector.detect();
       expect(info.detectionMethod).toBe('mock');
-      
+
       coreUltraDetector.disableMockMode();
       info = await coreUltraDetector.detect();
       expect(info.detectionMethod).not.toBe('mock');
@@ -96,20 +98,20 @@ describe('Intel Core Ultra Detection', () => {
 
     test('should cache detection results', async () => {
       coreUltraDetector.enableMockMode(true);
-      
+
       const info1 = await coreUltraDetector.detect();
       const info2 = await coreUltraDetector.detect();
-      
+
       expect(info1).toBe(info2); // Same object reference = cached
     });
 
     test('should clear cache when requested', async () => {
       coreUltraDetector.enableMockMode(true);
-      
+
       const info1 = await coreUltraDetector.detect();
       coreUltraDetector.clearCache();
       const info2 = await coreUltraDetector.detect();
-      
+
       // Different objects but same content
       expect(info1).not.toBe(info2);
       expect(info1.isIntelCoreUltra).toBe(info2.isIntelCoreUltra);
@@ -120,7 +122,7 @@ describe('Intel Core Ultra Detection', () => {
     test('should handle detection failures gracefully', async () => {
       // This tests the fallback behavior when systeminformation fails
       const info = await detectCoreUltraWithGraphics();
-      
+
       // Should not throw errors, even if detection fails
       expect(info).toBeDefined();
       expect(typeof info.isIntelCoreUltra).toBe('boolean');
@@ -130,7 +132,7 @@ describe('Intel Core Ultra Detection', () => {
   describe('Integration with Test Assertions', () => {
     test('should validate CoreUltraInfo structure', () => {
       const info = mockCoreUltraDetection(true);
-      
+
       // Use custom assertion if available
       if (TestAssertions.assertValidCoreUltraInfo) {
         TestAssertions.assertValidCoreUltraInfo(info);
@@ -146,4 +148,4 @@ describe('Intel Core Ultra Detection', () => {
 });
 
 // Export for potential integration tests
-export { };
+export {};

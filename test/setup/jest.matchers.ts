@@ -16,15 +16,17 @@ declare global {
 expect.extend({
   toHaveGPUDevice(received: any[], deviceId: string) {
     const device = received.find((d: any) => d.id === deviceId);
-    
+
     if (device) {
       return {
-        message: () => `Expected array not to contain GPU device with ID ${deviceId}`,
+        message: () =>
+          `Expected array not to contain GPU device with ID ${deviceId}`,
         pass: true,
       };
     } else {
       return {
-        message: () => `Expected array to contain GPU device with ID ${deviceId}`,
+        message: () =>
+          `Expected array to contain GPU device with ID ${deviceId}`,
         pass: false,
       };
     }
@@ -32,7 +34,7 @@ expect.extend({
 
   toBeOpenVINOCompatible(received: any) {
     const isCompatible = received.capabilities?.openvinoCompatible === true;
-    
+
     if (isCompatible) {
       return {
         message: () => `Expected device not to be OpenVINO compatible`,
@@ -47,11 +49,12 @@ expect.extend({
   },
 
   toHavePerformanceMetrics(received: any) {
-    const hasMetrics = received.processingTime !== undefined &&
-                      received.memoryUsage !== undefined &&
-                      received.powerConsumption !== undefined &&
-                      received.throughput !== undefined;
-    
+    const hasMetrics =
+      received.processingTime !== undefined &&
+      received.memoryUsage !== undefined &&
+      received.powerConsumption !== undefined &&
+      received.throughput !== undefined;
+
     if (hasMetrics) {
       return {
         message: () => `Expected object not to have performance metrics`,
@@ -59,7 +62,8 @@ expect.extend({
       };
     } else {
       return {
-        message: () => `Expected object to have performance metrics (processingTime, memoryUsage, powerConsumption, throughput)`,
+        message: () =>
+          `Expected object to have performance metrics (processingTime, memoryUsage, powerConsumption, throughput)`,
         pass: false,
       };
     }
