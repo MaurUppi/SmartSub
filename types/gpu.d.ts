@@ -180,7 +180,11 @@ export interface CoreUltraInfo {
 // Export utility types (removed - unused)
 
 // Compatibility layer for helper file interfaces
-// TODO: Migrate helper files to use canonical GPUCapabilities
+// ARCHITECTURAL DECISION: Different interfaces serve different purposes:
+// - Canonical GPUCapabilities: Comprehensive detection systems with full metadata
+// - LegacyGPUCapabilities: Simple detection functions (hardwareDetection.ts)
+// - SelectorGPUCapabilities: GPU selection logic with Intel-specific needs (gpuSelector.ts)
+// This approach maintains backward compatibility while providing type safety
 
 export interface LegacyGPUCapabilities {
   nvidia: boolean;
