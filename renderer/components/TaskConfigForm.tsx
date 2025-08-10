@@ -34,18 +34,15 @@ type Provider = {
   type: 'api' | 'local' | 'openai';
 };
 
-// 任务类型枚举
-type TaskType = 'generateAndTranslate' | 'generateOnly' | 'translateOnly';
-
 const TaskConfigForm = ({ form, formData, systemInfo }) => {
   const [providers, setProviders] = useState<Provider[]>([]);
-  const { taskType, sourceSrtSaveOption } = formData;
+  const { taskType } = formData;
   const [taskTab, setTaskTab] = useState<string>('sourceSubtitle');
   const { t } = useTranslation('home');
   const { t: tCommon } = useTranslation('common');
 
   useEffect(() => {
-    loadProviders();
+    loadProviders().catch(console.error);
   }, []);
 
   const loadProviders = async () => {
@@ -555,7 +552,7 @@ const TaskConfigForm = ({ form, formData, systemInfo }) => {
                 <FormField
                   control={form.control}
                   name="selectedGPU"
-                  render={({ field }) => (
+                  render={({ field: _field }) => (
                     <FormItem>
                       <GPUSelectionDropbox form={form} showDescription={true} />
                     </FormItem>
@@ -592,7 +589,13 @@ const TaskConfigForm = ({ form, formData, systemInfo }) => {
 };
 
 // 任务类型卡片组件
-const TaskTypeCard = ({ title, description, value, selected, onClick }) => {
+const TaskTypeCard = ({
+  title,
+  description,
+  value: _value,
+  selected,
+  onClick,
+}) => {
   return (
     <Card
       className={cn(

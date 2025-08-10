@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Button } from './ui/button';
 import { toast } from 'sonner';
-import { isSubtitleFile, needsCoreML } from 'lib/utils';
+import { isSubtitleFile } from 'lib/utils';
 import { useTranslation } from 'next-i18next';
 
 const TaskControls = ({ files, formData }) => {
@@ -14,7 +14,7 @@ const TaskControls = ({ files, formData }) => {
       const status = await window?.ipc?.invoke('getTaskStatus');
       setTaskStatus(status);
     };
-    getCurrentTaskStatus();
+    getCurrentTaskStatus().catch(console.error);
 
     // 监听任务状态变化
     const cleanup = window?.ipc?.on('taskComplete', (status: string) => {
@@ -33,7 +33,7 @@ const TaskControls = ({ files, formData }) => {
       });
       return;
     }
-    const isAllFilesProcessed = files.every((item) => {
+    const isAllFilesProcessed = files.every((item: any) => {
       const basicProcessingDone = item.extractAudio && item.extractSubtitle;
 
       if (formData.translateProvider === '-1') {
@@ -64,12 +64,12 @@ const TaskControls = ({ files, formData }) => {
     setTaskStatus('running');
     window?.ipc?.send('handleTask', { files, formData });
   };
-  const handlePause = () => {
-    // Note: Pause functionality is limited due to whisper.cpp addon limitations
-    // Processing continues in background, only UI updates are paused
-    window?.ipc?.send('pauseTask', null);
-    setTaskStatus('paused');
-  };
+  // Note: Pause functionality is limited due to whisper.cpp addon limitations
+  // Processing continues in background, only UI updates are paused
+  // const handlePause = () => {
+  //   window?.ipc?.send('pauseTask', null);
+  //   setTaskStatus('paused');
+  // };
 
   const handleResume = () => {
     // Resume UI updates - processing was never actually paused
@@ -77,12 +77,12 @@ const TaskControls = ({ files, formData }) => {
     setTaskStatus('running');
   };
 
-  const handleCancel = () => {
-    // Note: Cancel functionality is limited due to whisper.cpp addon limitations
-    // Processing will continue until natural completion
-    window?.ipc?.send('cancelTask', null);
-    setTaskStatus('cancelled');
-  };
+  // Note: Cancel functionality is limited due to whisper.cpp addon limitations
+  // Processing will continue until natural completion
+  // const handleCancel = () => {
+  //   window?.ipc?.send('cancelTask', null);
+  //   setTaskStatus('cancelled');
+  // };
   return (
     <div className="flex gap-2 ml-auto">
       {(taskStatus === 'idle' || taskStatus === 'completed') && (

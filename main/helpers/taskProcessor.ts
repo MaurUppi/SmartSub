@@ -6,7 +6,7 @@ import { logMessage, store } from './storeManager';
 import path from 'path';
 import { isAppleSilicon } from './utils';
 import { IFiles } from '../../types';
-import { ExtendedProvider, CustomParameterConfig } from '../../types/provider';
+import { ExtendedProvider, CustomParameterConfig } from 'types/provider';
 import { configurationManager } from '../service/configurationManager';
 
 let processingQueue = [];
@@ -68,7 +68,7 @@ async function createExtendedProvider(
   }
 }
 
-export function setupTaskProcessor(mainWindow: BrowserWindow) {
+export function setupTaskProcessor(_mainWindow: BrowserWindow) {
   ipcMain.on(
     'handleTask',
     async (event, { files, formData }: { files: IFiles[]; formData: any }) => {
@@ -82,7 +82,7 @@ export function setupTaskProcessor(mainWindow: BrowserWindow) {
         shouldCancel = false;
         hasOpenAiWhisper = await checkOpenAiWhisper();
         maxConcurrentTasks = formData.maxConcurrentTasks || 3;
-        processNextTasks(event);
+        await processNextTasks(event);
       }
     },
   );
@@ -109,7 +109,7 @@ export function setupTaskProcessor(mainWindow: BrowserWindow) {
     return 'idle';
   });
 
-  ipcMain.handle('checkMlmodel', async (event, modelName) => {
+  ipcMain.handle('checkMlmodel', async (_event, modelName) => {
     // 如果不是苹果芯片，不需要该文件，直接返回true
     if (!isAppleSilicon()) {
       return true;
@@ -124,7 +124,7 @@ export function setupTaskProcessor(mainWindow: BrowserWindow) {
   });
 }
 
-async function processNextTasks(event) {
+async function processNextTasks(event: any) {
   if (shouldCancel) {
     isProcessing = false;
     event.sender.send('taskComplete', 'cancelled');
@@ -151,7 +151,8 @@ async function processNextTasks(event) {
     const tasksToProcess = processingQueue.splice(0, availableSlots);
     const translationProviders = store.get('translationProviders');
 
-    tasksToProcess.forEach(async (task) => {
+    // Process tasks in parallel with proper Promise handling
+    const taskPromises = tasksToProcess.map(async (task) => {
       activeTasksCount++;
       try {
         const baseProvider = translationProviders.find(
@@ -173,8 +174,15 @@ async function processNextTasks(event) {
       } finally {
         activeTasksCount--;
         // 处理完一个任务后，检查是否可以启动新任务
-        processNextTasks(event);
+        await processNextTasks(event);
       }
+    });
+
+    // Don't wait for all tasks to complete, let them run concurrently
+    taskPromises.forEach((promise) => {
+      promise.catch((error) => {
+        console.error('Task processing error:', error);
+      });
     });
   }
 
@@ -182,17 +190,6 @@ async function processNextTasks(event) {
   if (activeTasksCount > 0) {
     setTimeout(() => processNextTasks(event), 100);
   }
-}
-
-/**
- * Export functions to access task state from other modules
- */
-export function getTaskCancellationState() {
-  return {
-    shouldCancel,
-    isPaused,
-    isProcessing,
-  };
 }
 
 export function isTaskCancelled(): boolean {

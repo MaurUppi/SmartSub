@@ -1,10 +1,12 @@
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { IFiles } from '../../types';
 
-export default function useIpcCommunication(setFiles) {
+export default function useIpcCommunication(
+  setFiles: React.Dispatch<React.SetStateAction<IFiles[]>>,
+) {
   useEffect(() => {
     window?.ipc?.on('file-selected', (res: IFiles[]) => {
-      setFiles((prevFiles) => [...prevFiles, ...res]);
+      setFiles((prevFiles: IFiles[]) => [...prevFiles, ...res]);
     });
 
     const handleTaskStatusChange = (
@@ -12,8 +14,8 @@ export default function useIpcCommunication(setFiles) {
       key: string,
       status: string,
     ) => {
-      setFiles((prevFiles) =>
-        prevFiles.map((file) =>
+      setFiles((prevFiles: IFiles[]) =>
+        prevFiles.map((file: IFiles) =>
           file.uuid === res?.uuid ? { ...file, [key]: status } : file,
         ),
       );
@@ -24,9 +26,9 @@ export default function useIpcCommunication(setFiles) {
       key: string,
       progress: number,
     ) => {
-      setFiles((prevFiles) => {
+      setFiles((prevFiles: IFiles[]) => {
         const progressKey = `${key}Progress`;
-        return prevFiles.map((file) =>
+        return prevFiles.map((file: IFiles) =>
           file.uuid === res?.uuid ? { ...file, [progressKey]: progress } : file,
         );
       });
@@ -37,17 +39,17 @@ export default function useIpcCommunication(setFiles) {
       key: string,
       errorMsg: string,
     ) => {
-      setFiles((prevFiles) => {
+      setFiles((prevFiles: IFiles[]) => {
         const errorKey = `${key}Error`;
-        return prevFiles.map((file) =>
+        return prevFiles.map((file: IFiles) =>
           file.uuid === res?.uuid ? { ...file, [errorKey]: errorMsg } : file,
         );
       });
     };
 
     const handleFileChange = (res: IFiles) => {
-      setFiles((prevFiles) =>
-        prevFiles.map((file) =>
+      setFiles((prevFiles: IFiles[]) =>
+        prevFiles.map((file: IFiles) =>
           file.uuid === res?.uuid ? { ...file, ...res } : file,
         ),
       );

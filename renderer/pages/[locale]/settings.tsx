@@ -12,7 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
-import { getStaticPaths, makeStaticProperties } from '../../lib/get-static';
+import { getStaticPaths, makeStaticProperties } from '@/lib/get-static';
 import { Globe, Trash2, Cog, HelpCircle, Eraser, Activity } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import {
@@ -73,7 +73,7 @@ const CommandInput = ({
 const Settings = () => {
   const router = useRouter();
   const { t, i18n } = useTranslation('settings');
-  const { platform, capabilities, isMacOS, isWindows, isLinux } = usePlatform();
+  const { platform, capabilities, isMacOS } = usePlatform();
   const [currentLanguage, setCurrentLanguage] = useState(router.locale);
   const [useLocalWhisper, setUseLocalWhisper] = useState(false);
   const [whisperCommand, setWhisperCommand] = useState('');
@@ -122,7 +122,7 @@ const Settings = () => {
       const tempDirPath = await window?.ipc?.invoke('getTempDir');
       setTempDir(tempDirPath || '');
     };
-    loadSettings();
+    loadSettings().catch(console.error);
   }, []);
 
   useEffect(() => {
@@ -134,21 +134,23 @@ const Settings = () => {
     if (platform !== 'unknown' && useCuda && !capabilities.supportsCUDA) {
       setUseCuda(false);
       // Optionally save the updated setting
-      window?.ipc?.invoke('setSettings', { useCuda: false });
+      window?.ipc
+        ?.invoke('setSettings', { useCuda: false })
+        .catch(console.error);
     }
   }, [platform, capabilities, useCuda]);
 
-  const handleLanguageChange = async (value) => {
+  const handleLanguageChange = async (value: string) => {
     await window?.ipc?.invoke('setSettings', { language: value });
     if (value !== i18n.language) {
-      router.push(`/${value}/settings`);
+      await router.push(`/${value}/settings`);
     }
   };
 
   const handleClearConfig = async () => {
     const result = await window?.ipc?.invoke('clearConfig');
     if (result) {
-      router.push(`/${i18n.language}/home`);
+      await router.push(`/${i18n.language}/home`);
       toast.success(t('restoreDefaultsSuccess'));
     } else {
       toast.error(t('restoreDefaultsFailed'));
@@ -255,8 +257,8 @@ const Settings = () => {
     }
   };
 
-  const handleWhisperCommandSave = () => {
-    saveSettings({
+  const handleWhisperCommandSave = async () => {
+    await saveSettings({
       useLocalWhisper,
       whisperCommand,
     });

@@ -28,7 +28,7 @@ export function setupStoreHandlers() {
   });
 
   // Provider 相关处理
-  ipcMain.on('setTranslationProviders', async (event, providers) => {
+  ipcMain.on('setTranslationProviders', async (_event, providers) => {
     store.set('translationProviders', providers);
   });
 
@@ -37,7 +37,7 @@ export function setupStoreHandlers() {
   });
 
   // 用户配置相关处理
-  ipcMain.on('setUserConfig', async (event, config) => {
+  ipcMain.on('setUserConfig', async (_event, config) => {
     store.set('userConfig', config);
   });
 
@@ -47,7 +47,7 @@ export function setupStoreHandlers() {
   });
 
   // 设置相关处理
-  ipcMain.handle('setSettings', async (event, settings) => {
+  ipcMain.handle('setSettings', async (_event, settings) => {
     const preSettings = store.get('settings');
     store.set('settings', { ...preSettings, ...settings });
   });
@@ -97,7 +97,7 @@ export function setupStoreHandlers() {
   });
 
   // GPU 配置管道处理
-  ipcMain.handle('configureGPUPipeline', async (event, config) => {
+  ipcMain.handle('configureGPUPipeline', async (_event, config) => {
     try {
       const { gpuId, gpuType, vendor } = config;
 
@@ -105,7 +105,7 @@ export function setupStoreHandlers() {
       console.log('Configuring GPU pipeline:', { gpuId, gpuType, vendor });
 
       // Store GPU configuration in settings
-      await store.set('gpuConfig', {
+      store.set('gpuConfig', {
         selectedGPU: gpuId,
         gpuType: gpuType,
         vendor: vendor,

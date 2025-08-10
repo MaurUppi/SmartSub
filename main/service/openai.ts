@@ -5,7 +5,7 @@ import {
   TranslationResultSchema,
 } from '../translate/constants/schema';
 import { ParameterProcessor } from '../helpers/parameterProcessor';
-import { ExtendedProvider } from '../../types/provider';
+import { ExtendedProvider } from 'types/provider';
 
 type OpenAIProvider = {
   apiUrl: string;

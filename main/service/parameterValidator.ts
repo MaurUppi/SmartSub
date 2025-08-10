@@ -9,7 +9,7 @@ import type {
   CustomParameterConfig,
   ParameterValue,
   ValidationError,
-} from '../../types/provider';
+} from 'types/provider';
 
 export interface ValidationRules {
   maxParameterCount?: number;
@@ -280,7 +280,7 @@ export class ParameterValidator {
     value: ParameterValue,
     parameterType: 'header' | 'body',
     rules: ValidationRules,
-    context: ValidationContext,
+    _context: ValidationContext,
   ): ValidationError[] {
     const errors: ValidationError[] = [];
 
@@ -386,15 +386,10 @@ export class ParameterValidator {
    */
   private validateCrossParameters(
     config: CustomParameterConfig,
-    rules: ValidationRules,
-    context: ValidationContext,
+    _rules: ValidationRules,
+    _context: ValidationContext,
   ): ValidationError[] {
     const errors: ValidationError[] = [];
-
-    const allParams = {
-      ...config.headerParameters,
-      ...config.bodyParameters,
-    };
 
     // Check for duplicate keys between headers and body
     const headerKeys = Object.keys(config.headerParameters || {});
@@ -433,7 +428,7 @@ export class ParameterValidator {
    */
   private validateSecurity(
     config: CustomParameterConfig,
-    rules: ValidationRules,
+    _rules: ValidationRules,
     context: ValidationContext,
   ): ValidationError[] {
     const errors: ValidationError[] = [];
@@ -448,8 +443,6 @@ export class ParameterValidator {
       if (typeof value === 'string') {
         // Check for hardcoded credentials patterns
         if (this.containsCredentialPattern(key, value)) {
-          const severity =
-            context.securityLevel === 'high' ? 'error' : 'warning';
           errors.push({
             key: key,
             message: `Parameter '${key}' appears to contain hardcoded credentials. Use environment variables or secure configuration`,
@@ -535,126 +528,6 @@ export class ParameterValidator {
   private containsUrlWithCredentials(value: string): boolean {
     const urlWithCredentialsPattern = /https?:\/\/[^:]+:[^@]+@/;
     return urlWithCredentialsPattern.test(value);
-  }
-
-  /**
-   * Validate a single parameter value with type coercion
-   */
-  async validateSingleParameterValue(
-    key: string,
-    value: any,
-    expectedType?: string,
-    constraints?: any,
-  ): Promise<{ isValid: boolean; errors: ValidationError[] }> {
-    const errors: ValidationError[] = [];
-    let convertedValue = value;
-
-    try {
-      // Type validation and coercion
-      if (expectedType) {
-        switch (expectedType) {
-          case 'string':
-            convertedValue = String(value);
-            break;
-          case 'number':
-            convertedValue = Number(value);
-            if (isNaN(convertedValue)) {
-              errors.push({
-                key: key,
-                message: `Cannot convert '${value}' to number`,
-                type: 'type',
-              });
-            }
-            break;
-          case 'boolean':
-            if (typeof value === 'string') {
-              convertedValue = value.toLowerCase() === 'true';
-            } else {
-              convertedValue = Boolean(value);
-            }
-            break;
-          case 'object':
-            if (typeof value === 'string') {
-              try {
-                convertedValue = JSON.parse(value);
-              } catch {
-                errors.push({
-                  key: key,
-                  message: `Invalid JSON string for parameter '${key}'`,
-                  type: 'format',
-                });
-              }
-            }
-            break;
-        }
-      }
-
-      // Constraint validation
-      if (constraints && errors.length === 0) {
-        errors.push(
-          ...this.validateConstraints(key, convertedValue, constraints),
-        );
-      }
-    } catch (error) {
-      errors.push({
-        key: key,
-        message: `Validation error for parameter '${key}': ${error instanceof Error ? error.message : 'Unknown error'}`,
-        type: 'system',
-      });
-    }
-
-    return {
-      isValid: errors.length === 0,
-      errors,
-    };
-  }
-
-  /**
-   * Validate constraints
-   */
-  private validateConstraints(
-    key: string,
-    value: any,
-    constraints: any,
-  ): ValidationError[] {
-    const errors: ValidationError[] = [];
-
-    if (constraints.min !== undefined && value < constraints.min) {
-      errors.push({
-        key: key,
-        message: `Value ${value} is less than minimum ${constraints.min}`,
-        type: 'range',
-      });
-    }
-
-    if (constraints.max !== undefined && value > constraints.max) {
-      errors.push({
-        key: key,
-        message: `Value ${value} is greater than maximum ${constraints.max}`,
-        type: 'range',
-      });
-    }
-
-    if (constraints.pattern && typeof value === 'string') {
-      const pattern = new RegExp(constraints.pattern);
-      if (!pattern.test(value)) {
-        errors.push({
-          key: key,
-          message: `Value does not match required pattern`,
-          type: 'format',
-        });
-      }
-    }
-
-    if (constraints.enum && !constraints.enum.includes(value)) {
-      errors.push({
-        key: key,
-        message: `Value must be one of: ${constraints.enum.join(', ')}`,
-        type: 'format',
-      });
-    }
-
-    return errors;
   }
 }
 

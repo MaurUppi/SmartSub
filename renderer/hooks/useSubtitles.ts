@@ -60,7 +60,7 @@ export const useSubtitles = (
 
   useEffect(() => {
     if (file && open) {
-      loadFiles();
+      loadFiles().catch(console.error);
     }
 
     // 4. 管理 Object URL 的生命周期
@@ -86,10 +86,9 @@ export const useSubtitles = (
   // 读取字幕文件
   const readSubtitleFile = async (filePath: string): Promise<Subtitle[]> => {
     try {
-      const result: Subtitle[] = await window.ipc.invoke('readSubtitleFile', {
+      return await window.ipc.invoke('readSubtitleFile', {
         filePath,
       });
-      return result;
     } catch (error) {
       console.error('Error reading subtitle file:', error);
       return [];
@@ -116,8 +115,8 @@ export const useSubtitles = (
       }
 
       // 确定原始字幕文件路径
-      let originalSrtPath: string | null | undefined = null;
-      let translatedSrtPath: string | null | undefined = null;
+      let originalSrtPath: string | null | undefined;
+      let translatedSrtPath: string | null | undefined;
 
       // 根据任务类型确定使用哪个原始字幕文件
       if (taskType === 'generateOnly') {
@@ -165,8 +164,7 @@ export const useSubtitles = (
             );
             return null;
           }
-          const srtContent = content;
-          const srtBlob = new Blob([srtContent], { type: 'text/plain' });
+          const srtBlob = new Blob([content], { type: 'text/plain' });
           const vttUrl = await toWebVTT(srtBlob);
           return {
             kind: 'subtitles',
@@ -272,14 +270,14 @@ export const useSubtitles = (
 
       // 保存原始字幕
       if (srtFile && formData.sourceSrtSaveOption !== 'noSave') {
-        window.ipc.invoke('saveSubtitleFile', {
+        await window.ipc.invoke('saveSubtitleFile', {
           filePath: srtFile,
           subtitles: mergedSubtitles,
           contentType: 'source',
         });
       }
       if (tempSrtFile) {
-        window.ipc.invoke('saveSubtitleFile', {
+        await window.ipc.invoke('saveSubtitleFile', {
           filePath: tempSrtFile,
           subtitles: mergedSubtitles,
           contentType: 'source',
@@ -290,7 +288,7 @@ export const useSubtitles = (
       if (shouldShowTranslation) {
         // 保存到翻译字幕文件
         if (translatedSrtFile) {
-          window.ipc.invoke('saveSubtitleFile', {
+          await window.ipc.invoke('saveSubtitleFile', {
             filePath: translatedSrtFile,
             subtitles: mergedSubtitles,
             contentType: formData.translateContent,
@@ -299,7 +297,7 @@ export const useSubtitles = (
 
         // 如果有指定的临时翻译文件且不同于主翻译文件，也保存一份
         if (tempTranslatedSrtFile) {
-          window.ipc.invoke('saveSubtitleFile', {
+          await window.ipc.invoke('saveSubtitleFile', {
             filePath: tempTranslatedSrtFile,
             subtitles: mergedSubtitles,
             contentType: 'onlyTranslate',

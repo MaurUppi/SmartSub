@@ -9,16 +9,12 @@ import { ipcMain } from 'electron';
 import { store } from './store';
 import { ParameterProcessor } from './parameterProcessor';
 import { configurationManager } from '../service/configurationManager';
-import {
-  ExtendedProvider,
-  CustomParameterConfig,
-  ValidationError,
-} from '../../types/provider';
+import { CustomParameterConfig, ValidationError } from 'types/provider';
 import {
   IpcParameterMessage,
   IpcParameterResponse,
-} from '../../types/parameterSystem';
-import { logMessage } from './storeManager';
+} from 'types/parameterSystem';
+import { logMessage } from './logger';
 
 /**
  * Get custom parameters for a specific provider
@@ -150,14 +146,14 @@ async function getSupportedParameters(providerId: string) {
  */
 export function setupParameterHandlers() {
   // Get custom parameters for a provider
-  ipcMain.handle('getCustomParameters', async (event, providerId: string) => {
+  ipcMain.handle('getCustomParameters', async (_event, providerId: string) => {
     return await getCustomParameters(providerId);
   });
 
   // Set custom parameters for a provider
   ipcMain.handle(
     'setCustomParameters',
-    async (event, providerId: string, config: CustomParameterConfig) => {
+    async (_event, providerId: string, config: CustomParameterConfig) => {
       return await setCustomParameters(providerId, config);
     },
   );
@@ -165,7 +161,7 @@ export function setupParameterHandlers() {
   // Delete custom parameters for a provider
   ipcMain.handle(
     'deleteCustomParameters',
-    async (event, providerId: string) => {
+    async (_event, providerId: string) => {
       return await deleteCustomParameters(providerId);
     },
   );
@@ -178,7 +174,7 @@ export function setupParameterHandlers() {
   // Validate parameter configuration
   ipcMain.handle(
     'validateParameterConfiguration',
-    async (event, providerId: string, config: CustomParameterConfig) => {
+    async (_event, providerId: string, config: CustomParameterConfig) => {
       return await validateParameterConfiguration(providerId, config);
     },
   );
@@ -186,7 +182,7 @@ export function setupParameterHandlers() {
   // Get supported parameters for a provider
   ipcMain.handle(
     'getSupportedParameters',
-    async (event, providerId: string) => {
+    async (_event, providerId: string) => {
       return await getSupportedParameters(providerId);
     },
   );
@@ -194,7 +190,7 @@ export function setupParameterHandlers() {
   // Get parameter definition
   ipcMain.handle(
     'getParameterDefinition',
-    async (event, parameterKey: string) => {
+    async (_event, parameterKey: string) => {
       return ParameterProcessor.getParameterDefinition(parameterKey);
     },
   );
@@ -203,7 +199,7 @@ export function setupParameterHandlers() {
   ipcMain.handle(
     'parameterMessage',
     async (
-      event,
+      _event,
       message: IpcParameterMessage,
     ): Promise<IpcParameterResponse> => {
       try {
