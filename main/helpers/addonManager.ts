@@ -125,6 +125,8 @@ export async function loadAndValidateAddon(
       correlationId,
     );
 
+    // @intentional-throw: Re-throw with context after logging - caught by caller
+    // This pattern allows error details to be logged before propagation
     throw new Error(`Addon loading failed: ${error.message}`);
   }
 }
@@ -297,6 +299,7 @@ export async function handleAddonLoadingError(
   );
 
   if (fallbackOptions.length === 0) {
+    // @intentional-throw: No recovery possible - must propagate error to caller
     throw new Error('No fallback options available');
   }
 
@@ -357,6 +360,7 @@ export async function handleAddonLoadingError(
     recoveryCorrelationId,
   );
 
+  // @intentional-throw: Complete failure after all recovery attempts - must propagate to caller
   throw new Error('All fallback options exhausted');
 }
 
@@ -659,6 +663,8 @@ async function loadOpenVINOAddon(
       },
       openvinoCorrelationId,
     );
+    // @intentional-throw: Final error propagation after logging with correlation ID
+    // Ensures caller receives complete context of OpenVINO integration failure
     throw new Error(`OpenVINO integration failed: ${error.message}`);
   }
 }
@@ -837,14 +843,17 @@ async function validateOpenVINOFunctionality(
  */
 export function validateAddonStructure(module: any): void {
   if (!module.exports) {
+    // @intentional-throw: Validation failure - addon structure invalid
     throw new Error('Invalid addon structure: Missing exports');
   }
 
   if (!module.exports.whisper) {
+    // @intentional-throw: Validation failure - required function missing
     throw new Error('Invalid addon structure: Missing whisper function');
   }
 
   if (typeof module.exports.whisper !== 'function') {
+    // @intentional-throw: Validation failure - function type incorrect
     throw new Error('Invalid addon structure: Invalid whisper function');
   }
 }

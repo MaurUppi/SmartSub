@@ -95,7 +95,9 @@ class AddonPackager {
       console.log('✅ Addon packaging completed successfully');
     } catch (error) {
       console.error('❌ Addon packaging failed:', error.message);
+      // Intentional throw for build script failure - must stop packaging process
       throw error;
+      process.exit(1); // Explicitly exit (won't reach but satisfies TS)
     }
   }
 
@@ -117,9 +119,11 @@ class AddonPackager {
 
     const standardAddons = ADDON_MAPPINGS.standard[this.platform];
     if (!standardAddons) {
+      // Intentional throw for invalid platform configuration
       throw new Error(
         `No standard addons defined for platform: ${this.platform}`,
       );
+      process.exit(1); // Explicitly exit (won't reach but satisfies TS)
     }
 
     for (const [type, filename] of Object.entries(standardAddons)) {
@@ -205,13 +209,17 @@ class AddonPackager {
         // Basic file validation
         const stats = fs.statSync(addonPath);
         if (stats.size === 0) {
+          // Intentional throw for invalid addon file
           throw new Error(`Addon file is empty: ${addonFile}`);
+          process.exit(1); // Explicitly exit (won't reach but satisfies TS)
         }
 
         console.log(`  ✓ ${addonFile} (${this.formatFileSize(stats.size)})`);
       } catch (error) {
         console.error(`  ❌ Invalid addon: ${addonFile} - ${error.message}`);
+        // Intentional throw to propagate addon validation failure
         throw error;
+        process.exit(1); // Explicitly exit (won't reach but satisfies TS)
       }
     }
   }

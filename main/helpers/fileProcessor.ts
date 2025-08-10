@@ -48,7 +48,9 @@ async function generateSubtitle(
     }
   } catch (error) {
     onError(event, file, 'extractSubtitle', error);
-    throw error; // 继续抛出错误，以便上层函数知道发生了错误
+    // @intentional-throw: Re-throw after error handling to notify caller
+    // 继续抛出错误，以便上层函数知道发生了错误
+    throw error;
   }
 }
 
@@ -160,6 +162,7 @@ export async function processFile(
       } catch (error) {
         // 如果是提取音频或生成字幕过程中出错，已经在各自的函数中处理了错误状态
         // 这里只需要继续抛出错误，中断后续流程
+        // @intentional-throw: Re-throw to interrupt processing flow after error logged
         throw error;
       }
     } else if (isSubtitleFile) {
@@ -177,12 +180,14 @@ export async function processFile(
         });
       } catch (error) {
         onError(event, file, 'prepareSubtitle', error);
+        // @intentional-throw: Re-throw after error logging to notify caller
         throw error;
       }
     } else if (!isSubtitleFile && !shouldGenerateSubtitle) {
       // 非字幕文件且不需要生成字幕的情况（只翻译模式下传入了视频文件）
       const errorMsg = '只翻译模式下不能处理视频文件，请提供字幕文件';
       onError(event, file, 'processFile', new Error(errorMsg));
+      // @intentional-throw: Input validation failure - wrong file type for mode
       throw new Error(errorMsg);
     }
 

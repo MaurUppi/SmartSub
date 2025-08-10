@@ -41,7 +41,9 @@ function runCommand(command, description) {
     console.error(error.message);
     if (error.stdout) console.log(error.stdout);
     if (error.stderr) console.error(error.stderr);
+    // Intentional throw for test execution failure - must fail the test script
     throw error;
+    process.exit(1); // Explicitly exit (won't reach but satisfies TS)
   }
 }
 
@@ -107,7 +109,9 @@ function main() {
     }
 
     if (!allFilesExist) {
+      // Intentional throw for missing required files - cannot proceed with tests
       throw new Error('Missing required implementation files');
+      process.exit(1); // Explicitly exit (won't reach but satisfies TS)
     }
 
     // Step 2: Install test dependencies if needed
