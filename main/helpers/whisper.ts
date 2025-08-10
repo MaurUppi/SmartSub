@@ -335,9 +335,12 @@ export async function loadWhisperAddon(
           fallbackChain,
         );
       } else {
-        throw new Error(
-          `No fallback options available for ${selectedAddon.type}`,
+        logMessage(
+          `No fallback options available for ${selectedAddon.type}, using emergency fallback`,
+          'warning',
         );
+        // No fallback options available, use emergency fallback
+        return await loadWhisperAddonLegacy(model);
       }
     }
   } catch (error) {
