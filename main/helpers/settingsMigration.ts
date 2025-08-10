@@ -7,10 +7,7 @@ import { store } from './store';
 import { logMessage } from './logger';
 import path from 'path';
 import { app } from 'electron';
-import {
-  SettingsMigrationContext,
-  ValidationResult,
-} from '../../types/settings';
+import { SettingsMigrationContext, ValidationResult } from 'types/settings';
 
 interface LegacySettings {
   [key: string]: any;
@@ -334,9 +331,4 @@ export class SettingsMigration {
       backupTimestamp: backup?.timestamp,
     };
   }
-}
-
-// Export convenience function for application startup
-export async function initializeSettingsMigration(): Promise<SettingsMigrationContext> {
-  return SettingsMigration.migrateSettings();
 }

@@ -1,7 +1,7 @@
 import path from 'path';
 import { app, protocol, net } from 'electron';
 import serve from 'electron-serve';
-import { createWindow } from './helpers/create-window';
+import { createWindow } from './helpers';
 import { setupIpcHandlers } from './helpers/ipcHandlers';
 import { setupTaskProcessor } from './helpers/taskProcessor';
 import { setupSystemInfoManager } from './helpers/systemInfoManager';

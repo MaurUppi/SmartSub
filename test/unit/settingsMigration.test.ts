@@ -11,10 +11,7 @@
  */
 
 import { describe, test, expect, beforeEach, jest } from '@jest/globals';
-import {
-  SettingsMigration,
-  initializeSettingsMigration,
-} from 'main/helpers/settingsMigration';
+import { SettingsMigration } from 'main/helpers/settingsMigration';
 
 // Mock the store module
 jest.mock('main/helpers/store', () => ({
@@ -356,7 +353,7 @@ describe('Settings Migration Integration', () => {
     (store.get as jest.Mock).mockReturnValue(legacySettings);
     (store.set as jest.Mock).mockImplementation(() => {});
 
-    const context = await initializeSettingsMigration();
+    const context = await SettingsMigration.migrateSettings();
 
     expect(context).toBeDefined();
     expect(context.currentVersion).toBe('1.3.0');
