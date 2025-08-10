@@ -1,17 +1,16 @@
 /**
- * Enhanced Settings Types for Intel OpenVINO GPU Integration
- * Extends existing settings structure with Intel GPU support while maintaining backward compatibility
+ * Settings Type Definitions
+ * Central location for all application settings and configuration types
  */
 
+// ============= IMPORTS =============
 import { GPUDevice } from './gpu';
 import { CustomParameterConfig } from './provider';
 
-export interface OpenVINOPreferences {
-  cacheDir: string;
-  devicePreference: 'discrete' | 'integrated' | 'auto';
-  enableOptimizations: boolean;
-}
-
+// ============= CORE SETTINGS =============
+/**
+ * Main application settings
+ */
 export interface EnhancedSettings {
   // Existing settings preserved (from store/types.ts)
   whisperCommand: string;
@@ -40,24 +39,33 @@ export interface EnhancedSettings {
   openvinoPreferences: OpenVINOPreferences;
 }
 
-export interface SettingsMigrationContext {
-  previousVersion?: string;
-  currentVersion: string;
-  backupCreated: boolean;
-  migrationApplied: boolean;
-  preservedSettings: string[];
-}
-
-export interface ValidationResult {
-  isValid: boolean;
-  errors: string[];
-  warnings: string[];
-  suggestions: string[];
-}
-
+// ============= GPU SETTINGS =============
 /**
- * Voice Activity Detection Settings
- * @since 2025.1
+ * GPU and OpenVINO preferences
+ */
+export interface OpenVINOPreferences {
+  cacheDir: string;
+  devicePreference: 'discrete' | 'integrated' | 'auto';
+  enableOptimizations: boolean;
+}
+
+export interface GPUSelectionOption {
+  id: string;
+  displayName: string;
+  type: 'nvidia' | 'intel-discrete' | 'intel-integrated' | 'apple' | 'cpu';
+  status: 'available' | 'unavailable' | 'requires-setup';
+  performance: 'high' | 'medium' | 'low';
+  description: string;
+  driverVersion?: string;
+  memory?: number | 'shared';
+  powerEfficiency: 'excellent' | 'good' | 'moderate';
+  estimatedSpeed?: string;
+  openvinoCompatible?: boolean;
+}
+
+// ============= AUDIO SETTINGS =============
+/**
+ * Audio processing settings
  */
 export interface VADSettings {
   useVAD: boolean;
@@ -69,9 +77,9 @@ export interface VADSettings {
   vadSamplesOverlap: number;
 }
 
+// ============= CONFIGURATION MANAGEMENT =============
 /**
- * Configuration Management Types
- * @since 2025.1
+ * Configuration storage and validation
  */
 export interface ConfigurationMetadata {
   version: string;
@@ -97,16 +105,21 @@ export interface ConfigurationValidationOptions {
   validateValues?: boolean;
 }
 
-export interface GPUSelectionOption {
-  id: string;
-  displayName: string;
-  type: 'nvidia' | 'intel-discrete' | 'intel-integrated' | 'apple' | 'cpu';
-  status: 'available' | 'unavailable' | 'requires-setup';
-  performance: 'high' | 'medium' | 'low';
-  description: string;
-  driverVersion?: string;
-  memory?: number | 'shared';
-  powerEfficiency: 'excellent' | 'good' | 'moderate';
-  estimatedSpeed?: string;
-  openvinoCompatible?: boolean;
+// ============= MIGRATION =============
+/**
+ * Settings migration support
+ */
+export interface SettingsMigrationContext {
+  previousVersion?: string;
+  currentVersion: string;
+  backupCreated: boolean;
+  migrationApplied: boolean;
+  preservedSettings: string[];
+}
+
+export interface ValidationResult {
+  isValid: boolean;
+  errors: string[];
+  warnings: string[];
+  suggestions: string[];
 }
