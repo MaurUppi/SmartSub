@@ -16,6 +16,7 @@ import {
 import { store } from './store';
 import { isAppleSilicon } from './utils';
 import { hasEncoderModel } from './whisper';
+import { AddonInfo } from '../../types/gpu-config';
 
 /**
  * Get platform-specific addon filename for CUDA acceleration
@@ -89,22 +90,6 @@ function getNoCudaAddonName(): string {
     default:
       return getCPUAddonName(); // Use CPU addon for other platforms
   }
-}
-
-export interface AddonInfo {
-  type: 'cuda' | 'openvino' | 'coreml' | 'cpu';
-  path: string;
-  displayName: string;
-  deviceConfig: {
-    deviceId?: string;
-    memory?: number | 'shared';
-    type?: 'discrete' | 'integrated';
-    // ✅ NEW: CUDA-specific configuration (Requirement #2)
-    cudaVersion?: string;
-    driverVersion?: string;
-    majorVersion?: number;
-  } | null;
-  fallbackReason?: string;
 }
 
 export interface GPUCapabilities {

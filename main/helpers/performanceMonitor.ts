@@ -5,8 +5,7 @@
 
 import { logMessage } from './logger';
 import { store } from './store';
-import { AddonInfo } from './gpuSelector';
-import { GPUConfig } from './gpuConfig';
+import { AddonInfo, GPUConfig } from '../../types/gpu-config';
 import fs from 'fs';
 import path from 'path';
 import { app } from 'electron';

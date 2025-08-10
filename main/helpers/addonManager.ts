@@ -14,15 +14,8 @@ import {
   logPerformanceMetrics,
   LogCategory,
 } from './logger';
-import {
-  AddonInfo,
-  getOpenVINOAddonName,
-  getCPUAddonName,
-} from './gpuSelector';
-
-export interface WhisperFunction {
-  (params: any, callback: (error: Error | null, result?: any) => void): void;
-}
+import { getOpenVINOAddonName, getCPUAddonName } from './gpuSelector';
+import { AddonInfo, WhisperFunction } from '../../types/gpu-config';
 
 /**
  * Load and validate addon based on addon info

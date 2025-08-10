@@ -11,7 +11,8 @@
 
 import { logMessage } from './logger';
 import { platform } from 'os';
-import { coreUltraDetector, CoreUltraInfo } from './coreUltraDetection';
+import { coreUltraDetector } from './coreUltraDetection';
+import { CoreUltraInfo } from '../../types/gpu';
 
 // Core interfaces from design.md
 export interface GPUDevice {
