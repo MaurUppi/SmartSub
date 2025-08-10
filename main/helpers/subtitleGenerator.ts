@@ -150,8 +150,8 @@ export async function generateSubtitleWithBuiltinWhisper(
       return file.srtFile;
     }
 
-    let performanceMonitor = null;
-    let sessionId = null;
+    let performanceMonitor: any = null;
+    let sessionId: string | null = null;
 
     try {
       const { tempAudioFile, srtFile } = file;
@@ -457,10 +457,15 @@ export async function generateSubtitleWithBuiltinWhisper(
       await fs.promises.writeFile(srtFile, formattedSrt);
 
       // Step 11: Complete performance monitoring
-      const metrics = await performanceMonitor.endSession(
+      const metrics = (await performanceMonitor?.endSession(
         result,
         audioDuration,
-      );
+      )) || {
+        speedupFactor: 1.0,
+        processingTime: 0,
+        addonType: 'unknown',
+        realTimeRatio: 1.0,
+      };
 
       // Step 12: Send completion with performance metrics
       event.sender.send('taskFileChange', {
@@ -490,9 +495,7 @@ export async function generateSubtitleWithBuiltinWhisper(
         logMessage(`Task cancelled: ${innerError.message}`, 'info');
 
         // Clean up performance monitoring
-        if (performanceMonitor && sessionId) {
-          performanceMonitor.trackError(innerError);
-        }
+        performanceMonitor?.trackError(innerError);
 
         // Send cancellation notification to UI
         event.sender.send('taskFileChange', {
@@ -521,9 +524,7 @@ export async function generateSubtitleWithBuiltinWhisper(
       );
 
       // Track error in performance monitoring
-      if (performanceMonitor && sessionId) {
-        performanceMonitor.trackError(innerError);
-      }
+      performanceMonitor?.trackError(innerError);
 
       // Handle processing error with recovery
       try {
