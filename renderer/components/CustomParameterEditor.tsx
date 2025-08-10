@@ -15,6 +15,11 @@ import {
   ValidationError,
   CustomParameterConfig,
 } from '../../types';
+import {
+  UIParameterCategory,
+  ParameterType,
+  NewParameterForm,
+} from 'types/parameterSystem';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -58,22 +63,6 @@ export interface CustomParameterEditorProps {
   onSave?: () => void;
   disabled?: boolean;
   className?: string;
-}
-
-type ParameterCategory = 'headers' | 'body';
-type ParameterType =
-  | 'string'
-  | 'integer'
-  | 'float'
-  | 'boolean'
-  | 'object'
-  | 'array';
-
-interface NewParameterForm {
-  key: string;
-  type: ParameterType;
-  category: ParameterCategory;
-  value: ParameterValue;
 }
 
 export const CustomParameterEditor: React.FC<CustomParameterEditorProps> = ({
@@ -124,7 +113,7 @@ export const CustomParameterEditor: React.FC<CustomParameterEditorProps> = ({
   );
 
   // Local state
-  const [activeTab, setActiveTab] = useState<ParameterCategory>('headers');
+  const [activeTab, setActiveTab] = useState<UIParameterCategory>('headers');
   const [searchQuery, setSearchQuery] = useState('');
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showRefreshDialog, setShowRefreshDialog] = useState(false);
@@ -158,7 +147,7 @@ export const CustomParameterEditor: React.FC<CustomParameterEditorProps> = ({
 
   // Get parameter count by category
   const getParameterCount = useCallback(
-    (category: ParameterCategory) => {
+    (category: UIParameterCategory) => {
       const config = state.config;
       if (!config) return 0;
 
@@ -572,7 +561,7 @@ export const CustomParameterEditor: React.FC<CustomParameterEditorProps> = ({
                 <Label htmlFor="param-category">Category</Label>
                 <Select
                   value={newParameter.category}
-                  onValueChange={(value: ParameterCategory) =>
+                  onValueChange={(value: UIParameterCategory) =>
                     setNewParameter((prev) => ({ ...prev, category: value }))
                   }
                 >
@@ -641,7 +630,7 @@ export const CustomParameterEditor: React.FC<CustomParameterEditorProps> = ({
       <Tabs
         value={activeTab}
         onValueChange={(value: string) =>
-          setActiveTab(value as ParameterCategory)
+          setActiveTab(value as UIParameterCategory)
         }
       >
         <TabsList className="grid w-full grid-cols-2">

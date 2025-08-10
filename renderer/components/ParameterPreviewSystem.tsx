@@ -8,6 +8,7 @@
 
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { CustomParameterConfig, ParameterValue } from '../../types/provider';
+import { PreviewValidationResult, PreviewMetrics } from 'types/parameterSystem';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -55,19 +56,6 @@ export interface PreviewRequest {
   estimatedCost?: number;
 }
 
-interface ValidationResult {
-  isValid: boolean;
-  errors: string[];
-  warnings: string[];
-}
-
-interface PreviewMetrics {
-  headerCount: number;
-  bodyParamCount: number;
-  estimatedSize: number;
-  complexity: 'low' | 'medium' | 'high';
-}
-
 const PROVIDER_ENDPOINTS = {
   openai: 'https://api.openai.com/v1/chat/completions',
   claude: 'https://api.anthropic.com/v1/messages',
@@ -105,11 +93,12 @@ export const ParameterPreviewSystem: React.FC<ParameterPreviewSystemProps> = ({
       PROVIDER_ENDPOINTS[providerId as keyof typeof PROVIDER_ENDPOINTS] ||
       '',
   );
-  const [validationResults, setValidationResults] = useState<ValidationResult>({
-    isValid: true,
-    errors: [],
-    warnings: [],
-  });
+  const [validationResults, setValidationResults] =
+    useState<PreviewValidationResult>({
+      isValid: true,
+      errors: [],
+      warnings: [],
+    });
   const [copied, setCopied] = useState<string | null>(null);
 
   // Generate preview request
@@ -172,7 +161,7 @@ export const ParameterPreviewSystem: React.FC<ParameterPreviewSystemProps> = ({
   }, [config, previewRequest]);
 
   // Validate configuration
-  const validateConfiguration = useCallback((): ValidationResult => {
+  const validateConfiguration = useCallback((): PreviewValidationResult => {
     const errors: string[] = [];
     const warnings: string[] = [];
 

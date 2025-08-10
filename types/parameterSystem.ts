@@ -67,3 +67,43 @@ export interface IpcParameterResponse {
   data?: any;
   error?: string;
 }
+
+/**
+ * UI-specific parameter types
+ * @since 2025.1
+ */
+
+/** UI parameter category for component organization */
+export type UIParameterCategory = 'headers' | 'body';
+
+/** Parameter data types for UI */
+export type ParameterType =
+  | 'string'
+  | 'integer'
+  | 'float'
+  | 'boolean'
+  | 'object'
+  | 'array';
+
+/** Form interface for creating new parameters */
+export interface NewParameterForm {
+  key: string;
+  type: ParameterType;
+  value: any;
+  category: UIParameterCategory;
+}
+
+/** Validation result for parameter preview system */
+export interface PreviewValidationResult {
+  isValid: boolean;
+  errors: string[];
+  warnings: string[];
+}
+
+/** Metrics for parameter preview system */
+export interface PreviewMetrics {
+  headerCount: number;
+  bodyParamCount: number;
+  estimatedSize: number;
+  complexity: 'low' | 'medium' | 'high';
+}
