@@ -4,7 +4,6 @@
  */
 
 // ============= IMPORTS =============
-import { GPUDevice } from './gpu';
 import { CustomParameterConfig } from './parameterSystem';
 
 // ============= CORE SETTINGS =============
