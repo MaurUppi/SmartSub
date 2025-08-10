@@ -59,13 +59,3 @@ export interface EnvironmentConfig {
   openvino_enable_optimizations?: boolean;
   openvino_performance_hint?: string;
 }
-
-export interface VADSettings {
-  useVAD: boolean;
-  vadThreshold: number;
-  vadMinSpeechDuration: number;
-  vadMinSilenceDuration: number;
-  vadMaxSpeechDuration: number;
-  vadSpeechPad: number;
-  vadSamplesOverlap: number;
-}

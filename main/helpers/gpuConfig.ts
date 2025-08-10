@@ -11,9 +11,9 @@ import {
   WhisperGPUParams,
   PerformanceHints,
   EnvironmentConfig,
-  VADSettings,
   AddonInfo,
 } from '../../types/gpu-config';
+import { VADSettings } from '../../types/settings';
 
 /**
  * Determine optimal GPU configuration for processing

@@ -54,6 +54,20 @@ export interface ValidationResult {
   suggestions: string[];
 }
 
+/**
+ * Voice Activity Detection Settings
+ * @since 2025.1
+ */
+export interface VADSettings {
+  useVAD: boolean;
+  vadThreshold: number;
+  vadMinSpeechDuration: number;
+  vadMinSilenceDuration: number;
+  vadMaxSpeechDuration: number;
+  vadSpeechPad: number;
+  vadSamplesOverlap: number;
+}
+
 export interface GPUSelectionOption {
   id: string;
   displayName: string;

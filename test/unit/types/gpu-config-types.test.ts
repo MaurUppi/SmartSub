@@ -61,18 +61,4 @@ describe('GPU Configuration Type Definitions', () => {
     };
     expect(envConfig.openvinoDeviceId).toBe('GPU.0');
   });
-
-  it('should export VADSettings interface', () => {
-    const vadSettings: GPUConfigTypes.VADSettings = {
-      useVAD: true,
-      vadThreshold: 0.5,
-      vadMinSpeechDuration: 250,
-      vadMinSilenceDuration: 100,
-      vadMaxSpeechDuration: 30000,
-      vadSpeechPad: 30,
-      vadSamplesOverlap: 0.1,
-    };
-    expect(vadSettings.useVAD).toBe(true);
-    expect(vadSettings.vadThreshold).toBe(0.5);
-  });
 });
