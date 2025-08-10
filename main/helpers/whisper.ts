@@ -213,7 +213,7 @@ export async function checkOpenAiWhisper(): Promise<boolean> {
 }
 
 // 判断 encoder 模型是否存在
-export const hasEncoderModel = (model) => {
+export const hasEncoderModel = (model: string) => {
   const encoderModelPath = path.join(
     getPath('modelsPath'),
     `ggml-${model}-encoder.mlmodelc`,
@@ -241,7 +241,6 @@ export async function loadWhisperAddon(
   const {
     selectOptimalGPU,
     resolveSpecificGPU,
-    getGPUSelectionConfig,
     logGPUSelection,
   } = require('./gpuSelector');
   const {
@@ -365,7 +364,7 @@ async function loadWhisperAddonLegacy(model: string) {
 
   if (platform === 'win32' && useCuda) {
     // 检查 CUDA 支持
-    const hasCudaSupport = await checkCudaSupport();
+    const hasCudaSupport = checkCudaSupport();
 
     if (hasCudaSupport) {
       addonPath = path.join(getExtraResourcesPath(), 'addons', 'addon.node');
@@ -385,10 +384,6 @@ async function loadWhisperAddonLegacy(model: string) {
     );
   } else {
     addonPath = path.join(getExtraResourcesPath(), 'addons', 'addon.node');
-  }
-
-  if (!addonPath) {
-    throw new Error('Unsupported platform or architecture');
   }
 
   const module = { exports: { whisper: null } };
