@@ -1,4 +1,5 @@
 import { Provider, CustomParameterConfig } from '../../../types/provider';
+import { OpenVINOPreferences } from '../../../types/settings';
 
 export enum LogCategory {
   GENERAL = 'general',
@@ -19,12 +20,6 @@ export type LogEntry = {
   context?: Record<string, any>;
   correlationId?: string;
 };
-
-export interface OpenVINOPreferences {
-  cacheDir: string;
-  devicePreference: 'discrete' | 'integrated' | 'auto';
-  enableOptimizations: boolean;
-}
 
 export type StoreType = {
   translationProviders: Provider[];

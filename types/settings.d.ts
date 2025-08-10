@@ -3,28 +3,12 @@
  * Extends existing settings structure with Intel GPU support while maintaining backward compatibility
  */
 
+import { GPUDevice } from './gpu';
+
 export interface OpenVINOPreferences {
   cacheDir: string;
   devicePreference: 'discrete' | 'integrated' | 'auto';
   enableOptimizations: boolean;
-}
-
-export interface GPUDevice {
-  id: string;
-  name: string;
-  type: 'discrete' | 'integrated';
-  vendor: 'nvidia' | 'intel' | 'apple';
-  deviceId: string;
-  priority: number;
-  driverVersion: string;
-  memory: number | 'shared';
-  capabilities: {
-    openvinoCompatible: boolean;
-    cudaCompatible: boolean;
-    coremlCompatible: boolean;
-  };
-  powerEfficiency: 'excellent' | 'good' | 'moderate';
-  performance: 'high' | 'medium' | 'low';
 }
 
 export interface EnhancedSettings {
