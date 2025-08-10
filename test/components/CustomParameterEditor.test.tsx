@@ -13,8 +13,8 @@ import {
   within,
 } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { CustomParameterEditor } from '../CustomParameterEditor';
-import { useParameterConfig } from '../../hooks/useParameterConfig';
+import { CustomParameterEditor } from '../../renderer/components/CustomParameterEditor';
+import { useParameterConfig } from '../../renderer/hooks/useParameterConfig';
 import {
   ParameterValue,
   ParameterDefinition,
@@ -23,7 +23,7 @@ import {
 } from '../../../types/provider';
 
 // Mock the parameter hook
-jest.mock('../../hooks/useParameterConfig');
+jest.mock('../../renderer/hooks/useParameterConfig');
 const mockUseParameterConfig = jest.mocked(useParameterConfig);
 
 // Mock Lucide React icons

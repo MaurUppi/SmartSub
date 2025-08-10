@@ -10,7 +10,7 @@ import '@testing-library/jest-dom';
 import {
   DynamicParameterInput,
   DynamicParameterInputProps,
-} from '../DynamicParameterInput';
+} from '../../renderer/components/DynamicParameterInput';
 import { ParameterDefinition, ValidationError } from '../../../types/provider';
 
 // Mock the utils import

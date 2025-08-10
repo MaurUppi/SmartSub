@@ -9,7 +9,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import {
   ParameterPreviewSystem,
   PreviewRequest,
-} from '../ParameterPreviewSystem';
+} from '../../renderer/components/ParameterPreviewSystem';
 import { CustomParameterConfig } from '../../../types/provider';
 
 // Mock Lucide React icons

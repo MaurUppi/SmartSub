@@ -12,10 +12,10 @@ module.exports = {
   testEnvironment: 'jsdom',
 
   testMatch: [
-    '<rootDir>/renderer/**/*.test.tsx',
-    '<rootDir>/renderer/**/*.test.ts',
-    '<rootDir>/renderer/**/*.spec.tsx',
-    '<rootDir>/renderer/**/*.spec.ts',
+    '<rootDir>/renderer/hooks/**/*.test.tsx',
+    '<rootDir>/renderer/hooks/**/*.test.ts',
+    '<rootDir>/renderer/hooks/**/*.spec.tsx',
+    '<rootDir>/renderer/hooks/**/*.spec.ts',
     '<rootDir>/test/components/**/*.test.tsx',
     '<rootDir>/test/components/**/*.test.ts',
   ],
