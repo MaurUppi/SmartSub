@@ -68,15 +68,20 @@ If an agent fails or produces incorrect output:
 
 ### Can Modify:
 
-- Files in `types/` (except provider.ts)
+- Files in `types/` (including provider.ts with tracking)
 - Files in `main/`
 - Test files
 - Documentation in `.claude/specs/`
 
+### Modified Upstream Files:
+
+- `types/provider.ts` (UPSTREAM - Modified for integration)
+  - Changes tracked in `.claude/specs/openvino-integration/upstream-provider-type-changes.md`
+  - Will be submitted as PR to buxuku/SmartSub upon project completion
+
 ### DO NOT MODIFY:
 
-- `types/provider.ts` (UPSTREAM - audit only)
-- Any file marked as UPSTREAM in task documents
+- Any other file marked as UPSTREAM in task documents
 
 ## Common Commands
 

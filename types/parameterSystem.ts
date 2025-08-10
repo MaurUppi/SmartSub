@@ -1,107 +1,28 @@
 /**
- * Parameter System Types for Dynamic Parameter Management
+ * Parameter System UI Types for Dynamic Parameter Management
  *
- * This file contains shared types for the dynamic parameter system that allows
- * users to configure custom AI model parameters without code modification.
- */
-
-/**
- * NOTE: We maintain our own parameter types to avoid dependency on UPSTREAM provider.ts
- * These types are compatible with provider types but are independently defined.
- * Use type guards when interfacing with provider code if needed.
+ * This file contains UI-specific types for the dynamic parameter system.
+ * Core parameter types (ParameterDefinition, ValidationError, etc.) are now
+ * located in types/provider.ts for proper architectural organization.
  *
  * @since 2025.1
  */
 
-// ============= CORE PARAMETER TYPES =============
+// Import core parameter types for use in our type definitions
+import type { ParameterDefinition, ValidationError } from './provider';
 
-/**
- * Value type for any parameter - can be primitive or complex
- */
-export type ParameterValue = string | number | boolean | object | any[];
-
-/**
- * Validation rule for parameter values
- */
-export interface ValidationRule {
-  min?: number;
-  max?: number;
-  enum?: any[];
-  pattern?: string;
-  dependencies?: Record<string, any>;
-}
-
-/**
- * Category classification for parameters
- */
-export type ParameterCategory =
-  | 'provider'
-  | 'performance'
-  | 'quality'
-  | 'experimental';
-
-/**
- * Complete definition of a parameter including validation and metadata
- */
-export interface ParameterDefinition {
-  key: string;
-  type: 'string' | 'integer' | 'float' | 'boolean' | 'object' | 'array';
-  category: 'core' | 'behavior' | 'response' | 'provider' | 'performance';
-  required: boolean;
-  defaultValue?: ParameterValue;
-  validation?: ValidationRule;
-  description: string;
-  providerSupport: string[];
-}
-
-/**
- * Validation error structure for parameter validation failures
- */
-export interface ValidationError {
-  key: string;
-  type: 'type' | 'range' | 'format' | 'dependency' | 'system';
-  message: string;
-  suggestion?: string;
-}
-
-/**
- * Configuration for custom parameters with versioning
- */
-export interface CustomParameterConfig {
-  headerParameters: Record<string, ParameterValue>;
-  bodyParameters: Record<string, ParameterValue>;
-  configVersion: string;
-  lastModified: number;
-}
-
-/**
- * Base provider interface for type compatibility
- */
-export interface Provider {
-  id: string;
-  name: string;
-  type: string;
-  isAi: boolean;
-  [key: string]: any;
-}
-
-/**
- * Extended provider with custom parameter support
- */
-export interface ExtendedProvider extends Provider {
-  customParameters?: CustomParameterConfig;
-}
-
-/**
- * Result of parameter processing with validation results
- */
-export interface ProcessedParameters {
-  headers: Record<string, string | number>;
-  body: Record<string, any>;
-  appliedParameters: string[];
-  skippedParameters: string[];
-  validationErrors: ValidationError[];
-}
+// Re-export core parameter types from provider.ts for convenience
+export type {
+  ParameterValue,
+  ValidationRule,
+  ParameterCategory,
+  ParameterDefinition,
+  ValidationError,
+  CustomParameterConfig,
+  Provider,
+  ExtendedProvider,
+  ProcessedParameters,
+} from './provider';
 
 // Additional parameter system specific types
 

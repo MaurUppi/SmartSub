@@ -13,11 +13,35 @@ export * from './gpu-error';
 export * from './settings';
 export * from './types';
 
-// Parameter types (our independent implementation)
-export * from './parameterSystem';
+// Parameter types (core types from provider.ts, UI types from parameterSystem.ts)
+export type {
+  ParameterValue,
+  ValidationRule,
+  ParameterCategory,
+  ParameterDefinition,
+  ValidationError,
+  CustomParameterConfig,
+  Provider,
+  ExtendedProvider,
+  ProcessedParameters,
+} from './provider';
 
-// Provider types (UPSTREAM - for compatibility only)
-// Note: Some types may conflict with parameterSystem - use explicit imports if needed
+// UI-specific parameter types
+export type {
+  UIParameterCategory,
+  ParameterType,
+  NewParameterForm,
+  PreviewValidationResult,
+  PreviewMetrics,
+  IpcParameterMessage,
+  IpcParameterResponse,
+  ParameterRegistry,
+  ParameterValidationResult,
+  ParameterManagerConfig,
+  ParameterApplyResult,
+} from './parameterSystem';
+
+// Provider types
 export type { ProviderField, ProviderType } from './provider';
 export {
   PROVIDER_TYPES,
