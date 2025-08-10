@@ -1,5 +1,5 @@
-import { Provider, CustomParameterConfig } from '../../../types/provider';
-import { EnhancedSettings, OpenVINOPreferences } from '../../../types/settings';
+import { Provider, CustomParameterConfig } from 'types/provider';
+import { EnhancedSettings } from 'types/settings';
 
 export enum LogCategory {
   GENERAL = 'general',
