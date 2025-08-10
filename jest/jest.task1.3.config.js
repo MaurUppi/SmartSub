@@ -10,7 +10,6 @@ module.exports = {
   // Test file patterns for Task 1.3
   testMatch: [
     '<rootDir>/../test/unit/settingsExtension.test.ts',
-    '<rootDir>/../test/unit/settingsMigration.test.ts',
     '<rootDir>/../test/unit/settingsValidation.test.ts',
   ],
 
@@ -28,7 +27,6 @@ module.exports = {
   // Coverage configuration
   collectCoverageFrom: [
     '../main/helpers/store/**/*.ts',
-    '../main/helpers/settingsMigration.ts',
     '!**/*.d.ts',
     '!**/node_modules/**',
     '!**/test/**',

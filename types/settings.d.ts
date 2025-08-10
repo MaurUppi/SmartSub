@@ -103,22 +103,3 @@ export interface ConfigurationValidationOptions {
   allowUnknownKeys?: boolean;
   validateValues?: boolean;
 }
-
-// ============= MIGRATION =============
-/**
- * Settings migration support
- */
-export interface SettingsMigrationContext {
-  previousVersion?: string;
-  currentVersion: string;
-  backupCreated: boolean;
-  migrationApplied: boolean;
-  preservedSettings: string[];
-}
-
-export interface ValidationResult {
-  isValid: boolean;
-  errors: string[];
-  warnings: string[];
-  suggestions: string[];
-}

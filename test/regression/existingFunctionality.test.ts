@@ -43,12 +43,6 @@ jest.mock('../../main/helpers/storeManager', () => ({
   logMessage: jest.fn(),
 }));
 
-// Mock settings migration module
-jest.mock('../../main/helpers/settingsMigration', () => ({
-  migrateSettings: jest.fn(),
-  validateSettings: jest.fn(),
-}));
-
 // Mock error handler module
 jest.mock('../../main/helpers/errorHandler', () => ({
   handleProcessingError: jest.fn(),
@@ -323,46 +317,6 @@ describe('Regression Testing: Existing Functionality Preservation', () => {
   });
 
   describe('Settings System Preservation', () => {
-    test('should maintain settings migration functionality', async () => {
-      // Set up legacy settings in mock store
-      const legacySettings = {
-        useCuda: true,
-        whisperModel: 'base',
-        language: 'auto',
-        gpuAcceleration: true,
-      };
-
-      mockStore.get.mockImplementation((key) => {
-        if (key === 'settings') {
-          return legacySettings;
-        }
-        return {};
-      });
-
-      // Mock the migrateSettings function
-      const {
-        migrateSettings,
-      } = require('../../main/helpers/settingsMigration');
-      migrateSettings.mockResolvedValue({
-        ...legacySettings,
-        useOpenVINO: false, // New setting
-        selectedGPUId: 'auto', // New setting
-        gpuPreference: ['nvidia', 'intel', 'cpu'], // New setting
-      });
-
-      const migratedSettings = await migrateSettings();
-
-      expect(migratedSettings).toBeDefined();
-      expect(migratedSettings.useCuda).toBe(true); // Legacy preserved
-      expect(migratedSettings.useOpenVINO).toBeDefined(); // New setting added
-      expect(migratedSettings.selectedGPUId).toBeDefined(); // New setting added
-      expect(migratedSettings.gpuPreference).toEqual([
-        'nvidia',
-        'intel',
-        'cpu',
-      ]);
-    });
-
     test('should maintain store compatibility', () => {
       const testKey = 'test-settings';
       const testValue = { useCuda: true, useOpenVINO: false };
