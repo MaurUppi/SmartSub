@@ -4,8 +4,6 @@
  * @since 2025.1
  */
 
-import { GPUDevice } from './gpu';
-
 export interface AddonInfo {
   type: 'cuda' | 'openvino' | 'coreml' | 'cpu';
   path: string;
