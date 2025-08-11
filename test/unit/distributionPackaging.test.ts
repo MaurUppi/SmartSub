@@ -240,11 +240,11 @@ describe('Distribution Packaging Tests', () => {
       };
 
       mockFs.existsSync.mockImplementation((filePath: string) => {
-        if (filePath.toString().endsWith('addon-manifest.json')) return true;
-        if (filePath.toString().endsWith('addon-windows-openvino.node'))
-          return true;
-        if (filePath.toString().endsWith('addon.node')) return true;
-        return false;
+        return (
+          filePath.toString().endsWith('addon-manifest.json') ||
+          filePath.toString().endsWith('addon-windows-openvino.node') ||
+          filePath.toString().endsWith('addon.node')
+        );
       });
 
       mockFs.readFileSync.mockImplementation((filePath: string) => {
@@ -276,9 +276,10 @@ describe('Distribution Packaging Tests', () => {
 
     test('should fallback to legacy resolution when manifest missing', () => {
       mockFs.existsSync.mockImplementation((filePath: string) => {
-        if (filePath.toString().endsWith('addon-manifest.json')) return false;
-        if (filePath.toString().endsWith('addon.node')) return true;
-        return false;
+        return (
+          !filePath.toString().endsWith('addon-manifest.json') &&
+          filePath.toString().endsWith('addon.node')
+        );
       });
 
       const resolvedPath = path.join(
@@ -706,7 +707,7 @@ describe('Integration Tests', () => {
 
     // Mock file system for full workflow
     mockFs.existsSync.mockReturnValue(true);
-    mockFs.mkdirSync.mockImplementation(() => {});
+    mockFs.mkdirSync.mockImplementation(() => '/mock/created/dir');
     mockFs.readdirSync.mockReturnValue([
       'addon.node',
       'addon-windows-openvino.node',
@@ -732,11 +733,10 @@ describe('Integration Tests', () => {
     // Mock missing OpenVINO addons
     mockFs.existsSync.mockImplementation((filePath: string) => {
       // Standard addons exist, OpenVINO addons don't
-      if (filePath.toString().includes('openvino')) return false;
-      return true;
+      return !filePath.toString().includes('openvino');
     });
 
-    mockFs.mkdirSync.mockImplementation(() => {});
+    mockFs.mkdirSync.mockImplementation(() => '/mock/created/dir');
     mockFs.readdirSync.mockReturnValue(['addon.node'] as any);
     mockFs.copyFileSync.mockImplementation(() => {});
     mockFs.writeFileSync.mockImplementation(() => {});
