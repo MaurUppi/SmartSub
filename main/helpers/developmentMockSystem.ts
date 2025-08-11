@@ -400,6 +400,14 @@ export class DevelopmentMockSystem {
   }
 
   /**
+   * Reset to default configuration (alias for reset method)
+   * Added for test compatibility
+   */
+  public resetToDefaults(): void {
+    this.reset();
+  }
+
+  /**
    * Get current configuration
    */
   public getConfiguration(): MockEnvironmentConfig {

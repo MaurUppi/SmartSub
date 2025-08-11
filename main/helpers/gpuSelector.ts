@@ -120,6 +120,42 @@ export function selectOptimalGPU(
     correlationId,
   );
 
+  // Handle empty priority array - should fallback directly to CPU
+  if (priority.length === 0) {
+    logGPUDetectionEvent(
+      'detection_failed',
+      {
+        reason: 'Empty priority array provided, falling back to CPU',
+        failedPriorities: priority,
+        totalPriorityOptions: 0,
+      },
+      correlationId,
+    );
+
+    // Direct CPU fallback for empty priority
+    logGPUDetectionEvent(
+      'detection_completed',
+      {
+        finalSelection: {
+          type: 'cpu',
+          reason: 'All acceleration options failed',
+        },
+        totalPriorityOptions: 0,
+        successfulSelection: false,
+        directCPUFallback: true,
+      },
+      correlationId,
+    );
+
+    return {
+      type: 'cpu',
+      path: getCPUAddonName(),
+      displayName: 'CPU Processing (Direct Fallback)',
+      deviceConfig: null,
+      fallbackReason: 'All acceleration options failed',
+    };
+  }
+
   for (const gpuType of priority) {
     const addonInfo = tryGPUType(gpuType, capabilities, model, correlationId);
 

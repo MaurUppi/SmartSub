@@ -135,7 +135,7 @@ const GPUSelectionDropbox: React.FC<GPUSelectionDropboxProps> = ({
   // Generate tooltip content based on platform
   const getTooltipContent = () => {
     if (isMacOS) {
-      return 'GPU selection is not available on Apple Silicon. OpenVINO GPU acceleration is not supported on macOS.';
+      return 'OpenVINO GPU acceleration is not supported on macOS platforms.';
     }
 
     if (!isWindows) {

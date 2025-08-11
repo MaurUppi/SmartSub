@@ -297,6 +297,7 @@ export const GPUAdvancedSettings: React.FC<GPUAdvancedSettingsProps> = ({
               disabled={!hasChanges || hasValidationErrors}
               size="sm"
               className="flex items-center"
+              data-testid="save-settings-button"
             >
               <Save className="w-4 h-4 mr-1" />
               {t('save')}
@@ -403,7 +404,7 @@ export const GPUAdvancedSettings: React.FC<GPUAdvancedSettingsProps> = ({
           </div>
         </div>
 
-        <Separator />
+        <Separator data-testid="separator" />
 
         {/* Device Preferences */}
         <div className="space-y-4">
@@ -433,7 +434,7 @@ export const GPUAdvancedSettings: React.FC<GPUAdvancedSettingsProps> = ({
                   handleSettingChange('devicePreference', value)
                 }
               >
-                <SelectTrigger>
+                <SelectTrigger data-testid="device-preference-select">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -453,7 +454,7 @@ export const GPUAdvancedSettings: React.FC<GPUAdvancedSettingsProps> = ({
           </div>
         </div>
 
-        <Separator />
+        <Separator data-testid="separator" />
 
         {/* Performance Optimization */}
         <div className="space-y-4">
@@ -550,7 +551,7 @@ export const GPUAdvancedSettings: React.FC<GPUAdvancedSettingsProps> = ({
           </div>
         </div>
 
-        <Separator />
+        <Separator data-testid="separator" />
 
         {/* Debug and Logging */}
         <div className="space-y-4">
@@ -580,7 +581,7 @@ export const GPUAdvancedSettings: React.FC<GPUAdvancedSettingsProps> = ({
                   value: 'error' | 'warning' | 'info' | 'debug',
                 ) => handleSettingChange('logLevel', value)}
               >
-                <SelectTrigger className="w-48">
+                <SelectTrigger className="w-48" data-testid="log-level-select">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -622,6 +623,8 @@ export const GPUAdvancedSettings: React.FC<GPUAdvancedSettingsProps> = ({
             </div>
           </div>
         </div>
+
+        <Separator data-testid="separator" />
 
         {/* Status and Actions */}
         {hasChanges && (
