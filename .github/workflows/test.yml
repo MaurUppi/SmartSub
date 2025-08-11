@@ -202,16 +202,16 @@ jobs:
         run: npm run test:ts -- --testNamePattern="openvino|OpenVINO" --testPathIgnorePatterns="production|e2e|performance"
 
       - name: Validate GPU detection
-        run: npm run test -- --testPathPattern="gpu"
+        run: npm run test -- --testPathPatterns="gpu"
 
       - name: Test AMD GPU CPU-only processing
-        run: npm run test -- --testPathPattern="amd|AMD" --testNamePattern="cpu.*only"
+        run: npm run test -- --testPathPatterns="amd|AMD" --testNamePattern="cpu.*only"
 
       - name: Test CUDA version-specific addon selection
-        run: npm run test -- --testPathPattern="cuda" --testNamePattern="version|1241|1220|1180"
+        run: npm run test -- --testPathPatterns="cuda" --testNamePattern="version|1241|1220|1180"
 
       - name: Test fallback chain logic
-        run: npm run test -- --testPathPattern="fallback" --testNamePattern="chain|fallback"
+        run: npm run test -- --testPathPatterns="fallback" --testNamePattern="chain|fallback"
 
       - name: Test GPU selector enhancements
         run: npm run test:ts -- --testNamePattern="GPU.*[Ss]election|selector" --testPathIgnorePatterns="production|e2e|performance"
