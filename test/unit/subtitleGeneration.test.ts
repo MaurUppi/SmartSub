@@ -637,7 +637,7 @@ describe('Error Handling and Recovery', () => {
 
     // Setup mocks
     const { determineGPUConfiguration } = require('main/helpers/gpuConfig');
-    const { loadWhisperAddon } = require('main/helpers/whisper');
+    const { loadAndValidateAddon } = require('main/helpers/addonManager');
     const errorHandler = require('main/helpers/errorHandler');
     const { exec } = require('child_process');
 
@@ -647,7 +647,7 @@ describe('Error Handling and Recovery', () => {
     const mockFailingWhisper = jest.fn((params, callback) => {
       callback(new Error('OpenVINO runtime initialization failed'));
     });
-    loadWhisperAddon.mockResolvedValue(mockFailingWhisper);
+    loadAndValidateAddon.mockResolvedValue(mockFailingWhisper);
 
     // Ensure the error handler is called and returns the srt file
     errorHandler.handleProcessingError.mockResolvedValue(file.srtFile);

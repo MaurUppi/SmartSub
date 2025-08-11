@@ -29,7 +29,8 @@ describe('Driver Failure Scenario Validation', () => {
   describe('Missing Intel GPU Driver Scenarios', () => {
     test('should gracefully fallback when Intel GPU driver is completely missing', async () => {
       // Mock missing driver scenario - GPU config determination fails
-      global.gpuConfigMocks.determineGPUConfiguration.mockRejectedValue(
+      const { determineGPUConfiguration } = require('main/helpers/gpuConfig');
+      determineGPUConfiguration.mockRejectedValue(
         new Error(
           'Intel GPU driver not found - no compatible OpenVINO device detected',
         ),
@@ -71,9 +72,8 @@ describe('Driver Failure Scenario Validation', () => {
       // Mock scenario where Intel Arc driver is specifically missing
       const noArcDriverConfig = null; // No valid GPU configuration available
 
-      global.gpuConfigMocks.determineGPUConfiguration.mockResolvedValue(
-        noArcDriverConfig,
-      );
+      const { determineGPUConfiguration } = require('main/helpers/gpuConfig');
+      determineGPUConfiguration.mockResolvedValue(noArcDriverConfig);
 
       // Should trigger fallback due to null config
       const result = await generateSubtitleWithBuiltinWhisper(
@@ -209,7 +209,8 @@ describe('Driver Failure Scenario Validation', () => {
 
     test('should handle OpenVINO runtime corruption with diagnostic info', async () => {
       // Mock OpenVINO runtime corruption
-      global.gpuConfigMocks.determineGPUConfiguration.mockRejectedValue(
+      const { determineGPUConfiguration } = require('main/helpers/gpuConfig');
+      determineGPUConfiguration.mockRejectedValue(
         new Error('OpenVINO runtime corrupted: missing core libraries'),
       );
 
@@ -315,7 +316,8 @@ describe('Driver Failure Scenario Validation', () => {
 
     test('should reject incompatible future driver version gracefully', async () => {
       // Mock future/incompatible driver version
-      global.gpuConfigMocks.determineGPUConfiguration.mockRejectedValue(
+      const { determineGPUConfiguration } = require('main/helpers/gpuConfig');
+      determineGPUConfiguration.mockRejectedValue(
         new Error(
           'Incompatible driver version 32.0.0.0000 - requires application update',
         ),
@@ -353,7 +355,8 @@ describe('Driver Failure Scenario Validation', () => {
   describe('Driver Conflict Scenarios', () => {
     test('should handle conflicting GPU driver installations', async () => {
       // Mock driver conflict scenario
-      global.gpuConfigMocks.determineGPUConfiguration.mockRejectedValue(
+      const { determineGPUConfiguration } = require('main/helpers/gpuConfig');
+      determineGPUConfiguration.mockRejectedValue(
         new Error('Multiple conflicting GPU drivers detected: Intel + NVIDIA'),
       );
 
@@ -416,16 +419,15 @@ describe('Driver Failure Scenario Validation', () => {
       expect(result).toBe(mockFile.srtFile);
 
       // Verify platform-specific configuration was applied
-      expect(
-        global.gpuConfigMocks.determineGPUConfiguration,
-      ).toHaveBeenCalled();
+      expect(determineGPUConfiguration).toHaveBeenCalled();
     });
   });
 
   describe('Driver Recovery and Diagnostics', () => {
     test('should provide comprehensive driver diagnostic information', async () => {
       // Mock driver diagnostic scenario
-      global.gpuConfigMocks.determineGPUConfiguration.mockRejectedValue(
+      const { determineGPUConfiguration } = require('main/helpers/gpuConfig');
+      determineGPUConfiguration.mockRejectedValue(
         new Error('Driver diagnostic failed: multiple issues detected'),
       );
 
@@ -479,17 +481,16 @@ describe('Driver Failure Scenario Validation', () => {
       // Mock recoverable driver issue
       let recoveryAttempted = false;
 
-      global.gpuConfigMocks.determineGPUConfiguration.mockImplementation(
-        async () => {
-          if (!recoveryAttempted) {
-            recoveryAttempted = true;
-            throw new Error('Temporary driver initialization failure');
-          } else {
-            // Recovery successful
-            return global.subtitleTestUtils.createMockGPUConfig('openvino');
-          }
-        },
-      );
+      const { determineGPUConfiguration } = require('main/helpers/gpuConfig');
+      determineGPUConfiguration.mockImplementation(async () => {
+        if (!recoveryAttempted) {
+          recoveryAttempted = true;
+          throw new Error('Temporary driver initialization failure');
+        } else {
+          // Recovery successful
+          return global.subtitleTestUtils.createMockGPUConfig('openvino');
+        }
+      });
 
       // Mock error handler with recovery attempt
       const errorHandler = require('main/helpers/errorHandler');
@@ -500,8 +501,7 @@ describe('Driver Failure Scenario Validation', () => {
 
           // Simulate recovery attempt by retrying GPU configuration
           try {
-            const recoveredConfig =
-              await global.gpuConfigMocks.determineGPUConfiguration();
+            const recoveredConfig = await determineGPUConfiguration();
             global.subtitleTestUtils.setupMockGPUConfig(recoveredConfig);
             logger.logMessage('Driver recovery successful!', 'info');
             return file.srtFile;
@@ -527,7 +527,8 @@ describe('Driver Failure Scenario Validation', () => {
 
     test('should handle driver issues with user-friendly error messages', async () => {
       // Mock user-friendly error messaging
-      global.gpuConfigMocks.determineGPUConfiguration.mockRejectedValue(
+      const { determineGPUConfiguration } = require('main/helpers/gpuConfig');
+      determineGPUConfiguration.mockRejectedValue(
         new Error('TECHNICAL_ERROR_CODE_0x80070002: Driver subsystem failure'),
       );
 

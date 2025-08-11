@@ -17,6 +17,20 @@ jest.mock('@volcengine/openapi', () => ({
   Service: jest.fn(() => ({})),
 }));
 
+jest.mock('@alicloud/alimt20181012', () => ({
+  __esModule: true,
+  default: jest.fn(() => ({})),
+}));
+
+jest.mock('@alicloud/openapi-client', () => ({
+  Config: jest.fn(() => ({})),
+  Client: jest.fn(() => ({})),
+}));
+
+jest.mock('@alicloud/tea-util', () => ({
+  RuntimeOptions: jest.fn(() => ({})),
+}));
+
 import { generateSubtitleWithBuiltinWhisper } from 'main/helpers/subtitleGenerator';
 import { detectAvailableGPUs } from 'main/helpers/hardware/hardwareDetection';
 import { selectOptimalGPU } from 'main/helpers/gpuSelector';

@@ -441,15 +441,32 @@ export async function generateSubtitleWithBuiltinWhisper(
           `Whisper processing error: ${whisperError.message}`,
           'error',
         );
-        const fallbackContent = formatSrtContent([
-          {
-            start: 0,
-            end: 5000,
-            text: 'Processing failed - please try again',
-          },
-        ]);
-        await fs.promises.writeFile(file.srtFile, fallbackContent);
-        return file.srtFile;
+
+        // Try error recovery first
+        try {
+          return await handleProcessingError(
+            whisperError,
+            event,
+            file,
+            formData,
+          );
+        } catch (recoveryError) {
+          logMessage(
+            `Error recovery failed: ${recoveryError.message}`,
+            'error',
+          );
+
+          // Final fallback: create a minimal SRT file and return its path
+          const fallbackContent = formatSrtContent([
+            {
+              start: 0,
+              end: 5000,
+              text: 'Processing failed - please try again',
+            },
+          ]);
+          await fs.promises.writeFile(file.srtFile, fallbackContent);
+          return file.srtFile;
+        }
       }
 
       // Step 10: Process results and finalize
