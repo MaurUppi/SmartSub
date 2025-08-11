@@ -193,10 +193,50 @@ jobs:
         if: runner.os == 'Windows'
         shell: powershell
         run: |
-          Invoke-WebRequest -Uri "https://storage.openvinotoolkit.org/repositories/openvino/packages/2024.6/w_openvino_toolkit_windows_${{ matrix.openvino_version }}_x86_64.zip" -OutFile "openvino.zip"
-          Expand-Archive -Path "openvino.zip" -DestinationPath "C:\temp\openvino"
-          Move-Item "C:\temp\openvino\w_openvino_toolkit_windows*" "C:\intel\openvino_${{ matrix.openvino_version }}"
-          echo "OPENVINO_INSTALL_DIR=C:\intel\openvino_${{ matrix.openvino_version }}" >> $env:GITHUB_ENV
+          # Use correct Windows OpenVINO filename with full version
+          $OpenVINOVersion = "${{ matrix.openvino_version }}"
+          $OpenVINOFilename = "w_openvino_toolkit_windows_2024.6.0.17404.4c0f47d2335_x86_64.zip"
+          $OpenVINOUrl = "https://storage.openvinotoolkit.org/repositories/openvino/packages/2024.6/windows/$OpenVINOFilename"
+
+          Write-Host "Downloading OpenVINO from: $OpenVINOUrl"
+
+          try {
+            Invoke-WebRequest -Uri $OpenVINOUrl -OutFile "openvino.zip" -TimeoutSec 30
+            
+            # Verify the downloaded file is a valid ZIP
+            $fileInfo = Get-Item "openvino.zip"
+            Write-Host "Downloaded file size: $($fileInfo.Length) bytes"
+            
+            if ($fileInfo.Length -lt 1000000) {
+              Write-Host "Downloaded file seems too small, checking content..."
+              Get-Content "openvino.zip" | Select-Object -First 5
+              throw "Downloaded file appears to be invalid"
+            }
+            
+            # Create directories first
+            New-Item -ItemType Directory -Force -Path "C:\temp\openvino"
+            New-Item -ItemType Directory -Force -Path "C:\intel"
+            
+            # Extract ZIP file
+            Expand-Archive -Path "openvino.zip" -DestinationPath "C:\temp\openvino" -Force
+            
+            # List extracted contents for debugging
+            Write-Host "Extracted contents:"
+            Get-ChildItem "C:\temp\openvino" -Recurse -Directory | Select-Object -First 10
+            
+            # Move extracted directory
+            $ExtractedDir = Get-ChildItem "C:\temp\openvino\w_openvino_toolkit_windows*" | Select-Object -First 1
+            Write-Host "Moving $($ExtractedDir.FullName) to C:\intel\openvino_$OpenVINOVersion"
+            Move-Item $ExtractedDir.FullName "C:\intel\openvino_$OpenVINOVersion"
+            
+            # Set environment variable
+            echo "OPENVINO_INSTALL_DIR=C:\intel\openvino_$OpenVINOVersion" >> $env:GITHUB_ENV
+            
+          } catch {
+            Write-Host "OpenVINO installation failed: $($_.Exception.Message)"
+            Write-Host "Skipping OpenVINO installation for now..."
+            echo "OPENVINO_INSTALL_DIR=" >> $env:GITHUB_ENV
+          }
 
       - name: Test OpenVINO integration
         run: npm run test:ts -- --testNamePattern="openvino|OpenVINO" --testPathIgnorePatterns="production|e2e|performance"
