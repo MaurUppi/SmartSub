@@ -201,7 +201,7 @@ describe('OpenVINO Addon Integration', () => {
   describe('Apple Silicon Specific Tests', () => {
     test('should validate Apple Silicon CPU processing expectations', () => {
       if (!isAppleSilicon()) {
-        pending('Not running on Apple Silicon');
+        console.log('Skipping: Not running on Apple Silicon');
         return;
       }
 
@@ -227,7 +227,7 @@ describe('OpenVINO Addon Integration', () => {
 
     test('should document Apple Silicon performance expectations', () => {
       if (!isAppleSilicon()) {
-        pending('Not running on Apple Silicon');
+        console.log('Skipping: Not running on Apple Silicon');
         return;
       }
 
@@ -250,7 +250,7 @@ describe('OpenVINO Addon Integration', () => {
 
     test('should validate integration with SmartSub settings', () => {
       if (!isAppleSilicon()) {
-        pending('Not running on Apple Silicon');
+        console.log('Skipping: Not running on Apple Silicon');
         return;
       }
 

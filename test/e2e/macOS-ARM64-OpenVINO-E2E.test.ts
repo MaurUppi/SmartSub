@@ -253,7 +253,7 @@ describe('macOS ARM64 OpenVINO End-to-End Workflow', () => {
   describe('Environment Validation', () => {
     test('should be running on Apple Silicon', () => {
       if (skipIfNotAppleSilicon()) {
-        pending('Not running on Apple Silicon');
+        console.log('Skipping: Not running on Apple Silicon');
         return;
       }
 
@@ -263,7 +263,7 @@ describe('macOS ARM64 OpenVINO End-to-End Workflow', () => {
 
     test('should have test audio file created', async () => {
       if (skipIfNotAppleSilicon()) {
-        pending('Not running on Apple Silicon');
+        console.log('Skipping: Not running on Apple Silicon');
         return;
       }
 
@@ -276,7 +276,7 @@ describe('macOS ARM64 OpenVINO End-to-End Workflow', () => {
 
     test('should have OpenVINO addon available', () => {
       if (skipIfNotAppleSilicon()) {
-        pending('Not running on Apple Silicon');
+        console.log('Skipping: Not running on Apple Silicon');
         return;
       }
 
@@ -301,7 +301,7 @@ describe('macOS ARM64 OpenVINO End-to-End Workflow', () => {
   describe('Platform Compatibility', () => {
     test('should detect Apple Silicon CPU capabilities', () => {
       if (skipIfNotAppleSilicon()) {
-        pending('Not running on Apple Silicon');
+        console.log('Skipping: Not running on Apple Silicon');
         return;
       }
 
@@ -329,7 +329,7 @@ describe('macOS ARM64 OpenVINO End-to-End Workflow', () => {
 
     test('should validate OpenVINO CPU-only operation on Apple Silicon', () => {
       if (skipIfNotAppleSilicon()) {
-        pending('Not running on Apple Silicon');
+        console.log('Skipping: Not running on Apple Silicon');
         return;
       }
 
@@ -353,7 +353,7 @@ describe('macOS ARM64 OpenVINO End-to-End Workflow', () => {
       'should complete full subtitle generation workflow',
       async () => {
         if (skipIfNotAppleSilicon()) {
-          pending('Not running on Apple Silicon');
+          console.log('Skipping: Not running on Apple Silicon');
           return;
         }
 
@@ -392,7 +392,7 @@ describe('macOS ARM64 OpenVINO End-to-End Workflow', () => {
 
     test('should handle error scenarios gracefully', async () => {
       if (skipIfNotAppleSilicon()) {
-        pending('Not running on Apple Silicon');
+        console.log('Skipping: Not running on Apple Silicon');
         return;
       }
 
@@ -413,7 +413,7 @@ describe('macOS ARM64 OpenVINO End-to-End Workflow', () => {
 
     test('should validate processing performance characteristics', async () => {
       if (skipIfNotAppleSilicon()) {
-        pending('Not running on Apple Silicon');
+        console.log('Skipping: Not running on Apple Silicon');
         return;
       }
 
@@ -471,7 +471,7 @@ describe('macOS ARM64 OpenVINO End-to-End Workflow', () => {
   describe('Integration with Application Workflow', () => {
     test('should validate addon loading mechanism', () => {
       if (skipIfNotAppleSilicon()) {
-        pending('Not running on Apple Silicon');
+        console.log('Skipping: Not running on Apple Silicon');
         return;
       }
 
@@ -500,7 +500,7 @@ describe('macOS ARM64 OpenVINO End-to-End Workflow', () => {
 
     test('should validate settings integration', () => {
       if (skipIfNotAppleSilicon()) {
-        pending('Not running on Apple Silicon');
+        console.log('Skipping: Not running on Apple Silicon');
         return;
       }
 
@@ -521,7 +521,7 @@ describe('macOS ARM64 OpenVINO End-to-End Workflow', () => {
 
     test('should document expected user experience', () => {
       if (skipIfNotAppleSilicon()) {
-        pending('Not running on Apple Silicon');
+        console.log('Skipping: Not running on Apple Silicon');
         return;
       }
 

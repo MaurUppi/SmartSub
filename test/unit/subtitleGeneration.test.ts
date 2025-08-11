@@ -638,7 +638,7 @@ describe('Error Handling and Recovery', () => {
     // Setup mocks
     const { determineGPUConfiguration } = require('main/helpers/gpuConfig');
     const { loadWhisperAddon } = require('main/helpers/whisper');
-    const { handleProcessingError } = require('main/helpers/errorHandler');
+    const errorHandler = require('main/helpers/errorHandler');
     const { exec } = require('child_process');
 
     determineGPUConfiguration.mockResolvedValue(gpuConfig);
@@ -648,6 +648,9 @@ describe('Error Handling and Recovery', () => {
       callback(new Error('OpenVINO runtime initialization failed'));
     });
     loadWhisperAddon.mockResolvedValue(mockFailingWhisper);
+
+    // Ensure the error handler is called and returns the srt file
+    errorHandler.handleProcessingError.mockResolvedValue(file.srtFile);
 
     exec.mockImplementation((command, callback) => {
       if (command.includes('ffprobe')) {
@@ -664,7 +667,7 @@ describe('Error Handling and Recovery', () => {
     );
 
     expect(result).toBe(file.srtFile);
-    expect(handleProcessingError).toHaveBeenCalled();
+    expect(errorHandler.handleProcessingError).toHaveBeenCalled();
   });
 
   test('should recover from Intel GPU driver issues', async () => {

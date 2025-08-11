@@ -12,6 +12,11 @@
  * 5. Performance monitoring and metrics collection
  */
 
+// Mock problematic modules that cause import issues in test environment
+jest.mock('@volcengine/openapi', () => ({
+  Service: jest.fn(() => ({})),
+}));
+
 import { generateSubtitleWithBuiltinWhisper } from 'main/helpers/subtitleGenerator';
 import { detectAvailableGPUs } from 'main/helpers/hardware/hardwareDetection';
 import { selectOptimalGPU } from 'main/helpers/gpuSelector';

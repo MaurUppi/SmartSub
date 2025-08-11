@@ -371,7 +371,18 @@ global.subtitleTestUtils = {
   },
 
   setupMockWhisperAddon: (shouldSucceed: boolean, addonType = 'openvino') => {
-    const { loadWhisperAddon } = require('main/helpers/whisper');
+    // Get the mocked module
+    const whisperModule = require('main/helpers/whisper');
+    const loadWhisperAddon = whisperModule.loadWhisperAddon;
+
+    // Ensure it's a jest mock function
+    if (
+      !loadWhisperAddon ||
+      typeof loadWhisperAddon.mockResolvedValue !== 'function'
+    ) {
+      console.warn('loadWhisperAddon mock is not properly set up');
+      return;
+    }
 
     if (shouldSucceed) {
       // Create a mock whisper function that works properly with promisify

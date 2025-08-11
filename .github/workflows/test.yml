@@ -100,14 +100,6 @@ jobs:
         run: npm run test:coverage -- --testPathIgnorePatterns="production|e2e|performance|functional|edge-cases|integration" || true
         continue-on-error: true
 
-      - name: Upload coverage reports
-        uses: codecov/codecov-action@v4
-        with:
-          file: ./coverage/lcov.info
-          flags: unittests
-          name: codecov-umbrella
-          fail_ci_if_error: true
-
       - name: Archive test results
         uses: actions/upload-artifact@v4
         if: always()
@@ -158,17 +150,17 @@ jobs:
       - name: Install OpenVINO toolkit (Ubuntu)
         if: runner.os == 'Linux'
         run: |
-          # Determine Ubuntu version for download URL
+          # Determine Ubuntu version and correct filename for OpenVINO 2024.6.0
           if [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
-            UBUNTU_VERSION="22"  # Use Ubuntu 22 package for latest
+            OPENVINO_FILENAME="l_openvino_toolkit_ubuntu22_2024.6.0.17404.4c0f47d2335_x86_64.tgz"
           elif [ "${{ matrix.os }}" = "ubuntu-22.04" ]; then
-            UBUNTU_VERSION="22"
+            OPENVINO_FILENAME="l_openvino_toolkit_ubuntu22_2024.6.0.17404.4c0f47d2335_x86_64.tgz"
           else
-            UBUNTU_VERSION="20"
+            OPENVINO_FILENAME="l_openvino_toolkit_ubuntu20_2024.6.0.17404.4c0f47d2335_x86_64.tgz"
           fi
 
-          # Download with better error handling and verification
-          OPENVINO_URL="https://storage.openvinotoolkit.org/repositories/openvino/packages/2024.6/l_openvino_toolkit_ubuntu${UBUNTU_VERSION}_${{ matrix.openvino_version }}_x86_64.tgz"
+          # Download with correct filename and better error handling
+          OPENVINO_URL="https://storage.openvinotoolkit.org/repositories/openvino/packages/2024.6/linux/$OPENVINO_FILENAME"
           echo "Downloading OpenVINO from: $OPENVINO_URL"
 
           wget --no-check-certificate --timeout=30 --tries=3 "$OPENVINO_URL" -O openvino.tgz

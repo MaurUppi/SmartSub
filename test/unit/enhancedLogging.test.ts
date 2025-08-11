@@ -297,7 +297,7 @@ describe('Enhanced Logging System', () => {
         type: 'info',
         category: LogCategory.GENERAL,
       });
-      expect(logs[0].timestamp).toBeGreaterThan(0);
+      expect(mockLogs[0].timestamp).toBeGreaterThan(0);
     });
 
     test('should log message with all parameters', () => {
@@ -402,7 +402,7 @@ describe('Enhanced Logging System', () => {
         category: LogCategory.OPENVINO_ADDON,
         correlationId: correlationId,
       });
-      expect(logs[0].context).toMatchObject({
+      expect(mockLogs[0].context).toMatchObject({
         event: 'loading_initiated',
         platform: process.platform,
         arch: process.arch,
@@ -442,7 +442,7 @@ describe('Enhanced Logging System', () => {
         type: 'error',
         category: LogCategory.OPENVINO_ADDON,
       });
-      expect(logs[0].context?.errorMessage).toBe('File not found');
+      expect(mockLogs[0].context?.errorMessage).toBe('File not found');
     });
 
     test('should log OpenVINO validation events', () => {
@@ -509,8 +509,8 @@ describe('Enhanced Logging System', () => {
         type: 'success',
         category: LogCategory.GPU_DETECTION,
       });
-      expect(logs[0].context?.gpuName).toBe('Intel Arc A770');
-      expect(logs[0].context?.memory).toBe(16384);
+      expect(mockLogs[0].context?.gpuName).toBe('Intel Arc A770');
+      expect(mockLogs[0].context?.memory).toBe(16384);
     });
 
     test('should log GPU detection failure', () => {
@@ -577,7 +577,7 @@ describe('Enhanced Logging System', () => {
         type: 'info',
         category: LogCategory.ADDON_LOADING,
       });
-      expect(logs[0].context?.addonType).toBe('cuda');
+      expect(mockLogs[0].context?.addonType).toBe('cuda');
     });
 
     test('should log fallback usage', () => {
@@ -618,7 +618,7 @@ describe('Enhanced Logging System', () => {
         category: LogCategory.PERFORMANCE,
         correlationId: correlationId,
       });
-      expect(logs[0].context).toMatchObject({
+      expect(mockLogs[0].context).toMatchObject({
         operation: 'subtitle_generation',
         ...metrics,
       });
@@ -633,7 +633,7 @@ describe('Enhanced Logging System', () => {
 
       expect(mockLogs).toHaveLength(1);
       expect(mockLogs[0].context?.operation).toBe('addon_loading');
-      expect(logs[0].context?.duration).toBe(5000);
+      expect(mockLogs[0].context?.duration).toBe(5000);
     });
   });
 
@@ -653,7 +653,7 @@ describe('Enhanced Logging System', () => {
         type: 'info',
         category: LogCategory.SYSTEM_INFO,
       });
-      expect(logs[0].context).toMatchObject({
+      expect(mockLogs[0].context).toMatchObject({
         ...info,
         nodeVersion: process.version,
         platform: process.platform,
@@ -678,7 +678,7 @@ describe('Enhanced Logging System', () => {
         type: 'info',
         category: LogCategory.USER_ACTION,
       });
-      expect(logs[0].context?.action).toBe('start_subtitle_generation');
+      expect(mockLogs[0].context?.action).toBe('start_subtitle_generation');
     });
 
     test('should log user actions without context', () => {
