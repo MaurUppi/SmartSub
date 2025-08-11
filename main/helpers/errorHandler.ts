@@ -501,3 +501,28 @@ export function createUserFriendlyErrorMessage(error: ProcessingError): string {
 
   return `Processing failed: ${error.message}. Please try again or contact support.`;
 }
+
+/**
+ * ErrorHandler class wrapper for E2E testing compatibility
+ * Provides class-based interface over existing error handling functions
+ */
+export class ErrorHandler {
+  /**
+   * Handle processing errors with recovery attempts
+   */
+  async handleProcessingError(
+    error: Error,
+    event: any,
+    file: any,
+    formData: any,
+  ): Promise<string> {
+    return await handleProcessingError(error, event, file, formData);
+  }
+
+  /**
+   * Create user-friendly error messages
+   */
+  createUserFriendlyErrorMessage(error: Error): string {
+    return createUserFriendlyErrorMessage(error as any);
+  }
+}

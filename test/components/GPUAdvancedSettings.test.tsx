@@ -49,7 +49,7 @@ jest.mock('next-i18next', () => ({
         cacheConfiguration: 'Cache Configuration',
         cacheDirectory: 'Cache Directory',
         cacheDirTooltip: 'Directory where OpenVINO stores cached models',
-        cacheDirPlaceholder: '/path/to/cache',
+        cacheDirPlaceholder: 'E.g., C:\\openvino\\cache',
         browse: 'Browse',
         enableCaching: 'Enable Caching',
         enableCachingTooltip: 'Cache compiled models for faster loading',

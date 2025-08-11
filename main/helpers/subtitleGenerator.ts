@@ -602,3 +602,31 @@ export async function generateSubtitleWithBuiltinWhisper(
     return file.srtFile;
   }
 }
+
+/**
+ * SubtitleGenerator class wrapper for E2E testing compatibility
+ * Provides class-based interface over existing functions
+ */
+export class SubtitleGenerator {
+  /**
+   * Generate subtitles using the enhanced builtin Whisper with GPU support
+   */
+  async generateSubtitle(
+    event: any,
+    file: any,
+    formData: any,
+  ): Promise<string> {
+    return await generateSubtitleWithBuiltinWhisper(event, file, formData);
+  }
+
+  /**
+   * Generate subtitles using local Whisper command line
+   */
+  async generateSubtitleWithLocal(
+    event: any,
+    file: any,
+    formData: any,
+  ): Promise<string> {
+    return await generateSubtitleWithLocalWhisper(event, file, formData);
+  }
+}

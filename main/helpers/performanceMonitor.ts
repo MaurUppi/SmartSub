@@ -515,3 +515,9 @@ export class GPUPerformanceMonitor {
     logMessage('Performance metrics history cleared', 'info');
   }
 }
+
+/**
+ * PerformanceMonitor class alias for E2E testing compatibility
+ * Provides class-based interface compatible with existing tests
+ */
+export class PerformanceMonitor extends GPUPerformanceMonitor {}
