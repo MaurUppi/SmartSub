@@ -175,7 +175,18 @@ jobs:
           fi
 
           tar -xzf openvino.tgz
-          sudo mv l_openvino_toolkit_ubuntu*_x86_64 /opt/intel/openvino_${{ matrix.openvino_version }}
+
+          # Debug: List extracted contents
+          echo "Extracted contents:"
+          ls -la l_openvino_toolkit_ubuntu*
+
+          # Create target directory structure
+          sudo mkdir -p /opt/intel/
+
+          # Move the extracted directory with proper handling
+          EXTRACTED_DIR=$(ls -d l_openvino_toolkit_ubuntu*_x86_64 | head -1)
+          echo "Moving $EXTRACTED_DIR to /opt/intel/openvino_${{ matrix.openvino_version }}"
+          sudo mv "$EXTRACTED_DIR" /opt/intel/openvino_${{ matrix.openvino_version }}
           echo "OPENVINO_INSTALL_DIR=/opt/intel/openvino_${{ matrix.openvino_version }}" >> $GITHUB_ENV
 
       - name: Install OpenVINO toolkit (Windows)
