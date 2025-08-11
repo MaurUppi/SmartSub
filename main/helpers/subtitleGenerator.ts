@@ -45,7 +45,7 @@ export async function generateSubtitleWithLocalWhisper(
   event: any,
   file: any,
   formData: any,
-) {
+): Promise<string> {
   const { model, sourceLanguage } = formData;
   const whisperModel = model?.toLowerCase();
   const settings = store.get('settings');
