@@ -57,6 +57,10 @@ jest.mock('../../main/helpers/cudaUtils', () => ({
 jest.mock('../../main/helpers/gpuSelector', () => ({
   selectOptimalGPU: jest.fn(),
   createAddonInfo: jest.fn(),
+  getCPUAddonName: jest.fn(() => 'addon-cpu.node'),
+  getOpenVINOAddonName: jest.fn(() => 'addon-openvino.node'),
+  getCUDAAddonName: jest.fn(() => 'addon-cuda.node'),
+  getCoreMLAddonName: jest.fn(() => 'addon-coreml.node'),
 }));
 
 jest.mock('electron', () => ({

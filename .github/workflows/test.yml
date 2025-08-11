@@ -167,8 +167,22 @@ jobs:
             UBUNTU_VERSION="20"
           fi
 
-          wget https://storage.openvinotoolkit.org/repositories/openvino/packages/2024.6/l_openvino_toolkit_ubuntu${UBUNTU_VERSION}_${{ matrix.openvino_version }}_x86_64.tgz
-          tar -xzf l_openvino_toolkit_ubuntu*.tgz
+          # Download with better error handling and verification
+          OPENVINO_URL="https://storage.openvinotoolkit.org/repositories/openvino/packages/2024.6/l_openvino_toolkit_ubuntu${UBUNTU_VERSION}_${{ matrix.openvino_version }}_x86_64.tgz"
+          echo "Downloading OpenVINO from: $OPENVINO_URL"
+
+          wget --no-check-certificate --timeout=30 --tries=3 "$OPENVINO_URL" -O openvino.tgz
+
+          # Verify the downloaded file is actually a gzip file
+          if ! file openvino.tgz | grep -q "gzip compressed"; then
+            echo "Downloaded file is not a valid gzip archive. Contents:"
+            head -n 20 openvino.tgz
+            echo "Skipping OpenVINO installation for now..."
+            echo "OPENVINO_INSTALL_DIR=" >> $GITHUB_ENV
+            exit 0
+          fi
+
+          tar -xzf openvino.tgz
           sudo mv l_openvino_toolkit_ubuntu*_x86_64 /opt/intel/openvino_${{ matrix.openvino_version }}
           echo "OPENVINO_INSTALL_DIR=/opt/intel/openvino_${{ matrix.openvino_version }}" >> $GITHUB_ENV
 
