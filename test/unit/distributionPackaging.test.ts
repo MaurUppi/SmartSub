@@ -66,11 +66,10 @@ jest.mock('electron', () => ({
 }));
 
 // Now import the modules that will use the mocks
-const {
-  AddonPackager,
-  ADDON_MAPPINGS,
-} = require('../../scripts/package-addons');
-const addonManager = require('../../main/helpers/addonManager');
+import { AddonPackager, ADDON_MAPPINGS } from '../../scripts/package-addons';
+import * as addonManager from '../../main/helpers/addonManager';
+import { logMessage } from '../../main/helpers/logger';
+import { AddonInfo } from '../../types';
 
 describe('Distribution Packaging Tests', () => {
   beforeEach(() => {
@@ -377,7 +376,7 @@ describe('Distribution Packaging Tests', () => {
 
   describe('Fallback Chain Testing', () => {
     test('should create correct fallback chain for OpenVINO failure', () => {
-      const failedAddonInfo = {
+      const failedAddonInfo: AddonInfo = {
         type: 'openvino',
         path: 'addon-openvino.node',
         displayName: 'Intel OpenVINO',
@@ -398,7 +397,7 @@ describe('Distribution Packaging Tests', () => {
     });
 
     test('should create correct fallback chain for CUDA failure', () => {
-      const failedAddonInfo = {
+      const failedAddonInfo: AddonInfo = {
         type: 'cuda',
         path: 'addon-cuda.node',
         displayName: 'NVIDIA CUDA',
@@ -419,7 +418,7 @@ describe('Distribution Packaging Tests', () => {
     });
 
     test('should handle CPU fallback (no further options)', () => {
-      const failedAddonInfo = {
+      const failedAddonInfo: AddonInfo = {
         type: 'cpu',
         path: 'addon-cpu.node',
         displayName: 'CPU Processing',
@@ -481,7 +480,7 @@ describe('Distribution Packaging Tests', () => {
 
       await packager.generateAddonManifest();
 
-      const manifestCall = mockFs.writeFileSync.mock.calls.find((call) =>
+      const manifestCall = mockFs.writeFileSync.mock.calls.find((call: any[]) =>
         call[0].toString().includes('addon-manifest.json'),
       );
 
@@ -507,14 +506,14 @@ describe('Distribution Packaging Tests', () => {
     });
 
     test('should handle addon loading failure with recovery', async () => {
-      const failedAddonInfo = {
+      const failedAddonInfo: AddonInfo = {
         type: 'openvino',
         path: 'addon-openvino.node',
         displayName: 'Intel OpenVINO',
         deviceConfig: null,
       };
 
-      const fallbackOptions = [
+      const fallbackOptions: AddonInfo[] = [
         {
           type: 'cpu',
           path: 'addon-cpu.node',
@@ -546,7 +545,7 @@ describe('Distribution Packaging Tests', () => {
     });
 
     test('should handle empty fallback options', async () => {
-      const failedAddonInfo = {
+      const failedAddonInfo: AddonInfo = {
         type: 'openvino',
         path: 'addon-openvino.node',
         displayName: 'Intel OpenVINO',
@@ -613,7 +612,7 @@ describe('Distribution Packaging Tests', () => {
 
   describe('Performance and Monitoring', () => {
     test('should provide addon performance info', () => {
-      const openvinoAddonInfo = {
+      const openvinoAddonInfo: AddonInfo = {
         type: 'openvino',
         path: 'addon-openvino.node',
         displayName: 'Intel OpenVINO',
@@ -635,18 +634,18 @@ describe('Distribution Packaging Tests', () => {
     });
 
     test('should differentiate between discrete and integrated GPU performance', () => {
-      const discreteAddonInfo = {
+      const discreteAddonInfo: AddonInfo = {
         type: 'openvino',
         path: 'addon-openvino.node',
         displayName: 'Intel Arc GPU',
         deviceConfig: { type: 'discrete' },
       };
 
-      const integratedAddonInfo = {
+      const integratedAddonInfo: AddonInfo = {
         type: 'openvino',
         path: 'addon-openvino.node',
         displayName: 'Intel Xe Graphics',
-        deviceConfig: { type: 'integrated', memory: 'shared' },
+        deviceConfig: { type: 'integrated', memory: 'shared' as const },
       };
 
       if (addonManager.getAddonPerformanceInfo) {
@@ -669,7 +668,7 @@ describe('Distribution Packaging Tests', () => {
     });
 
     test('should log addon loading attempts correctly', () => {
-      const addonInfo = {
+      const addonInfo: AddonInfo = {
         type: 'openvino',
         path: 'addon-openvino.node',
         displayName: 'Intel OpenVINO GPU',
@@ -681,11 +680,12 @@ describe('Distribution Packaging Tests', () => {
         addonManager.logAddonLoadAttempt(addonInfo);
 
         // Verify logging was called (mocked) - check that it was called with expected parameters
-        const logMessage = require('../../main/helpers/logger').logMessage;
+        // logMessage is already imported at the top of the file
         expect(logMessage).toHaveBeenCalled();
-        const calls = logMessage.mock.calls;
+        const calls = (logMessage as jest.MockedFunction<typeof logMessage>)
+          .mock.calls;
         const hasExpectedCall = calls.some(
-          (call) =>
+          (call: any[]) =>
             call[0] === 'Attempting to load openvino addon' &&
             call[1] === 'info',
         );
