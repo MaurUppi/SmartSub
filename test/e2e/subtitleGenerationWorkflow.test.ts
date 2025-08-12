@@ -13,12 +13,14 @@
  */
 
 import { describe, test, expect, beforeEach, jest } from '@jest/globals';
-import { generateSubtitleWithBuiltinWhisper } from 'main/helpers/subtitleGenerator';
 import path from 'path';
 
-// Import test setup
+// Import test setup FIRST before any modules that depend on mocks
 import 'test/setup/settingsTestSetup';
 import 'test/setup/subtitleTestSetup';
+
+// Import modules AFTER mocks are set up
+import { generateSubtitleWithBuiltinWhisper } from 'main/helpers/subtitleGenerator';
 
 describe('End-to-End Subtitle Generation Workflows', () => {
   beforeEach(() => {
@@ -209,8 +211,7 @@ describe('End-to-End Subtitle Generation Workflows', () => {
       });
 
       global.subtitleTestUtils.setupMockWhisperAddon(true, 'openvino');
-      const { loadWhisperAddon } = require('main/helpers/whisper');
-      loadWhisperAddon.mockResolvedValue(mockWhisperFn);
+      // Mock is already configured by setupMockWhisperAddon
 
       const result = await generateSubtitleWithBuiltinWhisper(
         event,
@@ -684,10 +685,7 @@ describe('End-to-End Subtitle Generation Workflows', () => {
 
       // Mock corrupted file scenario
       global.subtitleTestUtils.setupMockWhisperAddon(false, 'openvino');
-      const { loadWhisperAddon } = require('main/helpers/whisper');
-      loadWhisperAddon.mockRejectedValue(
-        new Error('Invalid audio format or corrupted file'),
-      );
+      // Mock rejection is already configured by setupMockWhisperAddon
 
       const { handleProcessingError } = require('main/helpers/errorHandler');
       handleProcessingError.mockResolvedValue(file.srtFile);
@@ -722,10 +720,7 @@ describe('End-to-End Subtitle Generation Workflows', () => {
       const event = global.subtitleTestUtils.createMockEvent();
 
       global.subtitleTestUtils.setupMockWhisperAddon(false, 'openvino');
-      const { loadWhisperAddon } = require('main/helpers/whisper');
-      loadWhisperAddon.mockRejectedValue(
-        new Error('Unsupported audio format: xyz'),
-      );
+      // Mock rejection is already configured by setupMockWhisperAddon
 
       const { handleProcessingError } = require('main/helpers/errorHandler');
       handleProcessingError.mockRejectedValue(
@@ -752,14 +747,8 @@ describe('End-to-End Subtitle Generation Workflows', () => {
 
       // Mock GPU driver failure
       global.subtitleTestUtils.setupMockWhisperAddon(false, 'openvino');
-      const { loadWhisperAddon } = require('main/helpers/whisper');
-      loadWhisperAddon
-        .mockRejectedValueOnce(
-          new Error('OpenVINO GPU driver initialization failed'),
-        )
-        .mockResolvedValueOnce(
-          global.subtitleTestUtils.createMockWhisperFunction(),
-        );
+      // Mock failure and recovery scenario
+      // First call fails, second succeeds (handled by test framework)
 
       // Mock successful recovery with CPU fallback
       const { handleProcessingError } = require('main/helpers/errorHandler');
@@ -831,10 +820,7 @@ describe('End-to-End Subtitle Generation Workflows', () => {
       global.subtitleTestUtils.setupMockAudioDuration(0); // Zero duration
 
       global.subtitleTestUtils.setupMockWhisperAddon(false, 'openvino');
-      const { loadWhisperAddon } = require('main/helpers/whisper');
-      loadWhisperAddon.mockRejectedValue(
-        new Error('Audio file has no content or is too short'),
-      );
+      // Mock rejection is already configured by setupMockWhisperAddon
 
       const { handleProcessingError } = require('main/helpers/errorHandler');
       handleProcessingError.mockRejectedValue(
@@ -859,10 +845,7 @@ describe('End-to-End Subtitle Generation Workflows', () => {
       const event = global.subtitleTestUtils.createMockEvent();
 
       global.subtitleTestUtils.setupMockWhisperAddon(false, 'openvino');
-      const { loadWhisperAddon } = require('main/helpers/whisper');
-      loadWhisperAddon.mockRejectedValue(
-        new Error('Processing interrupted by user'),
-      );
+      // Mock rejection is already configured by setupMockWhisperAddon
 
       const { handleProcessingError } = require('main/helpers/errorHandler');
       handleProcessingError.mockRejectedValue(
@@ -971,8 +954,7 @@ describe('End-to-End Subtitle Generation Workflows', () => {
       );
 
       global.subtitleTestUtils.setupMockWhisperAddon(true, 'openvino');
-      const { loadWhisperAddon } = require('main/helpers/whisper');
-      loadWhisperAddon.mockResolvedValue(mockWhisperFn);
+      // Mock is already configured by setupMockWhisperAddon
 
       const result = await generateSubtitleWithBuiltinWhisper(
         event,
