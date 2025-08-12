@@ -7,6 +7,7 @@ import { readFileContent, wrapFileObject } from './fileUtils';
 import { CONTENT_TEMPLATES } from '../translate/constants';
 import { renderTemplate } from './utils';
 import { parseSubtitles } from '../translate/utils/subtitle';
+import { detectAvailableGPUs } from '../hardware/hardwareDetection';
 
 // 定义支持的文件扩展名常量
 export const MEDIA_EXTENSIONS = [
@@ -266,5 +267,37 @@ export function setupIpcHandlers(mainWindow: BrowserWindow) {
     return dialog.showOpenDialog({
       properties: ['openDirectory'],
     });
+  });
+
+  // GPU Detection IPC Handler - CRITICAL for ALL renderer GPU detection
+  ipcMain.handle('detectGPUs', async () => {
+    try {
+      logMessage('Starting GPU detection via IPC handler', 'info');
+      const capabilities = await detectAvailableGPUs();
+
+      return {
+        nvidia: capabilities.nvidia,
+        intel: capabilities.intel,
+        amd: capabilities.amd,
+        apple: capabilities.apple,
+        totalGPUs: capabilities.totalGPUs,
+        openvinoVersion: capabilities.openvinoVersion,
+        recommendedGPU: capabilities.recommendedGPU,
+        success: true,
+      };
+    } catch (error: any) {
+      logMessage(`GPU detection failed: ${error.message}`, 'error');
+      return {
+        nvidia: false,
+        intel: [],
+        amd: [],
+        apple: false,
+        totalGPUs: 0,
+        openvinoVersion: false,
+        recommendedGPU: null,
+        success: false,
+        error: error.message,
+      };
+    }
   });
 }
