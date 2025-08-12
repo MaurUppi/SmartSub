@@ -29,7 +29,6 @@ jest.mock('main/helpers/utils', () => ({
 }));
 
 jest.mock('main/helpers/whisper', () => ({
-  loadWhisperAddon: jest.fn(),
   getPath: jest.fn(() => ({ modelsPath: '/mock/models' })),
   hasEncoderModel: jest.fn(() => true),
 }));
@@ -60,9 +59,9 @@ jest.mock('main/helpers/gpuSelector', () => ({
 }));
 
 // Import after mocks
-import { loadWhisperAddon } from 'main/helpers/whisper';
 import { store } from 'main/helpers/store';
 import {
+  loadAndValidateAddon,
   handleAddonLoadingError,
   createFallbackChain,
 } from 'main/helpers/addonManager';
@@ -108,11 +107,10 @@ describe('Fallback Chain Execution', () => {
   });
 
   test('should fallback from OpenVINO to CUDA when Intel GPU fails', async () => {
-    // Mock loadWhisperAddon to simulate successful fallback
-    const mockLoadWhisperAddon = loadWhisperAddon as jest.MockedFunction<
-      typeof loadWhisperAddon
-    >;
-    mockLoadWhisperAddon.mockResolvedValue(createMockWhisperFunction());
+    // Mock loadAndValidateAddon to simulate successful fallback
+    const mockLoadAndValidateAddon =
+      loadAndValidateAddon as jest.MockedFunction<typeof loadAndValidateAddon>;
+    mockLoadAndValidateAddon.mockResolvedValue(createMockWhisperFunction());
 
     (store.get as jest.Mock).mockReturnValue({
       useOpenVINO: true,
@@ -121,19 +119,18 @@ describe('Fallback Chain Execution', () => {
       gpuPreference: ['intel', 'nvidia', 'cpu'],
     });
 
-    const whisperFunc = await loadWhisperAddon('base');
+    const whisperFunc = await loadAndValidateAddon('base');
 
     expect(whisperFunc).toBeDefined();
     expect(typeof whisperFunc).toBe('function');
-    expect(mockLoadWhisperAddon).toHaveBeenCalledWith('base');
+    expect(mockLoadAndValidateAddon).toHaveBeenCalledWith('base');
   });
 
   test('should fallback from CUDA to OpenVINO when NVIDIA fails', async () => {
-    // Mock loadWhisperAddon to simulate successful fallback
-    const mockLoadWhisperAddon = loadWhisperAddon as jest.MockedFunction<
-      typeof loadWhisperAddon
-    >;
-    mockLoadWhisperAddon.mockResolvedValue(createMockWhisperFunction());
+    // Mock loadAndValidateAddon to simulate successful fallback
+    const mockLoadAndValidateAddon =
+      loadAndValidateAddon as jest.MockedFunction<typeof loadAndValidateAddon>;
+    mockLoadAndValidateAddon.mockResolvedValue(createMockWhisperFunction());
 
     (store.get as jest.Mock).mockReturnValue({
       useCuda: true,
@@ -142,11 +139,11 @@ describe('Fallback Chain Execution', () => {
       gpuPreference: ['nvidia', 'intel', 'cpu'],
     });
 
-    const whisperFunc = await loadWhisperAddon('base');
+    const whisperFunc = await loadAndValidateAddon('base');
 
     expect(whisperFunc).toBeDefined();
     expect(typeof whisperFunc).toBe('function');
-    expect(mockLoadWhisperAddon).toHaveBeenCalledWith('base');
+    expect(mockLoadAndValidateAddon).toHaveBeenCalledWith('base');
   });
 
   test('should fallback to CoreML on Apple Silicon when GPU options fail', async () => {
@@ -157,68 +154,64 @@ describe('Fallback Chain Execution', () => {
     >;
     mockIsAppleSilicon.mockReturnValue(true);
 
-    const mockLoadWhisperAddon = loadWhisperAddon as jest.MockedFunction<
-      typeof loadWhisperAddon
-    >;
-    mockLoadWhisperAddon.mockResolvedValue(createMockWhisperFunction());
+    const mockLoadAndValidateAddon =
+      loadAndValidateAddon as jest.MockedFunction<typeof loadAndValidateAddon>;
+    mockLoadAndValidateAddon.mockResolvedValue(createMockWhisperFunction());
 
     (store.get as jest.Mock).mockReturnValue({
       selectedGPUId: 'auto',
       gpuPreference: ['intel', 'nvidia', 'apple', 'cpu'],
     });
 
-    const whisperFunc = await loadWhisperAddon('base');
+    const whisperFunc = await loadAndValidateAddon('base');
 
     expect(whisperFunc).toBeDefined();
     expect(typeof whisperFunc).toBe('function');
   });
 
   test('should fallback to CPU when all GPU options fail', async () => {
-    const mockLoadWhisperAddon = loadWhisperAddon as jest.MockedFunction<
-      typeof loadWhisperAddon
-    >;
-    mockLoadWhisperAddon.mockResolvedValue(createMockWhisperFunction());
+    const mockLoadAndValidateAddon =
+      loadAndValidateAddon as jest.MockedFunction<typeof loadAndValidateAddon>;
+    mockLoadAndValidateAddon.mockResolvedValue(createMockWhisperFunction());
 
     (store.get as jest.Mock).mockReturnValue({
       selectedGPUId: 'auto',
       gpuPreference: ['nvidia', 'intel', 'apple', 'cpu'],
     });
 
-    const whisperFunc = await loadWhisperAddon('base');
+    const whisperFunc = await loadAndValidateAddon('base');
 
     expect(whisperFunc).toBeDefined();
     expect(typeof whisperFunc).toBe('function');
   });
 
   test('should maintain fallback order consistency', async () => {
-    const mockLoadWhisperAddon = loadWhisperAddon as jest.MockedFunction<
-      typeof loadWhisperAddon
-    >;
-    mockLoadWhisperAddon.mockResolvedValue(createMockWhisperFunction());
+    const mockLoadAndValidateAddon =
+      loadAndValidateAddon as jest.MockedFunction<typeof loadAndValidateAddon>;
+    mockLoadAndValidateAddon.mockResolvedValue(createMockWhisperFunction());
 
     (store.get as jest.Mock).mockReturnValue({
       selectedGPUId: 'auto',
       gpuPreference: ['nvidia', 'intel', 'cpu'],
     });
 
-    const whisperFunc = await loadWhisperAddon('base');
+    const whisperFunc = await loadAndValidateAddon('base');
 
     expect(whisperFunc).toBeDefined();
     expect(typeof whisperFunc).toBe('function');
   });
 
   test('should handle partial system failures gracefully', async () => {
-    const mockLoadWhisperAddon = loadWhisperAddon as jest.MockedFunction<
-      typeof loadWhisperAddon
-    >;
-    mockLoadWhisperAddon.mockResolvedValue(createMockWhisperFunction());
+    const mockLoadAndValidateAddon =
+      loadAndValidateAddon as jest.MockedFunction<typeof loadAndValidateAddon>;
+    mockLoadAndValidateAddon.mockResolvedValue(createMockWhisperFunction());
 
     (store.get as jest.Mock).mockReturnValue({
       selectedGPUId: 'auto',
       gpuPreference: ['nvidia', 'intel', 'cpu'],
     });
 
-    const whisperFunc = await loadWhisperAddon('base');
+    const whisperFunc = await loadAndValidateAddon('base');
 
     expect(whisperFunc).toBeDefined();
     expect(typeof whisperFunc).toBe('function');
@@ -231,16 +224,15 @@ describe('Emergency Legacy Fallback', () => {
   });
 
   test('should fallback to legacy system when enhanced system completely fails', async () => {
-    const mockLoadWhisperAddon = loadWhisperAddon as jest.MockedFunction<
-      typeof loadWhisperAddon
-    >;
-    mockLoadWhisperAddon.mockResolvedValue(createMockWhisperFunction());
+    const mockLoadAndValidateAddon =
+      loadAndValidateAddon as jest.MockedFunction<typeof loadAndValidateAddon>;
+    mockLoadAndValidateAddon.mockResolvedValue(createMockWhisperFunction());
 
     (store.get as jest.Mock).mockReturnValue({
       useCuda: false,
     });
 
-    const whisperFunc = await loadWhisperAddon('base');
+    const whisperFunc = await loadAndValidateAddon('base');
 
     expect(whisperFunc).toBeDefined();
     expect(typeof whisperFunc).toBe('function');
@@ -254,16 +246,15 @@ describe('Emergency Legacy Fallback', () => {
     >;
     mockCheckCudaSupport.mockResolvedValue(true);
 
-    const mockLoadWhisperAddon = loadWhisperAddon as jest.MockedFunction<
-      typeof loadWhisperAddon
-    >;
-    mockLoadWhisperAddon.mockResolvedValue(createMockWhisperFunction());
+    const mockLoadAndValidateAddon =
+      loadAndValidateAddon as jest.MockedFunction<typeof loadAndValidateAddon>;
+    mockLoadAndValidateAddon.mockResolvedValue(createMockWhisperFunction());
 
     (store.get as jest.Mock).mockReturnValue({
       useCuda: true,
     });
 
-    const whisperFunc = await loadWhisperAddon('base');
+    const whisperFunc = await loadAndValidateAddon('base');
 
     expect(whisperFunc).toBeDefined();
     expect(typeof whisperFunc).toBe('function');
@@ -281,30 +272,28 @@ describe('Emergency Legacy Fallback', () => {
     mockIsAppleSilicon.mockReturnValue(true);
     mockHasEncoderModel.mockReturnValue(true);
 
-    const mockLoadWhisperAddon = loadWhisperAddon as jest.MockedFunction<
-      typeof loadWhisperAddon
-    >;
-    mockLoadWhisperAddon.mockResolvedValue(createMockWhisperFunction());
+    const mockLoadAndValidateAddon =
+      loadAndValidateAddon as jest.MockedFunction<typeof loadAndValidateAddon>;
+    mockLoadAndValidateAddon.mockResolvedValue(createMockWhisperFunction());
 
     (store.get as jest.Mock).mockReturnValue({});
 
-    const whisperFunc = await loadWhisperAddon('base');
+    const whisperFunc = await loadAndValidateAddon('base');
 
     expect(whisperFunc).toBeDefined();
     expect(typeof whisperFunc).toBe('function');
   });
 
   test('should handle complete system failure gracefully', async () => {
-    const mockLoadWhisperAddon = loadWhisperAddon as jest.MockedFunction<
-      typeof loadWhisperAddon
-    >;
-    mockLoadWhisperAddon.mockRejectedValue(
+    const mockLoadAndValidateAddon =
+      loadAndValidateAddon as jest.MockedFunction<typeof loadAndValidateAddon>;
+    mockLoadAndValidateAddon.mockRejectedValue(
       new Error('Complete system failure'),
     );
 
     (store.get as jest.Mock).mockReturnValue({});
 
-    await expect(loadWhisperAddon('base')).rejects.toThrow(
+    await expect(loadAndValidateAddon('base')).rejects.toThrow(
       'Complete system failure',
     );
   });
@@ -373,10 +362,9 @@ describe('Graceful Degradation', () => {
   });
 
   test('should maintain performance expectations during fallback', async () => {
-    const mockLoadWhisperAddon = loadWhisperAddon as jest.MockedFunction<
-      typeof loadWhisperAddon
-    >;
-    mockLoadWhisperAddon.mockResolvedValue(createMockWhisperFunction());
+    const mockLoadAndValidateAddon =
+      loadAndValidateAddon as jest.MockedFunction<typeof loadAndValidateAddon>;
+    mockLoadAndValidateAddon.mockResolvedValue(createMockWhisperFunction());
 
     (store.get as jest.Mock).mockReturnValue({
       selectedGPUId: 'auto',
@@ -384,7 +372,7 @@ describe('Graceful Degradation', () => {
     });
 
     const startTime = Date.now();
-    const whisperFunc = await loadWhisperAddon('base');
+    const whisperFunc = await loadAndValidateAddon('base');
     const endTime = Date.now();
 
     expect(whisperFunc).toBeDefined();
@@ -394,17 +382,16 @@ describe('Graceful Degradation', () => {
 
   test('should provide user feedback during extended fallback attempts', async () => {
     const mockLogMessage = logMessage as jest.MockedFunction<typeof logMessage>;
-    const mockLoadWhisperAddon = loadWhisperAddon as jest.MockedFunction<
-      typeof loadWhisperAddon
-    >;
-    mockLoadWhisperAddon.mockResolvedValue(createMockWhisperFunction());
+    const mockLoadAndValidateAddon =
+      loadAndValidateAddon as jest.MockedFunction<typeof loadAndValidateAddon>;
+    mockLoadAndValidateAddon.mockResolvedValue(createMockWhisperFunction());
 
     (store.get as jest.Mock).mockReturnValue({
       selectedGPUId: 'auto',
       gpuPreference: ['intel', 'nvidia', 'apple', 'cpu'],
     });
 
-    const whisperFunc = await loadWhisperAddon('base');
+    const whisperFunc = await loadAndValidateAddon('base');
 
     expect(whisperFunc).toBeDefined();
     // Verify that the system can provide feedback (logMessage could be called)
