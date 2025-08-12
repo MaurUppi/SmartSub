@@ -47,7 +47,6 @@ jest.mock('main/helpers/storeManager', () => ({
 }));
 
 jest.mock('main/helpers/whisper', () => ({
-  loadWhisperAddon: jest.fn(),
   getPath: jest.fn((key) => {
     const paths = { modelsPath: '/mock/models' };
     return paths[key] || '/mock/default';
