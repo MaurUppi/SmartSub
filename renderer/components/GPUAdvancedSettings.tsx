@@ -297,7 +297,7 @@ export const GPUAdvancedSettings: React.FC<GPUAdvancedSettingsProps> = ({
               disabled={!hasChanges || hasValidationErrors}
               size="sm"
               className="flex items-center"
-              data-testid="save-settings-button"
+              data-testid="gpu-advanced-save-button"
             >
               <Save className="w-4 h-4 mr-1" />
               {t('save')}
@@ -434,7 +434,7 @@ export const GPUAdvancedSettings: React.FC<GPUAdvancedSettingsProps> = ({
                   handleSettingChange('devicePreference', value)
                 }
               >
-                <SelectTrigger data-testid="device-preference-select">
+                <SelectTrigger data-testid="gpu-advanced-device-select">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -581,7 +581,10 @@ export const GPUAdvancedSettings: React.FC<GPUAdvancedSettingsProps> = ({
                   value: 'error' | 'warning' | 'info' | 'debug',
                 ) => handleSettingChange('logLevel', value)}
               >
-                <SelectTrigger className="w-48" data-testid="log-level-select">
+                <SelectTrigger
+                  className="w-48"
+                  data-testid="gpu-advanced-log-level"
+                >
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
