@@ -14,7 +14,6 @@
 import { describe, test, expect, beforeEach, jest } from '@jest/globals';
 
 // Create mock functions
-const mockLoadWhisperAddon = jest.fn();
 const mockLoadAndValidateAddon = jest.fn();
 const mockSelectOptimalGPU = jest.fn();
 const mockSetupOpenVINOEnvironment = jest.fn();
@@ -56,7 +55,6 @@ jest.mock('main/helpers/addonManager', () => ({
 }));
 
 jest.mock('main/helpers/whisper', () => ({
-  loadWhisperAddon: mockLoadWhisperAddon,
   hasEncoderModel: jest.fn(() => true),
   getPath: jest.fn(() => ({ modelsPath: '/mock/models' })),
 }));
@@ -102,7 +100,7 @@ describe('Addon Loading System', () => {
     jest.clearAllMocks();
 
     // Setup default mock implementations
-    mockLoadWhisperAddon.mockResolvedValue(createMockWhisperFunction());
+    mockLoadAndValidateAddon.mockResolvedValue(createMockWhisperFunction());
     mockLoadAndValidateAddon.mockResolvedValue(createMockWhisperFunction());
     mockSelectOptimalGPU.mockReturnValue({
       addonInfo: {
@@ -128,11 +126,11 @@ describe('Addon Loading System', () => {
       return createMockWhisperFunction();
     });
 
-    const whisperFunc = await mockLoadWhisperAddon('base');
+    const whisperFunc = await mockLoadAndValidateAddon('base');
 
     expect(whisperFunc).toBeDefined();
     expect(typeof whisperFunc).toBe('function');
-    expect(mockLoadWhisperAddon).toHaveBeenCalledWith('base');
+    expect(mockLoadAndValidateAddon).toHaveBeenCalledWith('base');
   });
 
   test('should load NVIDIA CUDA addon (existing functionality)', async () => {
@@ -152,7 +150,7 @@ describe('Addon Loading System', () => {
       fallbackOptions: [],
     });
 
-    const whisperFunc = await mockLoadWhisperAddon('base');
+    const whisperFunc = await mockLoadAndValidateAddon('base');
 
     expect(whisperFunc).toBeDefined();
     expect(typeof whisperFunc).toBe('function');
@@ -174,7 +172,7 @@ describe('Addon Loading System', () => {
       fallbackOptions: [],
     });
 
-    const whisperFunc = await mockLoadWhisperAddon('base');
+    const whisperFunc = await mockLoadAndValidateAddon('base');
 
     expect(whisperFunc).toBeDefined();
     expect(typeof whisperFunc).toBe('function');
@@ -195,7 +193,7 @@ describe('Addon Loading System', () => {
       fallbackOptions: [],
     });
 
-    const whisperFunc = await mockLoadWhisperAddon('base');
+    const whisperFunc = await mockLoadAndValidateAddon('base');
 
     expect(whisperFunc).toBeDefined();
     expect(typeof whisperFunc).toBe('function');
@@ -219,7 +217,7 @@ describe('Addon Loading System', () => {
       gpuPreference: ['intel', 'nvidia', 'cpu'],
     });
 
-    const whisperFunc = await mockLoadWhisperAddon('base');
+    const whisperFunc = await mockLoadAndValidateAddon('base');
 
     expect(whisperFunc).toBeDefined();
     expect(typeof whisperFunc).toBe('function');
@@ -227,7 +225,7 @@ describe('Addon Loading System', () => {
 
   test('should validate addon structure after loading', async () => {
     // Mock addon loading with invalid structure
-    mockLoadWhisperAddon.mockRejectedValue(
+    mockLoadAndValidateAddon.mockRejectedValue(
       new Error('Invalid addon structure'),
     );
 
@@ -236,7 +234,7 @@ describe('Addon Loading System', () => {
       selectedGPUId: 'intel_arc_a770',
     });
 
-    await expect(mockLoadWhisperAddon('base')).rejects.toThrow(
+    await expect(mockLoadAndValidateAddon('base')).rejects.toThrow(
       'Invalid addon structure',
     );
   });
@@ -256,7 +254,7 @@ describe('Addon Loading System', () => {
       return createMockWhisperFunction();
     });
 
-    await mockLoadWhisperAddon('base');
+    await mockLoadAndValidateAddon('base');
 
     // Simulate the environment setup
     mockSetupOpenVINOEnvironment({ deviceId: 'GPU0' });
@@ -283,7 +281,7 @@ describe('Addon Loading System', () => {
     });
 
     // Should fall back to legacy addon loading
-    const whisperFunc = await mockLoadWhisperAddon('base');
+    const whisperFunc = await mockLoadAndValidateAddon('base');
     expect(whisperFunc).toBeDefined();
   });
 });
@@ -293,7 +291,7 @@ describe('GPU Selection Logic', () => {
     jest.clearAllMocks();
 
     // Reset mock implementations
-    mockLoadWhisperAddon.mockResolvedValue(createMockWhisperFunction());
+    mockLoadAndValidateAddon.mockResolvedValue(createMockWhisperFunction());
     mockLoadAndValidateAddon.mockResolvedValue(createMockWhisperFunction());
   });
 
@@ -308,7 +306,7 @@ describe('GPU Selection Logic', () => {
       return createMockWhisperFunction();
     });
 
-    await mockLoadWhisperAddon('base');
+    await mockLoadAndValidateAddon('base');
 
     // Simulate the selection
     process.env.OPENVINO_DEVICE_ID = 'GPU1';
@@ -333,10 +331,10 @@ describe('GPU Selection Logic', () => {
       fallbackOptions: [],
     });
 
-    await mockLoadWhisperAddon('base');
+    await mockLoadAndValidateAddon('base');
 
     // Should select NVIDIA first since it's available and first in priority
-    expect(mockLoadWhisperAddon).toHaveBeenCalledWith('base');
+    expect(mockLoadAndValidateAddon).toHaveBeenCalledWith('base');
   });
 
   test('should select best Intel GPU based on model requirements', async () => {
@@ -350,7 +348,7 @@ describe('GPU Selection Logic', () => {
       return createMockWhisperFunction();
     });
 
-    await mockLoadWhisperAddon('large'); // Large model needs more memory
+    await mockLoadAndValidateAddon('large'); // Large model needs more memory
 
     // Simulate selection
     process.env.OPENVINO_DEVICE_ID = 'GPU0';
@@ -375,10 +373,10 @@ describe('GPU Selection Logic', () => {
       fallbackOptions: [],
     });
 
-    await mockLoadWhisperAddon('large'); // Large model, but only integrated GPU available
+    await mockLoadAndValidateAddon('large'); // Large model, but only integrated GPU available
 
     // Should fall back to CPU due to insufficient GPU memory
-    expect(mockLoadWhisperAddon).toHaveBeenCalledWith('large');
+    expect(mockLoadAndValidateAddon).toHaveBeenCalledWith('large');
   });
 
   test('should handle Intel GPU unavailable scenarios', async () => {
@@ -398,11 +396,11 @@ describe('GPU Selection Logic', () => {
       fallbackOptions: [],
     });
 
-    const whisperFunc = await mockLoadWhisperAddon('base');
+    const whisperFunc = await mockLoadAndValidateAddon('base');
 
     // Should fall back to CPU
     expect(whisperFunc).toBeDefined();
-    expect(mockLoadWhisperAddon).toHaveBeenCalledWith('base');
+    expect(mockLoadAndValidateAddon).toHaveBeenCalledWith('base');
   });
 
   test('should handle OpenVINO toolkit missing scenarios', async () => {
@@ -422,11 +420,11 @@ describe('GPU Selection Logic', () => {
       fallbackOptions: [],
     });
 
-    const whisperFunc = await mockLoadWhisperAddon('base');
+    const whisperFunc = await mockLoadAndValidateAddon('base');
 
     // Should fall back to NVIDIA since OpenVINO unavailable
     expect(whisperFunc).toBeDefined();
-    expect(mockLoadWhisperAddon).toHaveBeenCalledWith('base');
+    expect(mockLoadAndValidateAddon).toHaveBeenCalledWith('base');
   });
 
   test('should fallback through entire priority chain if needed', async () => {
@@ -468,9 +466,9 @@ describe('GPU Selection Logic', () => {
       gpuPreference: ['nvidia', 'intel', 'apple', 'cpu'],
     });
 
-    const whisperFunc = await mockLoadWhisperAddon('base');
+    const whisperFunc = await mockLoadAndValidateAddon('base');
 
     expect(whisperFunc).toBeDefined();
-    expect(mockLoadWhisperAddon).toHaveBeenCalled();
+    expect(mockLoadAndValidateAddon).toHaveBeenCalled();
   });
 });
