@@ -620,6 +620,17 @@ export class SubtitleGenerator {
   }
 
   /**
+   * Generate subtitles using the enhanced builtin Whisper with GPU support (alias for E2E compatibility)
+   */
+  async generateSubtitles(
+    event: any,
+    file: any,
+    formData: any,
+  ): Promise<string> {
+    return await this.generateSubtitle(event, file, formData);
+  }
+
+  /**
    * Generate subtitles using local Whisper command line
    */
   async generateSubtitleWithLocal(
