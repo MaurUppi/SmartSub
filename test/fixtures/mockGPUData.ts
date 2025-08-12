@@ -1112,3 +1112,27 @@ export const fixtures = {
 
 // Default export for convenience
 export default fixtures;
+
+/**
+ * Compatibility export for tests expecting MockGPUData structure
+ */
+export const MockGPUData = {
+  // Intel GPU fixtures
+  intelArcA770: intelGPUFixtures.arcA770(),
+  intelArcA750: intelGPUFixtures.arcA750(),
+  intelArcA580: intelGPUFixtures.arcA580(),
+  intelArcA380: intelGPUFixtures.arcA380(),
+  intelXeGraphics: intelGPUFixtures.xeGraphics(),
+  intelIrisXe: intelGPUFixtures.irisXe(),
+  intelIrisXeMax: intelGPUFixtures.irisXeMax(),
+  intelUHD630: intelGPUFixtures.uhd630(),
+
+  // Other GPU fixtures
+  nvidiaRTX4090: intelGPUFixtures.nvidiaRTX4090(),
+  appleM1: intelGPUFixtures.appleM1(),
+
+  // AMD GPU fixtures for CPU-only processing
+  amdRadeonRX7900XT: intelGPUFixtures.amdRadeonRX7900XT(),
+  amdRadeonProW6800: intelGPUFixtures.amdRadeonProW6800(),
+  amdRadeonRX6600: intelGPUFixtures.amdRadeonRX6600(),
+};

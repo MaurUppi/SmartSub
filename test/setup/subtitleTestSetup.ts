@@ -52,6 +52,7 @@ jest.mock('main/helpers/whisper', () => ({
     return paths[key] || '/mock/default';
   }),
   hasEncoderModel: jest.fn(() => true),
+  loadWhisperAddon: jest.fn(),
 }));
 
 // Mock GPU-related modules
@@ -73,8 +74,11 @@ jest.mock('main/helpers/hardware/hardwareDetection', () => ({
   detectAvailableGPUs: jest.fn(() => ({
     nvidia: false,
     intel: [{ id: 'GPU0', name: 'Intel Arc A770' }],
+    amd: [], // Fix: Add missing amd array
     apple: false,
     openvinoVersion: '2024.6.0',
+    totalGPUs: 1,
+    recommendedGPU: 'Intel Arc A770',
   })),
 }));
 
