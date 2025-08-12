@@ -1135,8 +1135,24 @@ describe('GPUAdvancedSettings', () => {
 
       await waitFor(
         () => {
-          const separators = screen.getAllByTestId('separator');
-          expect(separators.length).toBeGreaterThan(3);
+          // Verify all 4 unique separators exist
+          const cacheSeparator = screen.getByTestId(
+            'gpu-advanced-separator-cache',
+          );
+          const deviceSeparator = screen.getByTestId(
+            'gpu-advanced-separator-device',
+          );
+          const performanceSeparator = screen.getByTestId(
+            'gpu-advanced-separator-performance',
+          );
+          const debugSeparator = screen.getByTestId(
+            'gpu-advanced-separator-debug',
+          );
+
+          expect(cacheSeparator).toBeInTheDocument();
+          expect(deviceSeparator).toBeInTheDocument();
+          expect(performanceSeparator).toBeInTheDocument();
+          expect(debugSeparator).toBeInTheDocument();
         },
         { timeout: 3000 },
       );
