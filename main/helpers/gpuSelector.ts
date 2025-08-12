@@ -111,8 +111,8 @@ export function selectOptimalGPU(
       model,
       systemCapabilities: {
         nvidia: capabilities.nvidia,
-        intelCount: capabilities.intel.length,
-        amdCount: capabilities.amd.length, // ✅ NEW: AMD GPU count logging
+        intelCount: capabilities.intel?.length || 0,
+        amdCount: capabilities.amd?.length || 0, // ✅ NEW: AMD GPU count logging
         apple: capabilities.apple,
         openvinoVersion: capabilities.openvinoVersion,
       },
@@ -267,8 +267,8 @@ function tryEnhancedFallbackChain(
       arch,
       systemCapabilities: {
         nvidia: capabilities.nvidia,
-        intelCount: capabilities.intel.length,
-        amdCount: capabilities.amd.length,
+        intelCount: capabilities.intel?.length || 0,
+        amdCount: capabilities.amd?.length || 0,
         apple: capabilities.apple,
         openvinoVersion: capabilities.openvinoVersion,
       },
@@ -688,7 +688,7 @@ function tryNVIDIAGPU(
     );
 
     // Check if Intel GPUs are available for OpenVINO fallback
-    if (capabilities.intel.length > 0) {
+    if (capabilities.intel?.length > 0) {
       logMessage(
         'Intel GPU detected, falling back to OpenVINO processing',
         'info',
@@ -761,7 +761,7 @@ function tryIntelGPU(
   model: string,
   correlationId?: string,
 ): AddonInfo | null {
-  if (capabilities.intel.length === 0) {
+  if (!capabilities.intel || capabilities.intel.length === 0) {
     logGPUDetectionEvent(
       'gpu_found',
       {
@@ -781,7 +781,7 @@ function tryIntelGPU(
         gpuType: 'intel',
         validated: false,
         reason: 'OpenVINO toolkit not available',
-        intelGPUCount: capabilities.intel.length,
+        intelGPUCount: capabilities.intel?.length || 0,
       },
       correlationId,
     );
@@ -795,7 +795,7 @@ function tryIntelGPU(
         gpuType: 'intel',
         validated: false,
         reason: `Model ${model} not supported on OpenVINO`,
-        intelGPUCount: capabilities.intel.length,
+        intelGPUCount: capabilities.intel?.length || 0,
         openvinoVersion: capabilities.openvinoVersion,
       },
       correlationId,
@@ -803,7 +803,7 @@ function tryIntelGPU(
     return null;
   }
 
-  const bestIntelGPU = selectBestIntelGPU(capabilities.intel, model);
+  const bestIntelGPU = selectBestIntelGPU(capabilities.intel || [], model);
 
   if (!bestIntelGPU) {
     logGPUDetectionEvent(
@@ -812,7 +812,7 @@ function tryIntelGPU(
         gpuType: 'intel',
         validated: false,
         reason: 'No suitable Intel GPU found for model requirements',
-        intelGPUCount: capabilities.intel.length,
+        intelGPUCount: capabilities.intel?.length || 0,
         model,
         modelMemoryRequirements: getModelMemoryRequirements(model),
       },
@@ -1080,7 +1080,7 @@ function tryAMDGPU(
   model: string,
   correlationId?: string,
 ): AddonInfo | null {
-  if (capabilities.amd.length === 0) {
+  if (!capabilities.amd || capabilities.amd.length === 0) {
     logGPUDetectionEvent(
       'gpu_found',
       {
@@ -1102,7 +1102,7 @@ function tryAMDGPU(
     {
       gpuType: 'amd',
       available: true,
-      amdGPUCount: capabilities.amd.length,
+      amdGPUCount: capabilities.amd?.length || 0,
       platform,
       arch,
       policy: 'cpu_only_processing',
@@ -1192,7 +1192,7 @@ export function resolveSpecificGPU(
       requestedGpuId: gpuId,
       systemCapabilities: {
         nvidia: capabilities.nvidia,
-        intelCount: capabilities.intel.length,
+        intelCount: capabilities.intel?.length || 0,
         apple: capabilities.apple,
       },
     },
@@ -1248,7 +1248,7 @@ export function resolveSpecificGPU(
   }
 
   // Handle AMD GPU selection (Requirements #4, #7, #8)
-  if (gpuId.includes('amd') && capabilities.amd.length > 0) {
+  if (gpuId.includes('amd') && capabilities.amd?.length > 0) {
     // AMD GPUs always result in CPU-only processing per requirements
     const platform = process.platform;
 
@@ -1475,7 +1475,7 @@ export function logGPUSelection(
     systemCapabilities: {
       nvidia: capabilities.nvidia,
       intelGPUCount: capabilities.intel.length,
-      amdGPUCount: capabilities.amd.length, // ✅ NEW: AMD GPU count logging
+      amdGPUCount: capabilities.amd?.length || 0, // ✅ NEW: AMD GPU count logging
       apple: capabilities.apple,
       openvinoVersion: capabilities.openvinoVersion,
       multiGPU: capabilities.capabilities.multiGPU,

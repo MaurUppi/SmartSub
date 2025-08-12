@@ -404,7 +404,7 @@ export const GPUAdvancedSettings: React.FC<GPUAdvancedSettingsProps> = ({
           </div>
         </div>
 
-        <Separator data-testid="separator" />
+        <Separator data-testid="gpu-advanced-separator-cache" />
 
         {/* Device Preferences */}
         <div className="space-y-4">
@@ -454,7 +454,7 @@ export const GPUAdvancedSettings: React.FC<GPUAdvancedSettingsProps> = ({
           </div>
         </div>
 
-        <Separator data-testid="separator" />
+        <Separator data-testid="gpu-advanced-separator-device" />
 
         {/* Performance Optimization */}
         <div className="space-y-4">
@@ -551,7 +551,7 @@ export const GPUAdvancedSettings: React.FC<GPUAdvancedSettingsProps> = ({
           </div>
         </div>
 
-        <Separator data-testid="separator" />
+        <Separator data-testid="gpu-advanced-separator-performance" />
 
         {/* Debug and Logging */}
         <div className="space-y-4">
@@ -627,7 +627,7 @@ export const GPUAdvancedSettings: React.FC<GPUAdvancedSettingsProps> = ({
           </div>
         </div>
 
-        <Separator data-testid="separator" />
+        <Separator data-testid="gpu-advanced-separator-debug" />
 
         {/* Status and Actions */}
         {hasChanges && (
